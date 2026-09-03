@@ -84,19 +84,31 @@
       <label for="enteragram">Enteragram</label>
       <input type="text" id="enteragram" placeholder="Notes / Time" />
   
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+      <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+
+        <!-- Formula & Hydration (Dynamic Rows) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="margin:0;">Formula & Hydration</h3>
         <button type="button" id="add-formula-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Row</button>
-      </div>
-      <div id="formula-container" style="margin-top: 10px;">
-        <!-- JavaScript will auto-render 2 initial Formula rows here -->
-      </div>
-  
-      <label for="warm-water-cups" style="margin-top: 12px;">Warm Water (Cups)</label>
-      <input type="number" id="warm-water-cups" min="0" step="0.5" placeholder="0" />
-      
-      <label for="warm-water-time">Warm Water Time</label>
-      <input type="text" id="warm-water-time" placeholder="Time" />
+        </div>
+        <div id="formula-container">
+        <!-- JavaScript will auto-render dynamic rows here -->
+        </div>
+
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+
+        <!-- Warm Water Tracking (Dedicated Section) -->
+        <h3 style="margin-bottom: 10px;">Warm Water</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+            <label for="warm-water-cups"><strong>Cups Drunk</strong></label>
+            <input type="number" id="warm-water-cups" min="0" step="0.5" placeholder="e.g. 2" style="width: 100%; margin-top: 4px;" />
+        </div>
+        <div>
+            <label for="warm-water-time"><strong>Time</strong></label>
+            <input type="text" id="warm-water-time" placeholder="e.g. 10:30 AM" style="width: 100%; margin-top: 4px;" />
+        </div>
+        </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
@@ -120,19 +132,19 @@
   <div class="enzyme-row">
     <input type="checkbox" id="enzyme-no-fenol" />
     <label for="enzyme-no-fenol">NO-FENOL</label>
-    <input type="text" id="enzyme-no-fenol-notes" placeholder="Notes / Dose" />
+    <input type="text" id="enzyme-no-fenol-notes" placeholder="Notes" />
   </div>
 
   <div class="enzyme-row">
     <input type="checkbox" id="enzyme-carb-dgts" />
     <label for="enzyme-carb-dgts">CARB DGTS</label>
-    <input type="text" id="enzyme-carb-dgts-notes" placeholder="Notes / Dose" />
+    <input type="text" id="enzyme-carb-dgts-notes" placeholder="Notes" />
   </div>
 
   <div class="enzyme-row">
     <input type="checkbox" id="enzyme-chew" />
     <label for="enzyme-chew">CHEW</label>
-    <input type="text" id="enzyme-chew-notes" placeholder="Notes / Dose" />
+    <input type="text" id="enzyme-chew-notes" placeholder="Notes" />
   </div>
 
 </div>
