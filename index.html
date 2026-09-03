@@ -3,23 +3,189 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Simple App</title>
+  <title>Health Log</title>
   
-  <!-- Link the PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="/icon.jpeg" />
   <meta name="theme-color" content="#4A90E2" />
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .auth-card {
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 360px;
+      box-sizing: border-box;
+    }
+    h2 { margin-top: 0; color: #333; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4A90E2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .toggle-text {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 15px;
+      text-align: center;
+    }
+    .toggle-link {
+      color: #4A90E2;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .hidden { display: none; }
+    #error-msg { color: #d9534f; font-size: 0.85rem; margin-top: 8px; }
+  </style>
 </head>
 <body>
-  <h1>Welcome to My App</h1>
-  <p>If you are viewing this on a phone browser, you can install it to your home screen!</p>
 
-  <script>
-    // Register the Service Worker
+  <!-- Auth Box -->
+  <div class="auth-card" id="auth-container">
+    <h2 id="auth-title">Sign In</h2>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button id="auth-btn">Sign In</button>
+    <div id="error-msg"></div>
+
+    <p class="toggle-text" id="toggle-wrapper">
+      Don't have an account? <span class="toggle-link" id="toggle-auth">Sign Up</span>
+    </p>
+  </div>
+
+  <!-- Dashboard (Hidden by default) -->
+  <div class="auth-card hidden" id="dashboard">
+    <h2>Welcome to Health Log</h2>
+    <p>Logged in as: <strong id="user-email"></strong></p>
+    <button id="logout-btn" style="background-color: #d9534f;">Sign Out</button>
+  </div>
+
+  <!-- Firebase Modular SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // TODO: Replace with your actual Firebase config keys
+    const firebaseConfig = {
+        apiKey: "AIzaSyC__qzuMp1hkem_qgz3p9ZRIDNkPGJyM5Q",
+        authDomain: "healthlog-c442b.firebaseapp.com",
+        projectId: "healthlog-c442b",
+        storageBucket: "healthlog-c442b.firebasestorage.app",
+        messagingSenderId: "485609621730",
+        appId: "1:485609621730:web:964d0e244855e4ea4df6bb",
+        measurementId: "G-9J4N42X9CL"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let isSignUp = false;
+
+    // DOM Elements
+    const authTitle = document.getElementById("auth-title");
+    const authBtn = document.getElementById("auth-btn");
+    const toggleAuth = document.getElementById("toggle-auth");
+    const toggleWrapper = document.getElementById("toggle-wrapper");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const errorMsg = document.getElementById("error-msg");
+    const authContainer = document.getElementById("auth-container");
+    const dashboard = document.getElementById("dashboard");
+    const userEmailSpan = document.getElementById("user-email");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    // Toggle between Sign In and Sign Up modes
+    toggleAuth.addEventListener("click", () => {
+      isSignUp = !isSignUp;
+      errorMsg.textContent = "";
+      if (isSignUp) {
+        authTitle.textContent = "Create Account";
+        authBtn.textContent = "Sign Up";
+        toggleWrapper.innerHTML = 'Already have an account? <span class="toggle-link" id="toggle-auth">Sign In</span>';
+      } else {
+        authTitle.textContent = "Sign In";
+        authBtn.textContent = "Sign In";
+        toggleWrapper.innerHTML = 'Don\'t have an account? <span class="toggle-link" id="toggle-auth">Sign Up</span>';
+      }
+      // Re-attach listener after innerHTML update
+      document.getElementById("toggle-auth").addEventListener("click", arguments.callee);
+    });
+
+    // Handle Authentication
+    authBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      errorMsg.textContent = "";
+
+      if (!email || !password) {
+        errorMsg.textContent = "Please enter both email and password.";
+        return;
+      }
+
+      try {
+        if (isSignUp) {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        errorMsg.textContent = err.message.replace("Firebase: ", "");
+      }
+    });
+
+    // Handle Sign Out
+    logoutBtn.addEventListener("click", () => signOut(auth));
+
+    // Listen for Auth State Changes (Auto Login/Logout)
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        authContainer.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+        userEmailSpan.textContent = user.email;
+      } else {
+        authContainer.classList.remove("hidden");
+        dashboard.classList.add("hidden");
+        emailInput.value = "";
+        passwordInput.value = "";
+      }
+    });
+
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('Service Worker registered successfully!'))
-          .catch(err => console.log('Service Worker registration failed:', err));
+        navigator.serviceWorker.register('/sw.js');
       });
     }
   </script>
