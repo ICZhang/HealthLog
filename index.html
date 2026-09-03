@@ -52,9 +52,17 @@
       <!-- Hidden input to track document ID during edit mode -->
       <input type="hidden" id="editing-doc-id" value="" />
   
-      <!-- Date Header -->
-      <label for="log-date"><strong>Date</strong></label>
-      <input type="date" id="log-date" required />
+      <!-- Date & Time Header -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+        <label for="log-date"><strong>Date</strong></label>
+        <input type="date" id="log-date" required style="width: 100%; margin-top: 4px;" />
+        </div>
+        <div>
+        <label for="log-time"><strong>Log Time</strong></label>
+        <input type="time" id="log-time" required style="width: 100%; margin-top: 4px;" />
+        </div>
+    </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
