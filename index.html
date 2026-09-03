@@ -46,9 +46,10 @@
   
     <!-- SECTION 1: NEW ENTRY FORM -->
     <!-- SECTION 1: CARE LOG FORM -->
+<!-- SECTION 1: CARE LOG FORM -->
 <div id="section-new-entry">
     <form id="log-form">
-      <!-- Hidden input to track if we are editing an existing document -->
+      <!-- Hidden input to track document ID during edit mode -->
       <input type="hidden" id="editing-doc-id" value="" />
   
       <!-- Date Header -->
@@ -57,24 +58,24 @@
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-      <!-- Bowel Movements (Dynamic) -->
+      <!-- Bowel Movements (Starts with 2 Rows) -->
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin:0;">BM (Bowel Movements)</h3>
         <button type="button" id="add-bm-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add BM</button>
       </div>
       <div id="bm-container" style="margin-top: 10px;">
-        <!-- Dynamic BM entries will render here -->
+        <!-- JavaScript will auto-render 2 initial BM rows here -->
       </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-      <!-- Medications & Hydration (Dynamic) -->
+      <!-- Medications & Hydration (Starts with 2 Rows) -->
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin:0;">Cromolyn Doses & Other Meds</h3>
         <button type="button" id="add-med-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Dose</button>
       </div>
       <div id="meds-container" style="margin-top: 10px;">
-        <!-- Dynamic Med inputs render here -->
+        <!-- JavaScript will auto-render 2 initial Med rows here -->
       </div>
   
       <label for="herbal-meds-time" style="margin-top: 12px;">Herbal Meds Time</label>
@@ -88,24 +89,24 @@
         <button type="button" id="add-formula-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Row</button>
       </div>
       <div id="formula-container" style="margin-top: 10px;">
-        <!-- Dynamic Formula inputs render here -->
+        <!-- JavaScript will auto-render 2 initial Formula rows here -->
       </div>
   
       <label for="warm-water-cups" style="margin-top: 12px;">Warm Water (Cups)</label>
-      <input type="number" id="warm-water-cups" min="0" placeholder="0" />
+      <input type="number" id="warm-water-cups" min="0" step="0.5" placeholder="0" />
       
       <label for="warm-water-time">Warm Water Time</label>
       <input type="text" id="warm-water-time" placeholder="Time" />
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-      <!-- Activities (Dynamic) -->
+      <!-- Activities (Starts with 2 Rows) -->
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin:0;">Activities List</h3>
         <button type="button" id="add-activity-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Activity</button>
       </div>
       <div id="activities-container" style="margin-top: 10px;">
-        <!-- Dynamic Activity inputs render here -->
+        <!-- JavaScript will auto-render 2 initial Activity rows here -->
       </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
@@ -120,24 +121,90 @@
         <label style="display:inline-block;"><input type="checkbox" id="enzyme-chew" /> CHEW</label>
       </div>
   
-      <strong>Foods & Portions:</strong>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
-        <label><input type="checkbox" name="food" value="Quinoa"> Quinoa (T)</label>
-        <label><input type="checkbox" name="food" value="Potato"> Potato (T)</label>
-        <label><input type="checkbox" name="food" value="Carrot"> Carrot (t/T)</label>
-        <label><input type="checkbox" name="food" value="Spinach"> Spinach (L)</label>
-        <label><input type="checkbox" name="food" value="Bok Choy"> Bok Choy (L)</label>
-        <label><input type="checkbox" name="food" value="Kobocha"> Kobocha (T)</label>
-        <label><input type="checkbox" name="food" value="Snow Pea"> Snow Pea (P)</label>
-        <label><input type="checkbox" name="food" value="Cabbage"> Cabbage (t/T)</label>
-        <label><input type="checkbox" name="food" value="Pineapple"> Pineapple (t/T)</label>
-        <label><input type="checkbox" name="food" value="Chicken"> Chicken (t/T)</label>
-        <label><input type="checkbox" name="food" value="Cod Fish"> Cod Fish (t/T)</label>
-        <label><input type="checkbox" name="food" value="Beef"> Beef (t/T)</label>
-        <label><input type="checkbox" name="food" value="Bone Broth"> Bone Broth (C)</label>
-        <label><input type="checkbox" name="food" value="Veggie Broth"> Veggie Broth (C)</label>
-        <label><input type="checkbox" name="food" value="Salt"> Salt (t/T)</label>
-        <label><input type="checkbox" name="food" value="Olive Oil"> Olive Oil (t/T)</label>
+      <strong>Foods & Amounts:</strong>
+      <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 8px;" id="foods-grid">
+        
+        <!-- Food Row Template (Repeated for items) -->
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Quinoa"> Quinoa</label>
+          <input type="text" name="food-amount" placeholder="Amount (T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Potato"> Potato</label>
+          <input type="text" name="food-amount" placeholder="Amount (T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Carrot"> Carrot</label>
+          <input type="text" name="food-amount" placeholder="Amount (t/T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Spinach"> Spinach</label>
+          <input type="text" name="food-amount" placeholder="Amount (L)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Bok Choy"> Bok Choy</label>
+          <input type="text" name="food-amount" placeholder="Amount (L)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Kobocha"> Kobocha</label>
+          <input type="text" name="food-amount" placeholder="Amount (T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Snow Pea"> Snow Pea</label>
+          <input type="text" name="food-amount" placeholder="Amount (P)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Cabbage"> Cabbage</label>
+          <input type="text" name="food-amount" placeholder="Amount (t/T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Pineapple"> Pineapple</label>
+          <input type="text" name="food-amount" placeholder="Amount (t/T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Chicken"> Chicken</label>
+          <input type="text" name="food-amount" placeholder="Amount (t/T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Cod Fish"> Cod Fish</label>
+          <input type="text" name="food-amount" placeholder="Amount (t/T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Beef"> Beef</label>
+          <input type="text" name="food-amount" placeholder="Amount (t/T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Bone Broth"> Bone Broth</label>
+          <input type="text" name="food-amount" placeholder="Amount (C)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Veggie Broth"> Veggie Broth</label>
+          <input type="text" name="food-amount" placeholder="Amount (C)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Salt"> Salt</label>
+          <input type="text" name="food-amount" placeholder="Amount (t/T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
+        <div class="food-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <label style="margin:0;"><input type="checkbox" name="food-check" value="Olive Oil"> Olive Oil</label>
+          <input type="text" name="food-amount" placeholder="Amount (t/T)" style="width: 110px; margin:0; padding: 6px;" />
+        </div>
+  
       </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
