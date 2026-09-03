@@ -112,18 +112,31 @@
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
       <!-- Solid Foods & Enzymes -->
-      <h3>Solid Foods & Enzymes</h3>
-      
-      <strong>Enzymes:</strong>
-      <div style="margin-bottom: 12px; margin-top: 6px;">
-        <label style="display:inline-block; margin-right: 10px;"><input type="checkbox" id="enzyme-no-fenol" /> NO-FENOL</label>
-        <label style="display:inline-block; margin-right: 10px;"><input type="checkbox" id="enzyme-carb-dgts" /> CARB DGTS</label>
-        <label style="display:inline-block;"><input type="checkbox" id="enzyme-chew" /> CHEW</label>
-      </div>
+<h3>Solid Foods & Enzymes</h3>
+
+<strong>Enzymes:</strong>
+<div style="margin-top: 8px; margin-bottom: 15px;">
   
-      <strong>Foods & Amounts:</strong>
-      <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 8px;" id="foods-grid">
-        
+  <div class="enzyme-row">
+    <label><input type="checkbox" id="enzyme-no-fenol" /> NO-FENOL</label>
+    <input type="text" id="enzyme-no-fenol-notes" placeholder="Notes / Dose" />
+  </div>
+
+  <div class="enzyme-row">
+    <label><input type="checkbox" id="enzyme-carb-dgts" /> CARB DGTS</label>
+    <input type="text" id="enzyme-carb-dgts-notes" placeholder="Notes / Dose" />
+  </div>
+
+  <div class="enzyme-row">
+    <label><input type="checkbox" id="enzyme-chew" /> CHEW</label>
+    <input type="text" id="enzyme-chew-notes" placeholder="Notes / Dose" />
+  </div>
+
+</div>
+
+    <strong>Foods & Amounts:</strong>
+    <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 8px;" id="foods-grid">
+    
         <div class="food-row">
             <label><input type="checkbox" name="food-check" value="Quinoa"> Quinoa</label>
             <input type="text" name="food-amount" placeholder="Amount (T)" />
@@ -204,7 +217,7 @@
             <input type="text" name="food-amount" placeholder="Amount (t/T)" />
         </div>
 
-       </div>
+    </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   

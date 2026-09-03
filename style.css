@@ -86,22 +86,49 @@ button {
 
 
 .food-row {
-    display: grid !important;
-    grid-template-columns: 24px 120px 1fr; 
+    display: grid;
+    grid-template-columns: 28px 110px 1fr; /* Fixed checkbox width, label width, and flexible text input */
     align-items: center;
     gap: 8px;
-  }
+}
   
-  .food-row label {
+.food-row label {
     margin: 0 !important;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    grid-column: 1 / span 2;
     display: flex;
     align-items: center;
     gap: 8px;
-    grid-column: 1 / span 2; 
-  }
-  
-  .food-row input[type="text"] {
+}
+
+.food-row input[type="text"] {
     width: 100% !important;
     margin: 0 !important;
     padding: 6px 8px;
-  }
+}
+
+.enzyme-row {
+    display: grid;
+    grid-template-columns: 28px 110px 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.enzyme-row label {
+    margin: 0 !important;
+    font-size: 0.85rem;
+    font-weight: bold;
+    white-space: nowrap;
+    grid-column: 1 / span 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.enzyme-row input[type="text"] {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 6px 8px;
+}
