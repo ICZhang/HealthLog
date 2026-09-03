@@ -1,4 +1,6 @@
 // Minimal Service Worker
+self.addEventListener('install', () => self.skipWaiting());
+
 self.addEventListener('install', (event) => {
     console.log('Service Worker installing...');
     self.skipWaiting();
