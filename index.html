@@ -15,23 +15,25 @@
 <body>
 
   <!-- Auth Box -->
-  <div class="card" id="auth-container">
-    <h2 id="auth-title">Sign In</h2>
-    <input type="text" id="username" placeholder="Username" required />
-    <input type="password" id="password" placeholder="Password" required />
+    <div class="card" id="auth-card">
+        <h2 id="auth-title">Sign In</h2>
+        <form id="auth-form">
+        <input type="text" id="username" placeholder="Username" required />
+        <input type="password" id="password" placeholder="Password" required />
+        
+        <div style="display: flex; align-items: center; margin: 4px 0 12px 0; font-size: 0.85rem; color: #666;">
+            <input type="checkbox" id="show-password" style="width: auto; margin: 0 6px 0 0; cursor: pointer;" />
+            <label for="show-password" style="margin: 0; cursor: pointer; user-select: none;">Show Password</label>
+        </div>
     
-    <div style="display: flex; align-items: center; margin: 4px 0 12px 0; font-size: 0.85rem; color: #666;">
-        <input type="checkbox" id="show-password" style="width: auto; margin: 0 6px 0 0; cursor: pointer;" />
-        <label for="show-password" style="margin: 0; cursor: pointer; user-select: none;">Show Password</label>
+        <button type="submit" id="auth-btn">Sign In</button>
+        </form>
+        <div id="error-msg" style="color: #e74c3c; margin-top: 8px; font-size: 0.85rem;"></div>
+    
+        <p class="toggle-text" id="toggle-wrapper" style="margin-top: 12px;">
+        Don't have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign Up</span>
+        </p>
     </div>
-
-    <button id="auth-btn">Sign In</button>
-    <div id="error-msg"></div>
-
-    <p class="toggle-text" id="toggle-wrapper">
-      Don't have an account? <span class="toggle-link" id="toggle-auth">Sign Up</span>
-    </p>
-  </div>
 
   <!-- Dashboard App UI -->
 <div class="card hidden" id="dashboard">

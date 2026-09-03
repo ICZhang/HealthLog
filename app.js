@@ -1,7 +1,9 @@
 import { auth, db } from "./firebase-config.js";
 import { 
   onAuthStateChanged, 
-  signOut 
+  signOut,
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
   collection, 
@@ -16,6 +18,7 @@ import {
 // Global Variables
 let currentUser = null;
 let unsubscribeLogs = null;
+let isSignUp = false;
 
 // DOM Elements
 const userEmailEl = document.getElementById("user-email");
@@ -43,6 +46,22 @@ const addMedBtn = document.getElementById("add-med-btn");
 const addFormulaBtn = document.getElementById("add-formula-btn");
 const addActivityBtn = document.getElementById("add-activity-btn");
 
+// Toggle Handler (Safe for Strict Mode)
+function handleAuthToggle() {
+  isSignUp = !isSignUp;
+  document.getElementById("auth-title").textContent = isSignUp ? "Sign Up" : "Sign In";
+  document.getElementById("auth-btn").textContent = isSignUp ? "Sign Up" : "Sign In";
+  document.getElementById("toggle-wrapper").innerHTML = isSignUp 
+    ? `Already have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign In</span>`
+    : `Don't have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign Up</span>`;
+  
+  // Re-attach event listener using named function
+  document.getElementById("toggle-auth")?.addEventListener("click", handleAuthToggle);
+}
+
+// Initial Listener Attachment
+document.getElementById("toggle-auth")?.addEventListener("click", handleAuthToggle);
+
 // Authentication State Tracker
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -51,10 +70,7 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById("dashboard").classList.remove("hidden");
     document.getElementById("auth-card")?.classList.add("hidden");
     
-    // Set default date to today and time to now
     resetForm();
-    
-    // Listen for live Firestore updates
     loadPastRecords(user.uid);
   } else {
     currentUser = null;
@@ -84,13 +100,44 @@ tabPastBtn.addEventListener("click", () => {
   sectionNewEntry.classList.add("hidden");
 });
 
+// Password visibility toggle
+document.getElementById("show-password")?.addEventListener("change", (e) => {
+  const pwdInput = document.getElementById("password");
+  pwdInput.type = e.target.checked ? "text" : "password";
+});
+
+// Auth Form Handler
+document.getElementById("auth-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const usernameVal = document.getElementById("username").value.trim().toLowerCase();
+  const passwordVal = document.getElementById("password").value;
+  const errorMsg = document.getElementById("error-msg");
+  
+  errorMsg.textContent = "";
+
+  const email = usernameVal.includes("@") ? usernameVal : `${usernameVal}@app.local`;
+
+  try {
+    if (isSignUp) {
+      await createUserWithEmailAndPassword(auth, email, passwordVal);
+    } else {
+      await signInWithEmailAndPassword(auth, email, passwordVal);
+    }
+  } catch (err) {
+    console.error("Auth Error:", err);
+    errorMsg.textContent = err.message.replace("Firebase: ", "");
+  }
+});
+
 // --- DYNAMIC ROW GENERATION ---
 
-// Helper to create BM Row
 function addBmRow(data = {}) {
   const row = document.createElement("div");
   row.className = "dynamic-row bm-row";
   row.style.cssText = "border: 1px solid #eee; padding: 8px; border-radius: 6px; margin-bottom: 8px; background: #fafafa;";
+  
+  const groupName = `bm-amt-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
   row.innerHTML = `
     <div style="display: flex; gap: 8px; margin-bottom: 6px;">
       <input type="time" class="bm-time" value="${data.time || ''}" style="flex: 1;" />
@@ -101,9 +148,9 @@ function addBmRow(data = {}) {
     </div>
     <div style="display: flex; gap: 8px; align-items: center;">
       <span style="font-size: 0.85rem; font-weight: bold;">Amount:</span>
-      <label style="margin:0;"><input type="radio" name="bm-amt-${Date.now()}-${Math.random()}" value="S" ${data.amount === 'S' ? 'checked' : ''}> S</label>
-      <label style="margin:0;"><input type="radio" name="bm-amt-${Date.now()}-${Math.random()}" value="M" ${data.amount === 'M' ? 'checked' : ''}> M</label>
-      <label style="margin:0;"><input type="radio" name="bm-amt-${Date.now()}-${Math.random()}" value="L" ${data.amount === 'L' ? 'checked' : ''}> L</label>
+      <label style="margin:0;"><input type="radio" name="${groupName}" value="S" ${data.amount === 'S' ? 'checked' : ''}> S</label>
+      <label style="margin:0;"><input type="radio" name="${groupName}" value="M" ${data.amount === 'M' ? 'checked' : ''}> M</label>
+      <label style="margin:0;"><input type="radio" name="${groupName}" value="L" ${data.amount === 'L' ? 'checked' : ''}> L</label>
       <input type="text" class="bm-color" placeholder="Color" value="${data.color || ''}" style="flex: 1; margin:0;" />
       <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0;">X</button>
     </div>
@@ -112,7 +159,6 @@ function addBmRow(data = {}) {
   bmContainer.appendChild(row);
 }
 
-// Helper to create Generic Single-Field Row
 function addTextRow(container, className, placeholder, value = "") {
   const row = document.createElement("div");
   row.className = `dynamic-row ${className}`;
@@ -125,31 +171,27 @@ function addTextRow(container, className, placeholder, value = "") {
   container.appendChild(row);
 }
 
-// Add Row Button Event Listeners
+// Add Row Event Listeners
 addBmBtn.addEventListener("click", () => addBmRow());
 addMedBtn.addEventListener("click", () => addTextRow(medsContainer, "med-row", "Cromolyn / Med Dose (Time / Notes)"));
 addFormulaBtn.addEventListener("click", () => addTextRow(formulaContainer, "formula-row", "Formula / Hydration Entry"));
 addActivityBtn.addEventListener("click", () => addTextRow(activitiesContainer, "activity-row", "Activity Details"));
 
-// Reset Form to Initial State (2 rows per section)
 function resetForm() {
   logForm.reset();
   editingDocIdInput.value = "";
   saveLogBtn.textContent = "Save Care Log";
   cancelEditBtn.classList.add("hidden");
 
-  // Set today's date & current time
   const now = new Date();
   document.getElementById("log-date").value = now.toISOString().split("T")[0];
   document.getElementById("log-time").value = now.toTimeString().slice(0, 5);
 
-  // Clear containers
   bmContainer.innerHTML = "";
   medsContainer.innerHTML = "";
   formulaContainer.innerHTML = "";
   activitiesContainer.innerHTML = "";
 
-  // Render 2 initial rows for each section
   addBmRow(); addBmRow();
   addTextRow(medsContainer, "med-row", "1st Med Dose (Time / Notes)");
   addTextRow(medsContainer, "med-row", "2nd Med Dose (Time / Notes)");
@@ -163,7 +205,6 @@ cancelEditBtn.addEventListener("click", resetForm);
 
 // --- EXTRACT FORM DATA ---
 function getFormData() {
-  // BM Entries
   const bmData = [];
   document.querySelectorAll(".bm-row").forEach(row => {
     const time = row.querySelector(".bm-time").value;
@@ -176,7 +217,6 @@ function getFormData() {
     }
   });
 
-  // Dynamic Text Inputs Helper
   const getValues = (selector) => {
     const vals = [];
     document.querySelectorAll(selector).forEach(row => {
@@ -186,7 +226,6 @@ function getFormData() {
     return vals;
   };
 
-  // Foods & Amounts
   const foodData = [];
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
@@ -234,11 +273,9 @@ logForm.addEventListener("submit", async (e) => {
 
   try {
     if (editingId) {
-      // Update Existing Doc
       await setDoc(doc(db, "users", currentUser.uid, "logs", editingId), logData, { merge: true });
       alert("Care Log updated successfully!");
     } else {
-      // Create New Doc
       await addDoc(collection(db, "users", currentUser.uid, "logs"), logData);
       alert("Care Log saved successfully!");
     }
@@ -279,7 +316,6 @@ function loadPastRecords(userId) {
         ${data.notes ? `<p style="margin: 4px 0; font-size: 0.85rem; color: #666; font-style: italic;">"${data.notes.slice(0, 60)}..."</p>` : ''}
       `;
 
-      // Edit Button Action
       li.querySelector(".edit-log-btn").addEventListener("click", () => {
         populateFormForEdit(docId, data);
       });
@@ -295,11 +331,9 @@ function populateFormForEdit(id, data) {
   saveLogBtn.textContent = "Update Care Log";
   cancelEditBtn.classList.remove("hidden");
 
-  // Basic Info
   document.getElementById("log-date").value = data.date || "";
   document.getElementById("log-time").value = data.time || "";
 
-  // Bowel Movements
   bmContainer.innerHTML = "";
   if (data.bowelMovements && data.bowelMovements.length > 0) {
     data.bowelMovements.forEach(bm => addBmRow(bm));
@@ -307,7 +341,6 @@ function populateFormForEdit(id, data) {
     addBmRow();
   }
 
-  // Meds
   medsContainer.innerHTML = "";
   if (data.medications && data.medications.length > 0) {
     data.medications.forEach(m => addTextRow(medsContainer, "med-row", "Med Dose", m));
@@ -318,7 +351,6 @@ function populateFormForEdit(id, data) {
   document.getElementById("herbal-meds-time").value = data.herbalMedsTime || "";
   document.getElementById("enteragram").value = data.enteragram || "";
 
-  // Formula
   formulaContainer.innerHTML = "";
   if (data.formulaHydration && data.formulaHydration.length > 0) {
     data.formulaHydration.forEach(f => addTextRow(formulaContainer, "formula-row", "Formula Entry", f));
@@ -326,11 +358,9 @@ function populateFormForEdit(id, data) {
     addTextRow(formulaContainer, "formula-row", "Formula Entry");
   }
 
-  // Warm Water
   document.getElementById("warm-water-cups").value = data.warmWater?.cups || "";
   document.getElementById("warm-water-time").value = data.warmWater?.time || "";
 
-  // Activities
   activitiesContainer.innerHTML = "";
   if (data.activities && data.activities.length > 0) {
     data.activities.forEach(a => addTextRow(activitiesContainer, "activity-row", "Activity Details", a));
@@ -338,7 +368,6 @@ function populateFormForEdit(id, data) {
     addTextRow(activitiesContainer, "activity-row", "Activity Details");
   }
 
-  // Enzymes
   if (data.enzymes) {
     document.getElementById("enzyme-no-fenol").checked = !!data.enzymes.noFenol?.checked;
     document.getElementById("enzyme-no-fenol-notes").value = data.enzymes.noFenol?.notes || "";
@@ -348,7 +377,6 @@ function populateFormForEdit(id, data) {
     document.getElementById("enzyme-chew-notes").value = data.enzymes.chew?.notes || "";
   }
 
-  // Foods
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
     const amountInput = row.querySelector("input[type='text']");
@@ -364,7 +392,5 @@ function populateFormForEdit(id, data) {
   });
 
   document.getElementById("day-notes").value = data.notes || "";
-
-  // Switch to New Entry tab for editing
   tabNewBtn.click();
 }
