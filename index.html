@@ -15,38 +15,44 @@
       background-color: #f4f6f9;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
       margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
     }
-    .auth-card {
+    .card {
       background: #ffffff;
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 360px;
+      max-width: 450px;
       box-sizing: border-box;
+      margin-top: 20px;
     }
-    h2 { margin-top: 0; color: #333; }
-    input {
+    h2, h3 { margin-top: 0; color: #333; }
+    label { display: block; font-size: 0.85rem; color: #666; margin-top: 10px; }
+    input, select, textarea {
       width: 100%;
       padding: 10px;
-      margin: 8px 0;
+      margin: 6px 0 12px 0;
       border: 1px solid #ccc;
       border-radius: 6px;
       box-sizing: border-box;
+      font-size: 1rem;
     }
     button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background-color: #4A90E2;
       color: white;
       border: none;
       border-radius: 6px;
       font-weight: bold;
+      font-size: 1rem;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 8px;
     }
     .toggle-text {
       font-size: 0.9rem;
@@ -61,12 +67,40 @@
     }
     .hidden { display: none; }
     #error-msg { color: #d9534f; font-size: 0.85rem; margin-top: 8px; }
+    
+    /* Log Items List */
+    .log-list {
+      list-style-type: none;
+      padding: 0;
+      margin-top: 15px;
+    }
+    .log-item {
+      background: #f9fbfd;
+      border: 1px solid #e1e8ed;
+      border-left: 4px solid #4A90E2;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .log-date { font-size: 0.75rem; color: #888; }
+    .log-notes { font-size: 0.9rem; color: #555; margin-top: 6px; }
+    .logout-btn {
+      background-color: #d9534f;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
 
   <!-- Auth Box -->
-  <div class="auth-card" id="auth-container">
+  <div class="card" id="auth-container">
     <h2 id="auth-title">Sign In</h2>
     <input type="email" id="email" placeholder="Email" required />
     <input type="password" id="password" placeholder="Password" required />
@@ -78,14 +112,49 @@
     </p>
   </div>
 
-  <!-- Dashboard (Hidden by default) -->
-  <div class="auth-card hidden" id="dashboard">
-    <h2>Welcome to Health Log</h2>
-    <p>Logged in as: <strong id="user-email"></strong></p>
-    <button id="logout-btn" style="background-color: #d9534f;">Sign Out</button>
+  <!-- Dashboard App UI -->
+  <div class="card hidden" id="dashboard">
+    <h2>Health Log</h2>
+    <p style="font-size: 0.85rem; color: #666;">User: <strong id="user-email"></strong></p>
+
+    <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;" />
+
+    <!-- Log Entry Form -->
+    <h3>New Entry</h3>
+    <form id="log-form">
+      <label for="symptom">Symptom / Metric</label>
+      <input type="text" id="symptom" placeholder="e.g., Headache, Blood Pressure" required />
+
+      <label for="severity">Severity / Rating (1-10)</label>
+      <select id="severity">
+        <option value="1">1 - Very Mild</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5 - Moderate</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10 - Severe</option>
+      </select>
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" rows="2" placeholder="Additional details or triggers..."></textarea>
+
+      <button type="submit" id="save-log-btn">Save Log Entry</button>
+    </form>
+
+    <!-- Past Logs Container -->
+    <h3 style="margin-top: 25px;">Past Entries</h3>
+    <ul class="log-list" id="log-list">
+      <li style="color: #888; font-size: 0.9rem;">Loading entries...</li>
+    </ul>
+
+    <button id="logout-btn" class="logout-btn">Sign Out</button>
   </div>
 
-  <!-- Firebase Modular SDKs -->
+  <!-- Firebase SDK Modules -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
@@ -95,8 +164,17 @@
       signOut, 
       onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      query, 
+      orderBy, 
+      onSnapshot, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // TODO: Replace with your actual Firebase config keys
+    // TODO: Replace with your actual Firebase project keys
     const firebaseConfig = {
         apiKey: "AIzaSyC__qzuMp1hkem_qgz3p9ZRIDNkPGJyM5Q",
         authDomain: "healthlog-c442b.firebaseapp.com",
@@ -107,11 +185,15 @@
         measurementId: "G-9J4N42X9CL"
     };
 
-    // Initialize Firebase
+
+    // Initialize Firebase Services
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
     let isSignUp = false;
+    let currentUser = null;
+    let unsubscribeFromLogs = null;
 
     // DOM Elements
     const authTitle = document.getElementById("auth-title");
@@ -125,8 +207,14 @@
     const dashboard = document.getElementById("dashboard");
     const userEmailSpan = document.getElementById("user-email");
     const logoutBtn = document.getElementById("logout-btn");
+    
+    const logForm = document.getElementById("log-form");
+    const symptomInput = document.getElementById("symptom");
+    const severitySelect = document.getElementById("severity");
+    const notesInput = document.getElementById("notes");
+    const logList = document.getElementById("log-list");
 
-    // Toggle between Sign In and Sign Up modes
+    // Toggle Sign In / Sign Up Modes
     toggleAuth.addEventListener("click", () => {
       isSignUp = !isSignUp;
       errorMsg.textContent = "";
@@ -139,11 +227,10 @@
         authBtn.textContent = "Sign In";
         toggleWrapper.innerHTML = 'Don\'t have an account? <span class="toggle-link" id="toggle-auth">Sign Up</span>';
       }
-      // Re-attach listener after innerHTML update
       document.getElementById("toggle-auth").addEventListener("click", arguments.callee);
     });
 
-    // Handle Authentication
+    // Handle Auth Submission
     authBtn.addEventListener("click", async () => {
       const email = emailInput.value.trim();
       const password = passwordInput.value.trim();
@@ -166,21 +253,98 @@
     });
 
     // Handle Sign Out
-    logoutBtn.addEventListener("click", () => signOut(auth));
+    logoutBtn.addEventListener("click", () => {
+      if (unsubscribeFromLogs) unsubscribeFromLogs();
+      signOut(auth);
+    });
 
-    // Listen for Auth State Changes (Auto Login/Logout)
+    // Listen for Auth State Changes
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        currentUser = user;
         authContainer.classList.add("hidden");
         dashboard.classList.remove("hidden");
         userEmailSpan.textContent = user.email;
+        
+        // Fetch health logs for logged-in user
+        listenToHealthLogs(user.uid);
       } else {
+        currentUser = null;
+        if (unsubscribeFromLogs) unsubscribeFromLogs();
         authContainer.classList.remove("hidden");
         dashboard.classList.add("hidden");
         emailInput.value = "";
         passwordInput.value = "";
+        logList.innerHTML = "";
       }
     });
+
+    // Save New Log Entry to Firestore
+    logForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const symptom = symptomInput.value.trim();
+      const severity = severitySelect.value;
+      const notes = notesInput.value.trim();
+
+      try {
+        // Path matches security rule: /users/{userId}/logs/{logId}
+        const logsRef = collection(db, "users", currentUser.uid, "logs");
+        await addDoc(logsRef, {
+          symptom: symptom,
+          severity: severity,
+          notes: notes,
+          createdAt: serverTimestamp()
+        });
+
+        // Reset Form
+        logForm.reset();
+      } catch (err) {
+        alert("Failed to save entry: " + err.message);
+      }
+    });
+
+    // Real-Time Listener to Fetch Logs
+    function listenToHealthLogs(userId) {
+      const logsRef = collection(db, "users", userId, "logs");
+      const q = query(logsRef, orderBy("createdAt", "desc"));
+
+      unsubscribeFromLogs = onSnapshot(q, (snapshot) => {
+        logList.innerHTML = "";
+        
+        if (snapshot.empty) {
+          logList.innerHTML = '<li style="color: #888; font-size: 0.9rem;">No entries logged yet.</li>';
+          return;
+        }
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const date = data.createdAt ? data.createdAt.toDate().toLocaleString() : "Just now";
+
+          const li = document.createElement("li");
+          li.className = "log-item";
+          li.innerHTML = `
+            <div class="log-header">
+              <span>${escapeHtml(data.symptom)}</span>
+              <span>Level: ${data.severity}/10</span>
+            </div>
+            <div class="log-date">${date}</div>
+            ${data.notes ? `<div class="log-notes">${escapeHtml(data.notes)}</div>` : ""}
+          `;
+          logList.appendChild(li);
+        });
+      }, (error) => {
+        logList.innerHTML = `<li style="color: #d9534f; font-size: 0.85rem;">Error loading entries: ${error.message}</li>`;
+      });
+    }
+
+    // Utility Helper to Prevent Injection in Displayed Notes
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
 
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
