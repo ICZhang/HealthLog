@@ -146,7 +146,7 @@ function addBmRow(data = {}) {
         ${[1,2,3,4,5,6,7].map(n => `<option value="${n}" ${data.type == n ? 'selected' : ''}>Type ${n}</option>`).join('')}
         </select>
     </div>
-    <div style="display: flex; gap: 8px; align-items: center;">
+    <div style="display: flex; gap: 12px; align-items: center;">
         <span style="font-size: 0.85rem; font-weight: bold;">Amount:</span>
         <div style="display: flex; gap: 12px; align-items: center;">
         <label style="display: flex; flex-direction: column; align-items: center; margin: 0; cursor: pointer; font-size: 0.85rem;">
