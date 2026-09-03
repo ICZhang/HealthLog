@@ -34,46 +34,145 @@
   </div>
 
   <!-- Dashboard App UI -->
-  <div class="card hidden" id="dashboard">
-    <h2>Health Log</h2>
-    <p style="font-size: 0.85rem; color: #666;">User: <strong id="user-email"></strong></p>
-
-    <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;" />
-
-    <!-- Log Entry Form -->
-    <h3>New Entry</h3>
-    <form id="log-form">
-      <label for="symptom">Symptom / Metric</label>
-      <input type="text" id="symptom" placeholder="e.g., Headache, Blood Pressure" required />
-
-      <label for="severity">Severity / Rating (1-10)</label>
-      <select id="severity">
-        <option value="1">1 - Very Mild</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5 - Moderate</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10 - Severe</option>
-      </select>
-
-      <label for="notes">Notes</label>
-      <textarea id="notes" rows="2" placeholder="Additional details or triggers..."></textarea>
-
-      <button type="submit" id="save-log-btn">Save Log Entry</button>
-    </form>
-
-    <!-- Past Logs Container -->
-    <h3 style="margin-top: 25px;">Past Entries</h3>
-    <ul class="log-list" id="log-list">
-      <li style="color: #888; font-size: 0.9rem;">Loading entries...</li>
-    </ul>
-
+<div class="card hidden" id="dashboard">
+    <h2>Evan's Daily Care Log</h2>
+    <p style="font-size: 0.85rem; color: #666;">Logged in as: <strong id="user-email"></strong></p>
+  
+    <!-- Navigation Tabs -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button id="tab-new-btn" type="button" style="background-color: #4A90E2;">New Entry</button>
+      <button id="tab-past-btn" type="button" style="background-color: #888;">Past Records</button>
+    </div>
+  
+    <!-- SECTION 1: NEW ENTRY FORM -->
+    <div id="section-new-entry">
+      <form id="log-form">
+        
+        <!-- Date Header -->
+        <label for="log-date"><strong>Date</strong></label>
+        <input type="date" id="log-date" required />
+  
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+  
+        <!-- Bowel Movements -->
+        <h3>BM (Bowel Movement)</h3>
+        <label for="bm-time">Time</label>
+        <input type="time" id="bm-time" />
+  
+        <label for="bm-type">Type (Bristol Scale 1–7)</label>
+        <select id="bm-type">
+          <option value="">-- Select Type --</option>
+          <option value="1">1 - Separate hard lumps</option>
+          <option value="2">2 - Lumpy and sausage-like</option>
+          <option value="3">3 - Sausage shape with cracks</option>
+          <option value="4">4 - Smooth & soft sausage</option>
+          <option value="5">5 - Soft blobs with clear edges</option>
+          <option value="6">6 - Fluffy pieces, mushy stool</option>
+          <option value="7">7 - Watery, no solid pieces</option>
+        </select>
+  
+        <label>Amount</label>
+        <div style="display: flex; gap: 15px; margin-bottom: 12px;">
+          <label style="margin:0;"><input type="radio" name="bm-amount" value="S"> S</label>
+          <label style="margin:0;"><input type="radio" name="bm-amount" value="M"> M</label>
+          <label style="margin:0;"><input type="radio" name="bm-amount" value="L"> L</label>
+        </div>
+  
+        <label for="bm-color">Color</label>
+        <input type="text" id="bm-color" placeholder="e.g., Brown, Yellow" />
+  
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+  
+        <!-- Medications & Hydration -->
+        <h3>Cromolyn Doses & Other Meds</h3>
+        <input type="text" id="med-dose-1" placeholder="1st Dose (Time / Notes)" />
+        <input type="text" id="med-dose-2" placeholder="2nd Dose (Time / Notes)" />
+        <input type="text" id="med-dose-3" placeholder="3rd Dose (Time / Notes)" />
+        <input type="text" id="med-dose-4" placeholder="4th Dose (Time / Notes)" />
+  
+        <label for="herbal-meds-time">Herbal Meds Time</label>
+        <input type="text" id="herbal-meds-time" placeholder="Time" />
+  
+        <label for="enteragram">Enteragram</label>
+        <input type="text" id="enteragram" placeholder="Notes / Time" />
+  
+        <h3>Formula & Hydration</h3>
+        <input type="text" id="formula-1" placeholder="1st Formula/Hydration" />
+        <input type="text" id="formula-2" placeholder="2nd Formula/Hydration" />
+        <input type="text" id="formula-3" placeholder="3rd Formula/Hydration" />
+        <input type="text" id="formula-4" placeholder="4th Formula/Hydration" />
+        <input type="text" id="formula-5" placeholder="5th Formula/Hydration" />
+        <input type="text" id="formula-6" placeholder="6th Formula/Hydration" />
+  
+        <label for="warm-water-cups">Warm Water (Cups)</label>
+        <input type="number" id="warm-water-cups" min="0" placeholder="0" />
+        
+        <label for="warm-water-time">Warm Water Time</label>
+        <input type="text" id="warm-water-time" placeholder="Time" />
+  
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+  
+        <!-- Activities -->
+        <h3>Activities List</h3>
+        <input type="text" id="activity-1" placeholder="#1 Activity" />
+        <input type="text" id="activity-2" placeholder="#2 Activity" />
+        <input type="text" id="activity-3" placeholder="#3 Activity" />
+        <input type="text" id="activity-4" placeholder="#4 Activity" />
+        <input type="text" id="activity-5" placeholder="#5 Activity" />
+        <input type="text" id="activity-6" placeholder="#6 Activity" />
+  
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+  
+        <!-- Solid Foods & Enzymes -->
+        <h3>Solid Foods & Enzymes</h3>
+        
+        <strong>Enzymes:</strong>
+        <div style="margin-bottom: 12px;">
+          <label><input type="checkbox" id="enzyme-no-fenol" /> NO-FENOL</label>
+          <label><input type="checkbox" id="enzyme-carb-dgts" /> CARB DGTS</label>
+          <label><input type="checkbox" id="enzyme-chew" /> CHEW</label>
+        </div>
+  
+        <strong>Foods & Portions:</strong>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+          <label><input type="checkbox" name="food" value="Quinoa"> Quinoa (T)</label>
+          <label><input type="checkbox" name="food" value="Potato"> Potato (T)</label>
+          <label><input type="checkbox" name="food" value="Carrot"> Carrot (t/T)</label>
+          <label><input type="checkbox" name="food" value="Spinach"> Spinach (L)</label>
+          <label><input type="checkbox" name="food" value="Bok Choy"> Bok Choy (L)</label>
+          <label><input type="checkbox" name="food" value="Kobocha"> Kobocha (T)</label>
+          <label><input type="checkbox" name="food" value="Snow Pea"> Snow Pea (P)</label>
+          <label><input type="checkbox" name="food" value="Cabbage"> Cabbage (t/T)</label>
+          <label><input type="checkbox" name="food" value="Pineapple"> Pineapple (t/T)</label>
+          <label><input type="checkbox" name="food" value="Chicken"> Chicken (t/T)</label>
+          <label><input type="checkbox" name="food" value="Cod Fish"> Cod Fish (t/T)</label>
+          <label><input type="checkbox" name="food" value="Beef"> Beef (t/T)</label>
+          <label><input type="checkbox" name="food" value="Bone Broth"> Bone Broth (C)</label>
+          <label><input type="checkbox" name="food" value="Veggie Broth"> Veggie Broth (C)</label>
+          <label><input type="checkbox" name="food" value="Salt"> Salt (t/T)</label>
+          <label><input type="checkbox" name="food" value="Olive Oil"> Olive Oil (t/T)</label>
+        </div>
+  
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+  
+        <!-- Day Instructions & Notes -->
+        <h3>Day Instructions & Notes</h3>
+        <textarea id="day-notes" rows="5" placeholder="Enter general notes, instructions, or observations for today..."></textarea>
+  
+        <button type="submit" id="save-log-btn">Save Care Log</button>
+      </form>
+    </div>
+  
+    <!-- SECTION 2: PAST RECORDS VIEW -->
+    <div id="section-past-records" class="hidden">
+      <h3>Past Care Records</h3>
+      <ul class="log-list" id="log-list">
+        <li style="color: #888; font-size: 0.9rem;">Loading entries...</li>
+      </ul>
+    </div>
+  
     <button id="logout-btn" class="logout-btn">Sign Out</button>
   </div>
-  
+
 </body>
 </html>
