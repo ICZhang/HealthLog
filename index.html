@@ -215,19 +215,21 @@
     const logList = document.getElementById("log-list");
 
     // Toggle Sign In / Sign Up Modes
-    toggleAuth.addEventListener("click", () => {
-      isSignUp = !isSignUp;
-      errorMsg.textContent = "";
-      if (isSignUp) {
-        authTitle.textContent = "Create Account";
-        authBtn.textContent = "Sign Up";
-        toggleWrapper.innerHTML = 'Already have an account? <span class="toggle-link" id="toggle-auth">Sign In</span>';
-      } else {
-        authTitle.textContent = "Sign In";
-        authBtn.textContent = "Sign In";
-        toggleWrapper.innerHTML = 'Don\'t have an account? <span class="toggle-link" id="toggle-auth">Sign Up</span>';
-      }
-      document.getElementById("toggle-auth").addEventListener("click", arguments.callee);
+    toggleWrapper.addEventListener("click", (e) => {
+        if (e.target && e.target.id === "toggle-auth") {
+            isSignUp = !isSignUp;
+            errorMsg.textContent = "";
+
+            if (isSignUp) {
+            authTitle.textContent = "Create Account";
+            authBtn.textContent = "Sign Up";
+            toggleWrapper.innerHTML = 'Already have an account? <span class="toggle-link" id="toggle-auth">Sign In</span>';
+            } else {
+            authTitle.textContent = "Sign In";
+            authBtn.textContent = "Sign In";
+            toggleWrapper.innerHTML = 'Don\'t have an account? <span class="toggle-link" id="toggle-auth">Sign Up</span>';
+            }
+        }
     });
 
     // Handle Auth Submission
