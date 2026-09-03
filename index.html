@@ -102,7 +102,7 @@
   <!-- Auth Box -->
   <div class="card" id="auth-container">
     <h2 id="auth-title">Sign In</h2>
-    <input type="email" id="email" placeholder="Email" required />
+    <input type="text" id="username" placeholder="Username" required />
     <input type="password" id="password" placeholder="Password" required />
     <button id="auth-btn">Sign In</button>
     <div id="error-msg"></div>
@@ -233,25 +233,35 @@
     });
 
     // Handle Auth Submission
+    // DOM Element
+    const usernameInput = document.getElementById("username");
+
+    // Handle Auth Submission
     authBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value.trim();
-      errorMsg.textContent = "";
+        const rawUsername = usernameInput.value.trim().toLowerCase();
+        const password = passwordInput.value.trim();
+        errorMsg.textContent = "";
 
-      if (!email || !password) {
-        errorMsg.textContent = "Please enter both email and password.";
-        return;
-      }
-
-      try {
-        if (isSignUp) {
-          await createUserWithEmailAndPassword(auth, email, password);
-        } else {
-          await signInWithEmailAndPassword(auth, email, password);
+        if (!rawUsername || !password) {
+            errorMsg.textContent = "Please enter both username and password.";
+            return;
         }
-      } catch (err) {
-        errorMsg.textContent = err.message.replace("Firebase: ", "");
-      }
+
+        // Convert simple username to Firebase-compatible email format
+        const formattedEmail = `${rawUsername}@app.local`;
+
+        try {
+            if (isSignUp) {
+            await createUserWithEmailAndPassword(auth, formattedEmail, password);
+            } else {
+            await signInWithEmailAndPassword(auth, formattedEmail, password);
+            }
+        } catch (err) {
+            // Clean up error message for the user
+            errorMsg.textContent = err.message
+            .replace("Firebase: ", "")
+            .replace("email address", "username");
+        }
     });
 
     // Handle Sign Out
@@ -266,9 +276,10 @@
         currentUser = user;
         authContainer.classList.add("hidden");
         dashboard.classList.remove("hidden");
-        userEmailSpan.textContent = user.email;
-        
-        // Fetch health logs for logged-in user
+
+        const cleanUsername = user.email.replace("@app.local", "");
+        userEmailSpan.textContent = cleanUsername;
+  
         listenToHealthLogs(user.uid);
       } else {
         currentUser = null;
