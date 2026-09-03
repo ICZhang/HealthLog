@@ -45,123 +45,111 @@
     </div>
   
     <!-- SECTION 1: NEW ENTRY FORM -->
-    <div id="section-new-entry">
-      <form id="log-form">
-        
-        <!-- Date Header -->
-        <label for="log-date"><strong>Date</strong></label>
-        <input type="date" id="log-date" required />
+    <!-- SECTION 1: CARE LOG FORM -->
+<div id="section-new-entry">
+    <form id="log-form">
+      <!-- Hidden input to track if we are editing an existing document -->
+      <input type="hidden" id="editing-doc-id" value="" />
   
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+      <!-- Date Header -->
+      <label for="log-date"><strong>Date</strong></label>
+      <input type="date" id="log-date" required />
   
-        <!-- Bowel Movements -->
-        <h3>BM (Bowel Movement)</h3>
-        <label for="bm-time">Time</label>
-        <input type="time" id="bm-time" />
+      <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-        <label for="bm-type">Type (Bristol Scale 1–7)</label>
-        <select id="bm-type">
-          <option value="">-- Select Type --</option>
-          <option value="1">1 - Separate hard lumps</option>
-          <option value="2">2 - Lumpy and sausage-like</option>
-          <option value="3">3 - Sausage shape with cracks</option>
-          <option value="4">4 - Smooth & soft sausage</option>
-          <option value="5">5 - Soft blobs with clear edges</option>
-          <option value="6">6 - Fluffy pieces, mushy stool</option>
-          <option value="7">7 - Watery, no solid pieces</option>
-        </select>
+      <!-- Bowel Movements (Dynamic) -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin:0;">BM (Bowel Movements)</h3>
+        <button type="button" id="add-bm-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add BM</button>
+      </div>
+      <div id="bm-container" style="margin-top: 10px;">
+        <!-- Dynamic BM entries will render here -->
+      </div>
   
-        <label>Amount</label>
-        <div style="display: flex; gap: 15px; margin-bottom: 12px;">
-          <label style="margin:0;"><input type="radio" name="bm-amount" value="S"> S</label>
-          <label style="margin:0;"><input type="radio" name="bm-amount" value="M"> M</label>
-          <label style="margin:0;"><input type="radio" name="bm-amount" value="L"> L</label>
-        </div>
+      <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-        <label for="bm-color">Color</label>
-        <input type="text" id="bm-color" placeholder="e.g., Brown, Yellow" />
+      <!-- Medications & Hydration (Dynamic) -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin:0;">Cromolyn Doses & Other Meds</h3>
+        <button type="button" id="add-med-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Dose</button>
+      </div>
+      <div id="meds-container" style="margin-top: 10px;">
+        <!-- Dynamic Med inputs render here -->
+      </div>
   
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+      <label for="herbal-meds-time" style="margin-top: 12px;">Herbal Meds Time</label>
+      <input type="text" id="herbal-meds-time" placeholder="Time" />
   
-        <!-- Medications & Hydration -->
-        <h3>Cromolyn Doses & Other Meds</h3>
-        <input type="text" id="med-dose-1" placeholder="1st Dose (Time / Notes)" />
-        <input type="text" id="med-dose-2" placeholder="2nd Dose (Time / Notes)" />
-        <input type="text" id="med-dose-3" placeholder="3rd Dose (Time / Notes)" />
-        <input type="text" id="med-dose-4" placeholder="4th Dose (Time / Notes)" />
+      <label for="enteragram">Enteragram</label>
+      <input type="text" id="enteragram" placeholder="Notes / Time" />
   
-        <label for="herbal-meds-time">Herbal Meds Time</label>
-        <input type="text" id="herbal-meds-time" placeholder="Time" />
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+        <h3 style="margin:0;">Formula & Hydration</h3>
+        <button type="button" id="add-formula-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Row</button>
+      </div>
+      <div id="formula-container" style="margin-top: 10px;">
+        <!-- Dynamic Formula inputs render here -->
+      </div>
   
-        <label for="enteragram">Enteragram</label>
-        <input type="text" id="enteragram" placeholder="Notes / Time" />
+      <label for="warm-water-cups" style="margin-top: 12px;">Warm Water (Cups)</label>
+      <input type="number" id="warm-water-cups" min="0" placeholder="0" />
+      
+      <label for="warm-water-time">Warm Water Time</label>
+      <input type="text" id="warm-water-time" placeholder="Time" />
   
-        <h3>Formula & Hydration</h3>
-        <input type="text" id="formula-1" placeholder="1st Formula/Hydration" />
-        <input type="text" id="formula-2" placeholder="2nd Formula/Hydration" />
-        <input type="text" id="formula-3" placeholder="3rd Formula/Hydration" />
-        <input type="text" id="formula-4" placeholder="4th Formula/Hydration" />
-        <input type="text" id="formula-5" placeholder="5th Formula/Hydration" />
-        <input type="text" id="formula-6" placeholder="6th Formula/Hydration" />
+      <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-        <label for="warm-water-cups">Warm Water (Cups)</label>
-        <input type="number" id="warm-water-cups" min="0" placeholder="0" />
-        
-        <label for="warm-water-time">Warm Water Time</label>
-        <input type="text" id="warm-water-time" placeholder="Time" />
+      <!-- Activities (Dynamic) -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin:0;">Activities List</h3>
+        <button type="button" id="add-activity-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Activity</button>
+      </div>
+      <div id="activities-container" style="margin-top: 10px;">
+        <!-- Dynamic Activity inputs render here -->
+      </div>
   
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+      <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-        <!-- Activities -->
-        <h3>Activities List</h3>
-        <input type="text" id="activity-1" placeholder="#1 Activity" />
-        <input type="text" id="activity-2" placeholder="#2 Activity" />
-        <input type="text" id="activity-3" placeholder="#3 Activity" />
-        <input type="text" id="activity-4" placeholder="#4 Activity" />
-        <input type="text" id="activity-5" placeholder="#5 Activity" />
-        <input type="text" id="activity-6" placeholder="#6 Activity" />
+      <!-- Solid Foods & Enzymes -->
+      <h3>Solid Foods & Enzymes</h3>
+      
+      <strong>Enzymes:</strong>
+      <div style="margin-bottom: 12px; margin-top: 6px;">
+        <label style="display:inline-block; margin-right: 10px;"><input type="checkbox" id="enzyme-no-fenol" /> NO-FENOL</label>
+        <label style="display:inline-block; margin-right: 10px;"><input type="checkbox" id="enzyme-carb-dgts" /> CARB DGTS</label>
+        <label style="display:inline-block;"><input type="checkbox" id="enzyme-chew" /> CHEW</label>
+      </div>
   
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+      <strong>Foods & Portions:</strong>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+        <label><input type="checkbox" name="food" value="Quinoa"> Quinoa (T)</label>
+        <label><input type="checkbox" name="food" value="Potato"> Potato (T)</label>
+        <label><input type="checkbox" name="food" value="Carrot"> Carrot (t/T)</label>
+        <label><input type="checkbox" name="food" value="Spinach"> Spinach (L)</label>
+        <label><input type="checkbox" name="food" value="Bok Choy"> Bok Choy (L)</label>
+        <label><input type="checkbox" name="food" value="Kobocha"> Kobocha (T)</label>
+        <label><input type="checkbox" name="food" value="Snow Pea"> Snow Pea (P)</label>
+        <label><input type="checkbox" name="food" value="Cabbage"> Cabbage (t/T)</label>
+        <label><input type="checkbox" name="food" value="Pineapple"> Pineapple (t/T)</label>
+        <label><input type="checkbox" name="food" value="Chicken"> Chicken (t/T)</label>
+        <label><input type="checkbox" name="food" value="Cod Fish"> Cod Fish (t/T)</label>
+        <label><input type="checkbox" name="food" value="Beef"> Beef (t/T)</label>
+        <label><input type="checkbox" name="food" value="Bone Broth"> Bone Broth (C)</label>
+        <label><input type="checkbox" name="food" value="Veggie Broth"> Veggie Broth (C)</label>
+        <label><input type="checkbox" name="food" value="Salt"> Salt (t/T)</label>
+        <label><input type="checkbox" name="food" value="Olive Oil"> Olive Oil (t/T)</label>
+      </div>
   
-        <!-- Solid Foods & Enzymes -->
-        <h3>Solid Foods & Enzymes</h3>
-        
-        <strong>Enzymes:</strong>
-        <div style="margin-bottom: 12px;">
-          <label><input type="checkbox" id="enzyme-no-fenol" /> NO-FENOL</label>
-          <label><input type="checkbox" id="enzyme-carb-dgts" /> CARB DGTS</label>
-          <label><input type="checkbox" id="enzyme-chew" /> CHEW</label>
-        </div>
+      <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-        <strong>Foods & Portions:</strong>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
-          <label><input type="checkbox" name="food" value="Quinoa"> Quinoa (T)</label>
-          <label><input type="checkbox" name="food" value="Potato"> Potato (T)</label>
-          <label><input type="checkbox" name="food" value="Carrot"> Carrot (t/T)</label>
-          <label><input type="checkbox" name="food" value="Spinach"> Spinach (L)</label>
-          <label><input type="checkbox" name="food" value="Bok Choy"> Bok Choy (L)</label>
-          <label><input type="checkbox" name="food" value="Kobocha"> Kobocha (T)</label>
-          <label><input type="checkbox" name="food" value="Snow Pea"> Snow Pea (P)</label>
-          <label><input type="checkbox" name="food" value="Cabbage"> Cabbage (t/T)</label>
-          <label><input type="checkbox" name="food" value="Pineapple"> Pineapple (t/T)</label>
-          <label><input type="checkbox" name="food" value="Chicken"> Chicken (t/T)</label>
-          <label><input type="checkbox" name="food" value="Cod Fish"> Cod Fish (t/T)</label>
-          <label><input type="checkbox" name="food" value="Beef"> Beef (t/T)</label>
-          <label><input type="checkbox" name="food" value="Bone Broth"> Bone Broth (C)</label>
-          <label><input type="checkbox" name="food" value="Veggie Broth"> Veggie Broth (C)</label>
-          <label><input type="checkbox" name="food" value="Salt"> Salt (t/T)</label>
-          <label><input type="checkbox" name="food" value="Olive Oil"> Olive Oil (t/T)</label>
-        </div>
+      <!-- Day Instructions & Notes -->
+      <h3>Day Instructions & Notes</h3>
+      <textarea id="day-notes" rows="5" placeholder="Enter general notes, instructions, or observations for today..."></textarea>
   
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
-  
-        <!-- Day Instructions & Notes -->
-        <h3>Day Instructions & Notes</h3>
-        <textarea id="day-notes" rows="5" placeholder="Enter general notes, instructions, or observations for today..."></textarea>
-  
-        <button type="submit" id="save-log-btn">Save Care Log</button>
-      </form>
-    </div>
+      <button type="submit" id="save-log-btn">Save Care Log</button>
+      <button type="button" id="cancel-edit-btn" class="hidden logout-btn" style="background-color: #888; margin-top: 8px;">Cancel Edit</button>
+    </form>
+  </div>
   
     <!-- SECTION 2: PAST RECORDS VIEW -->
     <div id="section-past-records" class="hidden">
