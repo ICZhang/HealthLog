@@ -561,13 +561,13 @@ function updateWaterRowLabels() {
 function addWaterRow(data = {}) {
     const row = document.createElement("div");
     row.className = "dynamic-row water-row";
-    row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
+    // Centered flex layout with precise widths matching headers
+    row.style.cssText = "display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 6px;";
     
     row.innerHTML = `
-    <span class="water-label" style="font-size: 0.9rem; font-weight: bold; min-width: 75px;">1st Cup:</span>
-    <!-- Changed flex: 1 to width: 140px for a compact time box -->
-    <input type="time" class="water-time" value="${data.time || ''}" style="width: 140px; margin: 0;" />
-    <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0;">X</button>
+      <span class="water-label" style="font-size: 0.85rem; font-weight: bold; width: 75px; text-align: right;">1st Cup:</span>
+      <input type="time" class="water-time" value="${data.time || ''}" style="width: 140px; margin: 0;" />
+      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 8px; font-size: 0.8rem; margin: 0;">X</button>
     `;
     
     row.querySelector(".remove-row-btn").addEventListener("click", () => {
@@ -577,7 +577,7 @@ function addWaterRow(data = {}) {
   
     waterContainer.appendChild(row);
     updateWaterRowLabels();
-}
+  }
   
 // Button Listener
 addWaterBtn?.addEventListener("click", () => addWaterRow());
