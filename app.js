@@ -784,6 +784,13 @@ function showViewModal(data) {
         : '<li>None recorded</li>'}
     </ul>
 
+    <p><strong>Cromolyn & Other Meds:</strong></p>
+    <ul>
+    ${data.cromolynMeds?.length 
+        ? data.cromolynMeds.map(m => `<li>${m.name || 'Unnamed'}: at ${m.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
     <p><strong>Herbal Meds:</strong></p>
     <ul>
       ${data.herbalMeds?.length 
@@ -798,7 +805,7 @@ function showViewModal(data) {
         : '<li>None recorded</li>'}
     </ul>
 
-    <p><strong>Formula / Hydration:</strong></p>
+    <p><strong>Formula:</strong></p>
     <ul>
       ${data.formulaHydration?.length ? data.formulaHydration.map(f => `<li>${f}</li>`).join('') : '<li>None recorded</li>'}
     </ul>
@@ -831,13 +838,6 @@ function showViewModal(data) {
     <ul>
     ${data.behaviorLogs?.length 
         ? data.behaviorLogs.map(b => `<li>${b.type || 'Unspecified'}: at ${b.time || 'N/A'}</li>`).join('') 
-        : '<li>None recorded</li>'}
-    </ul>
-
-    <p><strong>Cromolyn & Other Meds:</strong></p>
-    <ul>
-    ${data.cromolynMeds?.length 
-        ? data.cromolynMeds.map(m => `<li>${m.name || 'Unnamed'}: at ${m.time || 'N/A'}</li>`).join('') 
         : '<li>None recorded</li>'}
     </ul>
 
