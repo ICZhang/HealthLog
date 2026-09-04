@@ -395,47 +395,6 @@ logForm.addEventListener("submit", async (e) => {
   }
 });
 
-// --- LOAD PAST RECORDS ---
-function loadPastRecords(userId) {
-    const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
-    
-    unsubscribeLogs = onSnapshot(q, (snapshot) => {
-      logList.innerHTML = "";
-      if (snapshot.empty) {
-        logList.innerHTML = `<li style="color: #888;">No saved care records found.</li>`;
-        return;
-      }
-  
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const docId = docSnap.id;
-  
-        const li = document.createElement("li");
-        li.style.cssText = "background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 10px; list-style: none;";
-        
-        li.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <strong>📅 ${data.date} at ${data.time || 'N/A'}</strong>
-            <div style="display: flex; gap: 6px;">
-              <button type="button" class="view-log-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin:0; background: #2ecc71;">View</button>
-              <button type="button" class="edit-log-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin:0; background: #4A90E2;">Edit</button>
-            </div>
-          </div>
-          <p style="margin: 6px 0; font-size: 0.9rem; color: #444;">
-            <strong>BMs:</strong> ${data.bowelMovements ? data.bowelMovements.length : 0} logged | 
-            <strong>Warm Water:</strong> ${data.warmWater?.cups || 0} cups
-          </p>
-          ${data.notes ? `<p style="margin: 4px 0; font-size: 0.85rem; color: #666; font-style: italic;">"${data.notes.slice(0, 60)}..."</p>` : ''}
-        `;
-  
-        // Event Listeners
-        li.querySelector(".view-log-btn").addEventListener("click", () => showViewModal(data));
-        li.querySelector(".edit-log-btn").addEventListener("click", () => populateFormForEdit(docId, data));
-  
-        logList.appendChild(li);
-      });
-    });
-}
 
 // Populate Form for Editing
 function populateFormForEdit(id, data) {
