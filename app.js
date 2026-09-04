@@ -244,23 +244,23 @@ function updateWaterRowLabels() {
 }
 
 function addWaterRow(data = {}) {
-  const row = document.createElement("div");
-  row.className = "dynamic-row water-row";
-  row.style.cssText = "display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 6px;";
+    const row = document.createElement("div");
+    row.className = "dynamic-row water-row";
+    row.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 6px; width: 100%;";
+    
+    row.innerHTML = `
+      <span class="water-label" style="font-size: 0.85rem; font-weight: bold; width: 75px; text-align: left;">1st Cup:</span>
+      <input type="time" class="water-time" value="${data.time || ''}" style="flex: 1; margin: 0; width: 100%;" />
+      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
+    `;
+    
+    row.querySelector(".remove-row-btn").addEventListener("click", () => {
+      row.remove();
+      updateWaterRowLabels();
+    });
   
-  row.innerHTML = `
-    <span class="water-label" style="font-size: 0.85rem; font-weight: bold; width: 75px; text-align: right;">1st Cup:</span>
-    <input type="time" class="water-time" value="${data.time || ''}" style="width: 140px; margin: 0;" />
-    <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 8px; font-size: 0.8rem; margin: 0;">X</button>
-  `;
-  
-  row.querySelector(".remove-row-btn").addEventListener("click", () => {
-    row.remove();
+    waterContainer.appendChild(row);
     updateWaterRowLabels();
-  });
-
-  waterContainer.appendChild(row);
-  updateWaterRowLabels();
 }
 
 function addHerbalRow(data = {}) {
@@ -284,7 +284,7 @@ function addEnteragramRow(data = {}) {
   row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
   
   row.innerHTML = `
-    <input type="text" class="enteragram-dose" placeholder="Dose (e.g. 1 scoop / 5mL)" value="${data.dose || ''}" style="flex: 1; margin: 0;" />
+    <input type="text" class="enteragram-dose" placeholder="Dose (e.g. 1 scoop / 5mg)" value="${data.dose || ''}" style="flex: 1; margin: 0;" />
     <input type="time" class="enteragram-time" value="${data.time || ''}" style="width: 130px; margin: 0;" />
     <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 8px; font-size: 0.8rem; margin: 0;">X</button>
   `;
