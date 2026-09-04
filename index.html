@@ -279,12 +279,57 @@
         </div>
 
     </div>
+
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+
+    <!-- Pain Level Section -->
+    <div class="form-section" style="margin-top: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="margin: 0;">Pain Level</h4>
+        <button type="button" id="add-pain-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Pain Log</button>
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 4px; padding-right: 36px;">
+        <span style="font-size: 0.8rem; font-weight: bold; flex: 2;">Level</span>
+        <span style="font-size: 0.8rem; font-weight: bold; width: 130px; text-align: center;">Time</span>
+        </div>
+        <div id="pain-container"></div>
+    </div>
+
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+    
+    <!-- Mood Section -->
+    <div class="form-section" style="margin-top: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="margin: 0;">Mood</h4>
+        <button type="button" id="add-mood-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Mood</button>
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 4px; padding-right: 36px;">
+        <span style="font-size: 0.8rem; font-weight: bold; flex: 2;">Zone</span>
+        <span style="font-size: 0.8rem; font-weight: bold; width: 130px; text-align: center;">Time</span>
+        </div>
+        <div id="mood-container"></div>
+    </div>
+    
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+
+    <!-- Behavior Section -->
+    <div class="form-section" style="margin-top: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="margin: 0;">Behavior</h4>
+        <button type="button" id="add-behavior-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Behavior</button>
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 4px; padding-right: 36px;">
+        <span style="font-size: 0.8rem; font-weight: bold; flex: 2;">Behavior</span>
+        <span style="font-size: 0.8rem; font-weight: bold; width: 130px; text-align: center;">Time</span>
+        </div>
+        <div id="behavior-container"></div>
+    </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-      <!-- Day Instructions & Notes -->
-      <h3>Day Instructions & Notes</h3>
-      <textarea id="day-notes" rows="5" placeholder="Enter general notes, instructions, or observations for today..."></textarea>
+      <!-- Day Summary & Notes -->
+      <h3>Day Summary & Notes</h3>
+      <textarea id="day-notes" rows="5" placeholder="Enter general notes, summaries, or observations for today..."></textarea>
   
       <button type="submit" id="save-log-btn">Save Care Log</button>
       <button type="button" id="cancel-edit-btn" class="hidden logout-btn" style="background-color: #888; margin-top: 8px;">Cancel Edit</button>

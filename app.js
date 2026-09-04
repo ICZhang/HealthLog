@@ -43,6 +43,9 @@ const activitiesContainer = document.getElementById("activities-container");
 const waterContainer = document.getElementById("water-container");
 const herbalContainer = document.getElementById("herbal-container");
 const enteragramContainer = document.getElementById("enteragram-container");
+const painContainer = document.getElementById("pain-container");
+const moodContainer = document.getElementById("mood-container");
+const behaviorContainer = document.getElementById("behavior-container");
 
 // Add Row Buttons
 const addBmBtn = document.getElementById("add-bm-btn");
@@ -51,6 +54,9 @@ const addActivityBtn = document.getElementById("add-activity-btn");
 const addWaterBtn = document.getElementById("add-water-btn");
 const addHerbalBtn = document.getElementById("add-herbal-btn");
 const addEnteragramBtn = document.getElementById("add-enteragram-btn");
+const addPainBtn = document.getElementById("add-pain-btn");
+const addMoodBtn = document.getElementById("add-mood-btn");
+const addBehaviorBtn = document.getElementById("add-behavior-btn");
 
 // Delete Entry Handler
 async function deleteLogRecord(docId) {
@@ -350,6 +356,9 @@ addActivityBtn?.addEventListener("click", () => addTextRow(activitiesContainer, 
 addWaterBtn?.addEventListener("click", () => addWaterRow());
 addHerbalBtn?.addEventListener("click", () => addHerbalRow());
 addEnteragramBtn?.addEventListener("click", () => addEnteragramRow());
+addPainBtn?.addEventListener("click", () => addPainRow());
+addMoodBtn?.addEventListener("click", () => addMoodRow());
+addBehaviorBtn?.addEventListener("click", () => addBehaviorRow());
 
 function resetForm() {
   logForm.reset();
@@ -367,6 +376,9 @@ function resetForm() {
   waterContainer.innerHTML = "";
   herbalContainer.innerHTML = "";
   enteragramContainer.innerHTML = "";
+  painContainer.innerHTML = "";
+  moodContainer.innerHTML = "";
+  behaviorContainer.innerHTML = "";
 
   addBmRow(); 
   addBmRow();
@@ -377,6 +389,9 @@ function resetForm() {
   addWaterRow();
   addHerbalRow();     
   addEnteragramRow();
+  addPainRow();
+  addMoodRow();
+  addBehaviorRow();
 }
 
 cancelEditBtn.addEventListener("click", resetForm);
@@ -437,6 +452,27 @@ function getFormData() {
     }
   });
 
+  const painLogs = [];
+document.querySelectorAll(".pain-row").forEach(row => {
+  const level = row.querySelector(".pain-level").value;
+  const time = row.querySelector(".pain-time").value;
+  if (level || time) painLogs.push({ level, time });
+});
+
+  const moodLogs = [];
+document.querySelectorAll(".mood-row").forEach(row => {
+  const zone = row.querySelector(".mood-zone").value;
+  const time = row.querySelector(".mood-time").value;
+  if (zone || time) moodLogs.push({ zone, time });
+});
+
+  const behaviorLogs = [];
+document.querySelectorAll(".behavior-row").forEach(row => {
+  const type = row.querySelector(".behavior-type").value;
+  const time = row.querySelector(".behavior-time").value;
+  if (type || time) behaviorLogs.push({ type, time });
+});
+
   return {
     date: document.getElementById("log-date").value,
     time: document.getElementById("log-time").value,
@@ -452,6 +488,9 @@ function getFormData() {
       chew: { checked: document.getElementById("enzyme-chew").checked, notes: document.getElementById("enzyme-chew-notes").value }
     },
     foods: foodData,
+    painLogs,
+    moodLogs,
+    behaviorLogs,
     notes: document.getElementById("day-notes").value,
     updatedAt: new Date()
   };
@@ -531,6 +570,27 @@ function populateFormForEdit(id, data) {
     addTextRow(activitiesContainer, "activity-row", "Activity Details");
   }
 
+  painContainer.innerHTML = "";
+if (Array.isArray(data.painLogs) && data.painLogs.length > 0) {
+  data.painLogs.forEach(p => addPainRow(p));
+} else {
+  addPainRow();
+}
+
+moodContainer.innerHTML = "";
+if (Array.isArray(data.moodLogs) && data.moodLogs.length > 0) {
+  data.moodLogs.forEach(m => addMoodRow(m));
+} else {
+  addMoodRow();
+}
+
+behaviorContainer.innerHTML = "";
+if (Array.isArray(data.behaviorLogs) && data.behaviorLogs.length > 0) {
+  data.behaviorLogs.forEach(b => addBehaviorRow(b));
+} else {
+  addBehaviorRow();
+}
+
   if (data.enzymes) {
     document.getElementById("enzyme-no-fenol").checked = !!data.enzymes.noFenol?.checked;
     document.getElementById("enzyme-no-fenol-notes").value = data.enzymes.noFenol?.notes || "";
@@ -556,6 +616,69 @@ function populateFormForEdit(id, data) {
 
   document.getElementById("day-notes").value = data.notes || "";
   tabNewBtn.click();
+}
+
+// Pain Row Generator
+function addPainRow(data = {}) {
+    const row = document.createElement("div");
+    row.className = "dynamic-row pain-row";
+    row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
+
+    row.innerHTML = `
+        <select class="pain-level" style="flex: 2; margin: 0;">
+        <option value="">-- Select Pain Level --</option>
+        <option value="No Pain" ${data.level === 'No Pain' ? 'selected' : ''}>No pain</option>
+        <option value="Minor Pain" ${data.level === 'Minor Pain' ? 'selected' : ''}>Minor pain</option>
+        <option value="Severe Pain" ${data.level === 'Severe Pain' ? 'selected' : ''}>Severe pain</option>
+        </select>
+        <input type="time" class="pain-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
+        <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
+    `;
+
+    row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+    painContainer.appendChild(row);
+}
+
+// Mood Row Generator
+function addMoodRow(data = {}) {
+    const row = document.createElement("div");
+    row.className = "dynamic-row mood-row";
+    row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
+
+    row.innerHTML = `
+        <select class="mood-zone" style="flex: 2; margin: 0;">
+        <option value="">-- Select Mood Zone --</option>
+        <option value="Blue Zone" ${data.zone === 'Blue Zone' ? 'selected' : ''}>Blue Zone</option>
+        <option value="Green Zone" ${data.zone === 'Green Zone' ? 'selected' : ''}>Green Zone</option>
+        <option value="Yellow Zone" ${data.zone === 'Yellow Zone' ? 'selected' : ''}>Yellow Zone</option>
+        <option value="Red Zone" ${data.zone === 'Red Zone' ? 'selected' : ''}>Red Zone</option>
+        </select>
+        <input type="time" class="mood-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
+        <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
+    `;
+
+    row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+    moodContainer.appendChild(row);
+}
+
+// Behavior Row Generator
+function addBehaviorRow(data = {}) {
+    const row = document.createElement("div");
+    row.className = "dynamic-row behavior-row";
+    row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
+
+    row.innerHTML = `
+        <select class="behavior-type" style="flex: 2; margin: 0;">
+        <option value="">-- Select Behavior --</option>
+        <option value="Screaming" ${data.type === 'Screaming' ? 'selected' : ''}>Screaming</option>
+        <option value="Throwing" ${data.type === 'Throwing' ? 'selected' : ''}>Throwing</option>
+        </select>
+        <input type="time" class="behavior-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
+        <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
+    `;
+
+    row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+    behaviorContainer.appendChild(row);
 }
 
 // Render read-only record details
@@ -608,6 +731,27 @@ function showViewModal(data) {
     <p><strong>Foods:</strong></p>
     <ul>
       ${data.foods?.length ? data.foods.map(f => `<li>${f.name}: ${f.amount || 'Checked'}</li>`).join('') : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Pain Logs:</strong></p>
+    <ul>
+    ${data.painLogs?.length 
+        ? data.painLogs.map(p => `<li>${p.level || 'Unspecified'}: at ${p.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Mood Logs:</strong></p>
+    <ul>
+    ${data.moodLogs?.length 
+        ? data.moodLogs.map(m => `<li>${m.zone || 'Unspecified'}: at ${m.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Behavior Logs:</strong></p>
+    <ul>
+    ${data.behaviorLogs?.length 
+        ? data.behaviorLogs.map(b => `<li>${b.type || 'Unspecified'}: at ${b.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
     </ul>
 
     <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
