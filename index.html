@@ -273,10 +273,18 @@
   
     <!-- SECTION 2: PAST RECORDS VIEW -->
     <div id="section-past-records" class="hidden">
-      <h3>Past Care Records</h3>
-      <ul class="log-list" id="log-list">
-        <li style="color: #888; font-size: 0.9rem;">Loading entries...</li>
-      </ul>
+        <h3>Past Care Records</h3>
+        
+        <!-- Search & Filter Controls -->
+        <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+          <input type="text" id="search-input" placeholder="Search notes, foods, meds..." style="flex: 2; min-width: 150px; margin: 0;" />
+          <input type="date" id="filter-date-input" style="flex: 1; min-width: 120px; margin: 0;" />
+          <button type="button" id="clear-filter-btn" style="width: auto; padding: 4px 10px; background: #888; margin: 0;">Clear</button>
+        </div>
+      
+        <ul class="log-list" id="log-list">
+          <li style="color: #888; font-size: 0.9rem;">Loading entries...</li>
+        </ul>
     </div>
   
     <button id="logout-btn" class="logout-btn">Sign Out</button>

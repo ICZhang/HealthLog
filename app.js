@@ -12,13 +12,16 @@ import {
   setDoc, 
   onSnapshot, 
   query, 
-  orderBy 
+  orderBy,
+  deleteDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Global Variables
 let currentUser = null;
 let unsubscribeLogs = null;
 let isSignUp = false;
+
+let allPastRecords = [];
 
 // DOM Elements
 const userEmailEl = document.getElementById("user-email");
@@ -45,6 +48,104 @@ const addBmBtn = document.getElementById("add-bm-btn");
 const addMedBtn = document.getElementById("add-med-btn");
 const addFormulaBtn = document.getElementById("add-formula-btn");
 const addActivityBtn = document.getElementById("add-activity-btn");
+
+// Delete Entry Handler
+async function deleteLogRecord(docId) {
+    const confirmed = confirm("Are you sure you want to delete this care record? This action cannot be undone.");
+    if (!confirmed || !currentUser) return;
+  
+    try {
+      await deleteDoc(doc(db, "users", currentUser.uid, "logs", docId));
+      alert("Care record deleted successfully.");
+    } catch (err) {
+      console.error("Error deleting record:", err);
+      alert("Failed to delete record. Please try again.");
+    }
+}
+
+// Render filtered records to DOM
+function renderRecordsList(records) {
+    logList.innerHTML = "";
+  
+    if (records.length === 0) {
+      logList.innerHTML = `<li style="color: #888; font-size: 0.9rem;">No matching care records found.</li>`;
+      return;
+    }
+  
+    records.forEach(({ docId, data }) => {
+      const li = document.createElement("li");
+      li.style.cssText = "background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 10px; list-style: none;";
+      
+      li.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+          <strong>📅 ${data.date} at ${data.time || 'N/A'}</strong>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="view-log-btn" style="width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0; background: #2ecc71;">View</button>
+            <button type="button" class="edit-log-btn" style="width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0; background: #4A90E2;">Edit</button>
+            <button type="button" class="delete-log-btn" style="width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0; background: #e74c3c;">Delete</button>
+          </div>
+        </div>
+        <p style="margin: 6px 0; font-size: 0.9rem; color: #444;">
+          <strong>BMs:</strong> ${data.bowelMovements ? data.bowelMovements.length : 0} logged | 
+          <strong>Warm Water:</strong> ${data.warmWater?.cups || 0} cups
+        </p>
+        ${data.notes ? `<p style="margin: 4px 0; font-size: 0.85rem; color: #666; font-style: italic;">"${data.notes.slice(0, 60)}..."</p>` : ''}
+      `;
+  
+      li.querySelector(".view-log-btn").addEventListener("click", () => showViewModal(data));
+      li.querySelector(".edit-log-btn").addEventListener("click", () => populateFormForEdit(docId, data));
+      li.querySelector(".delete-log-btn").addEventListener("click", () => deleteLogRecord(docId));
+  
+      logList.appendChild(li);
+    });
+}
+  
+  // Filter Logic Function
+function applySearchAndFilter() {
+    const searchTerm = document.getElementById("search-input").value.toLowerCase().trim();
+    const filterDate = document.getElementById("filter-date-input").value;
+  
+    const filtered = allPastRecords.filter(({ data }) => {
+      // Check Date Match
+      const matchesDate = !filterDate || data.date === filterDate;
+  
+      // Check Text Match across Notes, Meds, and Foods
+      const notesMatch = data.notes?.toLowerCase().includes(searchTerm);
+      const medsMatch = data.medications?.some(m => m.toLowerCase().includes(searchTerm));
+      const foodsMatch = data.foods?.some(f => f.name.toLowerCase().includes(searchTerm));
+      
+      const matchesSearch = !searchTerm || notesMatch || medsMatch || foodsMatch;
+  
+      return matchesDate && matchesSearch;
+    });
+  
+    renderRecordsList(filtered);
+}
+  
+  // Load Firestore Records into Cache & Add Listeners
+function loadPastRecords(userId) {
+    const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
+    
+    unsubscribeLogs = onSnapshot(q, (snapshot) => {
+      allPastRecords = [];
+      snapshot.forEach((docSnap) => {
+        allPastRecords.push({ docId: docSnap.id, data: docSnap.data() });
+      });
+      
+      applySearchAndFilter();
+    });
+  }
+  
+  // Search and Filter Event Listeners
+  document.getElementById("search-input")?.addEventListener("input", applySearchAndFilter);
+  document.getElementById("filter-date-input")?.addEventListener("change", applySearchAndFilter);
+  document.getElementById("clear-filter-btn")?.addEventListener("click", () => {
+    document.getElementById("search-input").value = "";
+    document.getElementById("filter-date-input").value = "";
+    applySearchAndFilter();
+});
+
+
 
 // Toggle Handler (Safe for Strict Mode)
 function handleAuthToggle() {
