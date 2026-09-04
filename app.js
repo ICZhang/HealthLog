@@ -466,12 +466,18 @@ document.querySelectorAll(".mood-row").forEach(row => {
   if (zone || time) moodLogs.push({ zone, time });
 });
 
-  const behaviorLogs = [];
-document.querySelectorAll(".behavior-row").forEach(row => {
-  const type = row.querySelector(".behavior-type").value;
-  const time = row.querySelector(".behavior-time").value;
-  if (type || time) behaviorLogs.push({ type, time });
-});
+    const behaviorLogs = [];
+    document.querySelectorAll(".behavior-row").forEach(row => {
+        const selectEl = row.querySelector(".behavior-type");
+        const customEl = row.querySelector(".behavior-custom");
+        const time = row.querySelector(".behavior-time").value;
+
+        const type = customEl ? customEl.value.trim() : (selectEl ? selectEl.value : "");
+
+        if (type || time) {
+            behaviorLogs.push({ type, time });
+        }
+    });
 
   return {
     date: document.getElementById("log-date").value,
@@ -666,20 +672,59 @@ function addBehaviorRow(data = {}) {
     const row = document.createElement("div");
     row.className = "dynamic-row behavior-row";
     row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
-
+    
+    // Check if saved data is custom text (not one of the predefined options)
+    const predefined = ["Screaming", "Throwing", ""];
+    const isCustom = data.type && !predefined.includes(data.type);
+  
     row.innerHTML = `
-        <select class="behavior-type" style="flex: 2; margin: 0;">
-        <option value="">-- Select Behavior --</option>
-        <option value="Screaming" ${data.type === 'Screaming' ? 'selected' : ''}>Screaming</option>
-        <option value="Throwing" ${data.type === 'Throwing' ? 'selected' : ''}>Throwing</option>
-        </select>
-        <input type="time" class="behavior-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
-        <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
+      <div class="behavior-input-wrapper" style="flex: 2; display: flex; gap: 4px;">
+        ${isCustom ? `
+          <input type="text" class="behavior-custom" placeholder="Specify behavior..." value="${data.type}" style="flex: 1; margin: 0;" />
+          <button type="button" class="reset-dropdown-btn" title="Back to dropdown" style="width: 28px; padding: 0; background: #888;">↺</button>
+        ` : `
+          <select class="behavior-type" style="width: 100%; margin: 0;">
+            <option value="">-- Select Behavior --</option>
+            <option value="Screaming" ${data.type === 'Screaming' ? 'selected' : ''}>Screaming</option>
+            <option value="Throwing" ${data.type === 'Throwing' ? 'selected' : ''}>Throwing</option>
+            <option value="Other">Other...</option>
+          </select>
+        `}
+      </div>
+      <input type="time" class="behavior-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
+      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
     `;
-
+  
+    const wrapper = row.querySelector(".behavior-input-wrapper");
+  
+    // Handle switching to text input when "Other" is selected
+    row.addEventListener("change", (e) => {
+      if (e.target.classList.contains("behavior-type") && e.target.value === "Other") {
+        wrapper.innerHTML = `
+          <input type="text" class="behavior-custom" placeholder="Specify behavior..." style="flex: 1; margin: 0;" />
+          <button type="button" class="reset-dropdown-btn" title="Back to dropdown" style="width: 28px; padding: 0; background: #888;">↺</button>
+        `;
+        wrapper.querySelector(".behavior-custom").focus();
+      }
+    });
+  
+    // Handle switching back to dropdown if user clicks reset ↺
+    row.addEventListener("click", (e) => {
+      if (e.target.classList.contains("reset-dropdown-btn")) {
+        wrapper.innerHTML = `
+          <select class="behavior-type" style="width: 100%; margin: 0;">
+            <option value="">-- Select Behavior --</option>
+            <option value="Screaming">Screaming</option>
+            <option value="Throwing">Throwing</option>
+            <option value="Other">Other...</option>
+          </select>
+        `;
+      }
+    });
+  
     row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
     behaviorContainer.appendChild(row);
-}
+  }
 
 // Render read-only record details
 function showViewModal(data) {
