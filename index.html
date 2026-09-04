@@ -46,8 +46,6 @@
       <button id="tab-past-btn" type="button" style="background-color: #888;">Past Records</button>
     </div>
   
-    <!-- SECTION 1: NEW ENTRY FORM -->
-    <!-- SECTION 1: CARE LOG FORM -->
 <!-- SECTION 1: CARE LOG FORM -->
 <div id="section-new-entry">
     <form id="log-form">
@@ -78,6 +76,24 @@
       </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+
+      <!-- Cromolyn Doses & Other Meds Section -->
+    <div class="form-section" style="margin-top: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="margin: 0; font-size: 1.1rem; font-weight: bold;">Cromolyn Doses & Other Meds</h4>
+        <button type="button" id="add-cromolyn-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Med</button>
+        </div>
+        
+        <!-- Column Headers -->
+        <div style="display: flex; gap: 8px; margin-bottom: 4px; padding-right: 36px;">
+        <span style="font-size: 0.8rem; font-weight: bold; flex: 1;">Medicine Name</span>
+        <span style="font-size: 0.8rem; font-weight: bold; width: 130px; text-align: center;">Time</span>
+        </div>
+    
+        <div id="cromolyn-container"></div>
+    </div>
+
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
       <!-- Herbal Meds Section -->
     <div class="form-section">

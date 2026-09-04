@@ -46,6 +46,7 @@ const enteragramContainer = document.getElementById("enteragram-container");
 const painContainer = document.getElementById("pain-container");
 const moodContainer = document.getElementById("mood-container");
 const behaviorContainer = document.getElementById("behavior-container");
+const cromolynContainer = document.getElementById("cromolyn-container");
 
 // Add Row Buttons
 const addBmBtn = document.getElementById("add-bm-btn");
@@ -57,6 +58,8 @@ const addEnteragramBtn = document.getElementById("add-enteragram-btn");
 const addPainBtn = document.getElementById("add-pain-btn");
 const addMoodBtn = document.getElementById("add-mood-btn");
 const addBehaviorBtn = document.getElementById("add-behavior-btn");
+const addCromolynBtn = document.getElementById("add-cromolyn-btn");
+
 
 // Delete Entry Handler
 async function deleteLogRecord(docId) {
@@ -359,6 +362,7 @@ addEnteragramBtn?.addEventListener("click", () => addEnteragramRow());
 addPainBtn?.addEventListener("click", () => addPainRow());
 addMoodBtn?.addEventListener("click", () => addMoodRow());
 addBehaviorBtn?.addEventListener("click", () => addBehaviorRow());
+addCromolynBtn?.addEventListener("click", () => addCromolynRow());
 
 function resetForm() {
   logForm.reset();
@@ -379,6 +383,7 @@ function resetForm() {
   painContainer.innerHTML = "";
   moodContainer.innerHTML = "";
   behaviorContainer.innerHTML = "";
+  cromolynContainer.innerHTML = "";
 
   addBmRow(); 
   addBmRow();
@@ -392,6 +397,7 @@ function resetForm() {
   addPainRow();
   addMoodRow();
   addBehaviorRow();
+  addCromolynRow();
 }
 
 cancelEditBtn.addEventListener("click", resetForm);
@@ -439,6 +445,13 @@ function getFormData() {
     if (dose || time) enteragramDoses.push({ dose, time });
   });
 
+  const cromolynMeds = [];
+  document.querySelectorAll(".cromolyn-row").forEach(row => {
+    const name = row.querySelector(".cromolyn-name").value.trim();
+    const time = row.querySelector(".cromolyn-time").value;
+  if (name || time) cromolynMeds.push({ name, time });
+  });
+
   const foodData = [];
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
@@ -453,31 +466,31 @@ function getFormData() {
   });
 
   const painLogs = [];
-document.querySelectorAll(".pain-row").forEach(row => {
-  const level = row.querySelector(".pain-level").value;
-  const time = row.querySelector(".pain-time").value;
-  if (level || time) painLogs.push({ level, time });
-});
+  document.querySelectorAll(".pain-row").forEach(row => {
+    const level = row.querySelector(".pain-level").value;
+    const time = row.querySelector(".pain-time").value;
+    if (level || time) painLogs.push({ level, time });
+  });
 
   const moodLogs = [];
-document.querySelectorAll(".mood-row").forEach(row => {
-  const zone = row.querySelector(".mood-zone").value;
-  const time = row.querySelector(".mood-time").value;
-  if (zone || time) moodLogs.push({ zone, time });
-});
+  document.querySelectorAll(".mood-row").forEach(row => {
+    const zone = row.querySelector(".mood-zone").value;
+    const time = row.querySelector(".mood-time").value;
+    if (zone || time) moodLogs.push({ zone, time });
+  });
 
-    const behaviorLogs = [];
-    document.querySelectorAll(".behavior-row").forEach(row => {
-        const selectEl = row.querySelector(".behavior-type");
-        const customEl = row.querySelector(".behavior-custom");
-        const time = row.querySelector(".behavior-time").value;
+  const behaviorLogs = [];
+  document.querySelectorAll(".behavior-row").forEach(row => {
+    const selectEl = row.querySelector(".behavior-type");
+    const customEl = row.querySelector(".behavior-custom");
+    const time = row.querySelector(".behavior-time").value;
 
-        const type = customEl ? customEl.value.trim() : (selectEl ? selectEl.value : "");
+    const type = customEl ? customEl.value.trim() : (selectEl ? selectEl.value : "");
 
-        if (type || time) {
-            behaviorLogs.push({ type, time });
-        }
-    });
+    if (type || time) {
+        behaviorLogs.push({ type, time });
+    }
+  });
 
   return {
     date: document.getElementById("log-date").value,
@@ -560,6 +573,13 @@ function populateFormForEdit(id, data) {
     data.enteragramDoses.forEach(e => addEnteragramRow(e));
   } else {
     addEnteragramRow();
+  }
+
+  cromolynContainer.innerHTML = "";
+  if (Array.isArray(data.cromolynMeds) && data.cromolynMeds.length > 0) {
+    data.cromolynMeds.forEach(m => addCromolynRow(m));
+  } else {
+    addCromolynRow();
   }
 
   formulaContainer.innerHTML = "";
@@ -724,7 +744,22 @@ function addBehaviorRow(data = {}) {
   
     row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
     behaviorContainer.appendChild(row);
-  }
+}
+
+function addCromolynRow(data = {}) {
+    const row = document.createElement("div");
+    row.className = "dynamic-row cromolyn-row";
+    row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
+  
+    row.innerHTML = `
+      <input type="text" class="cromolyn-name" placeholder="Medicine Name" value="${data.name || ''}" style="flex: 1; margin: 0;" />
+      <input type="time" class="cromolyn-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
+      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
+    `;
+  
+    row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+    cromolynContainer.appendChild(row);
+}
 
 // Render read-only record details
 function showViewModal(data) {
@@ -799,6 +834,13 @@ function showViewModal(data) {
         : '<li>None recorded</li>'}
     </ul>
 
+    <p><strong>Cromolyn & Other Meds:</strong></p>
+    <ul>
+    ${data.cromolynMeds?.length 
+        ? data.cromolynMeds.map(m => `<li>${m.name || 'Unnamed'}: at ${m.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
     <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
   `;
 
@@ -809,3 +851,4 @@ function showViewModal(data) {
 document.getElementById("close-modal-btn")?.addEventListener("click", () => {
   document.getElementById("view-modal").classList.add("hidden");
 });
+
