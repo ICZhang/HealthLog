@@ -541,19 +541,41 @@ function showViewModal(data) {
   });
 
 
+// Function to update row labels sequentially (1st Cup, 2nd Cup, 3rd Cup...)
+function updateWaterRowLabels() {
+    const rows = waterContainer.querySelectorAll(".water-row");
+    rows.forEach((row, index) => {
+      const num = index + 1;
+      let suffix = "th";
+      if (num % 10 === 1 && num % 100 !== 11) suffix = "st";
+      else if (num % 10 === 2 && num % 100 !== 12) suffix = "nd";
+      else if (num % 10 === 3 && num % 100 !== 13) suffix = "rd";
+  
+      const label = row.querySelector(".water-label");
+      if (label) {
+        label.textContent = `${num}${suffix} Cup:`;
+      }
+    });
+}
+
 function addWaterRow(data = {}) {
     const row = document.createElement("div");
     row.className = "dynamic-row water-row";
     row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
     
     row.innerHTML = `
-      <input type="number" class="water-cups" placeholder="Cups (e.g., 1)" value="${data.cups || ''}" style="flex: 1; margin: 0;" step="0.5" min="0" />
+      <span class="water-label" style="font-size: 0.9rem; font-weight: bold; min-width: 75px;">1st Cup:</span>
       <input type="time" class="water-time" value="${data.time || ''}" style="flex: 1; margin: 0;" />
       <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0;">X</button>
     `;
     
-    row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+    row.querySelector(".remove-row-btn").addEventListener("click", () => {
+      row.remove();
+      updateWaterRowLabels();
+    });
+  
     waterContainer.appendChild(row);
+    updateWaterRowLabels();
 }
   
 // Button Listener
