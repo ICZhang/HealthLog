@@ -644,22 +644,22 @@ function addMoodRow(data = {}) {
     const row = document.createElement("div");
     row.className = "dynamic-row mood-row";
     row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
-
+    
     row.innerHTML = `
-        <select class="mood-zone" style="flex: 2; margin: 0;">
+      <select class="mood-zone" style="flex: 2; margin: 0;">
         <option value="">-- Select Mood Zone --</option>
-        <option value="Blue Zone" ${data.zone === 'Blue Zone' ? 'selected' : ''}>Blue Zone</option>
-        <option value="Green Zone" ${data.zone === 'Green Zone' ? 'selected' : ''}>Green Zone</option>
-        <option value="Yellow Zone" ${data.zone === 'Yellow Zone' ? 'selected' : ''}>Yellow Zone</option>
-        <option value="Red Zone" ${data.zone === 'Red Zone' ? 'selected' : ''}>Red Zone</option>
-        </select>
-        <input type="time" class="mood-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
-        <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
+        <option value="Blue Zone" ${data.zone === 'Blue Zone' ? 'selected' : ''}>🔵 Blue Zone</option>
+        <option value="Green Zone" ${data.zone === 'Green Zone' ? 'selected' : ''}>🟢 Green Zone</option>
+        <option value="Yellow Zone" ${data.zone === 'Yellow Zone' ? 'selected' : ''}>🟡 Yellow Zone</option>
+        <option value="Red Zone" ${data.zone === 'Red Zone' ? 'selected' : ''}>🔴 Red Zone</option>
+      </select>
+      <input type="time" class="mood-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
+      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
     `;
-
+    
     row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
     moodContainer.appendChild(row);
-}
+  }
 
 // Behavior Row Generator
 function addBehaviorRow(data = {}) {
