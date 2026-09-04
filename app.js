@@ -250,7 +250,7 @@ function addWaterRow(data = {}) {
     
     row.innerHTML = `
       <span class="water-label" style="font-size: 0.85rem; font-weight: bold; width: 75px; text-align: left;">1st Cup:</span>
-      <input type="time" class="water-time" value="${data.time || ''}" style="flex: 1; margin: 0; width: 100%;" />
+      <input type="time" class="water-time" value="${data.time || ''}" style="flex: 1; margin: 0; width: 100%; text-align: center;" />
       <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
     `;
     
