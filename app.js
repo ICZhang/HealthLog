@@ -296,41 +296,44 @@ logForm.addEventListener("submit", async (e) => {
 
 // --- LOAD PAST RECORDS ---
 function loadPastRecords(userId) {
-  const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
+    const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
+    
+    unsubscribeLogs = onSnapshot(q, (snapshot) => {
+      logList.innerHTML = "";
+      if (snapshot.empty) {
+        logList.innerHTML = `<li style="color: #888;">No saved care records found.</li>`;
+        return;
+      }
   
-  unsubscribeLogs = onSnapshot(q, (snapshot) => {
-    logList.innerHTML = "";
-    if (snapshot.empty) {
-      logList.innerHTML = `<li style="color: #888;">No saved care records found.</li>`;
-      return;
-    }
-
-    snapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const docId = docSnap.id;
-
-      const li = document.createElement("li");
-      li.style.cssText = "background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 10px; list-style: none;";
-      
-      li.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <strong>📅 ${data.date} at ${data.time || 'N/A'}</strong>
-          <button type="button" class="edit-log-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin:0; background: #4A90E2;">Edit</button>
-        </div>
-        <p style="margin: 6px 0; font-size: 0.9rem; color: #444;">
-          <strong>BMs:</strong> ${data.bowelMovements ? data.bowelMovements.length : 0} logged | 
-          <strong>Warm Water:</strong> ${data.warmWater?.cups || 0} cups
-        </p>
-        ${data.notes ? `<p style="margin: 4px 0; font-size: 0.85rem; color: #666; font-style: italic;">"${data.notes.slice(0, 60)}..."</p>` : ''}
-      `;
-
-      li.querySelector(".edit-log-btn").addEventListener("click", () => {
-        populateFormForEdit(docId, data);
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const docId = docSnap.id;
+  
+        const li = document.createElement("li");
+        li.style.cssText = "background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 10px; list-style: none;";
+        
+        li.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong>📅 ${data.date} at ${data.time || 'N/A'}</strong>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="view-log-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin:0; background: #2ecc71;">View</button>
+              <button type="button" class="edit-log-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin:0; background: #4A90E2;">Edit</button>
+            </div>
+          </div>
+          <p style="margin: 6px 0; font-size: 0.9rem; color: #444;">
+            <strong>BMs:</strong> ${data.bowelMovements ? data.bowelMovements.length : 0} logged | 
+            <strong>Warm Water:</strong> ${data.warmWater?.cups || 0} cups
+          </p>
+          ${data.notes ? `<p style="margin: 4px 0; font-size: 0.85rem; color: #666; font-style: italic;">"${data.notes.slice(0, 60)}..."</p>` : ''}
+        `;
+  
+        // Event Listeners
+        li.querySelector(".view-log-btn").addEventListener("click", () => showViewModal(data));
+        li.querySelector(".edit-log-btn").addEventListener("click", () => populateFormForEdit(docId, data));
+  
+        logList.appendChild(li);
       });
-
-      logList.appendChild(li);
     });
-  });
 }
 
 // Populate Form for Editing
@@ -402,3 +405,52 @@ function populateFormForEdit(id, data) {
   document.getElementById("day-notes").value = data.notes || "";
   tabNewBtn.click();
 }
+
+// Render read-only record details
+function showViewModal(data) {
+    const modal = document.getElementById("view-modal");
+    const modalBody = document.getElementById("view-modal-body");
+  
+    modalBody.innerHTML = `
+      <h3 style="margin-top: 0; color: #333;">Care Log - ${data.date} (${data.time || 'N/A'})</h3>
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;" />
+      
+      <p><strong>Bowel Movements:</strong></p>
+      <ul>
+        ${data.bowelMovements?.length 
+          ? data.bowelMovements.map(bm => `<li>Time: ${bm.time || 'N/A'} | Type: ${bm.type || 'N/A'} | Amount: ${bm.amount || 'N/A'} | Color: ${bm.color || 'N/A'}</li>`).join('')
+          : '<li>None recorded</li>'}
+      </ul>
+  
+      <p><strong>Medications:</strong></p>
+      <ul>
+        ${data.medications?.length ? data.medications.map(m => `<li>${m}</li>`).join('') : '<li>None recorded</li>'}
+      </ul>
+  
+      <p><strong>Warm Water:</strong> ${data.warmWater?.cups || 0} cups (Time: ${data.warmWater?.time || 'N/A'})</p>
+  
+      <p><strong>Formula / Hydration:</strong></p>
+      <ul>
+        ${data.formulaHydration?.length ? data.formulaHydration.map(f => `<li>${f}</li>`).join('') : '<li>None recorded</li>'}
+      </ul>
+  
+      <p><strong>Activities:</strong></p>
+      <ul>
+        ${data.activities?.length ? data.activities.map(a => `<li>${a}</li>`).join('') : '<li>None recorded</li>'}
+      </ul>
+  
+      <p><strong>Foods:</strong></p>
+      <ul>
+        ${data.foods?.length ? data.foods.map(f => `<li>${f.name}: ${f.amount || 'Checked'}</li>`).join('') : '<li>None recorded</li>'}
+      </ul>
+  
+      <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
+    `;
+  
+    modal.classList.remove("hidden");
+  }
+  
+  // Close Modal Event Handler
+  document.getElementById("close-modal-btn")?.addEventListener("click", () => {
+    document.getElementById("view-modal").classList.add("hidden");
+  });

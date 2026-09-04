@@ -281,6 +281,13 @@
   
     <button id="logout-btn" class="logout-btn">Sign Out</button>
   </div>
+  
+  <div id="view-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: #fff; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 20px; border-radius: 8px; position: relative;">
+      <button id="close-modal-btn" type="button" style="position: absolute; top: 10px; right: 10px; background: #e74c3c; width: auto; padding: 4px 10px;">X</button>
+      <div id="view-modal-body"></div>
+    </div>
+  </div>
 
 </body>
 </html>
