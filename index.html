@@ -79,20 +79,35 @@
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-      <!-- Medications & Hydration (Starts with 2 Rows) -->
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin:0;">Cromolyn Doses & Other Meds</h3>
-        <button type="button" id="add-med-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Dose</button>
-      </div>
-      <div id="meds-container" style="margin-top: 10px;">
-        <!-- JavaScript will auto-render 2 initial Med rows here -->
-      </div>
-  
-      <label for="herbal-meds-time" style="margin-top: 12px;">Herbal Meds Time</label>
-      <input type="text" id="herbal-meds-time" placeholder="Time" />
-  
-      <label for="enteragram">Enteragram</label>
-      <input type="text" id="enteragram" placeholder="Notes / Time" />
+      <!-- Herbal Meds Section -->
+    <div class="form-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="margin: 0;">Herbal Meds</h4>
+        <button type="button" id="add-herbal-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Herbal Med</button>
+        </div>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 4px; padding-right: 32px;">
+        <span style="font-size: 0.8rem; font-weight: bold; flex: 2;">Medicine Name</span>
+        <span style="font-size: 0.8rem; font-weight: bold; width: 130px; text-align: center;">Time</span>
+        </div>
+    
+        <div id="herbal-container"></div>
+    </div>
+    
+    <!-- Enteragram Section -->
+    <div class="form-section" style="margin-top: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="margin: 0;">Enteragram</h4>
+        <button type="button" id="add-enteragram-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Enteragram</button>
+        </div>
+    
+        <div style="display: flex; gap: 8px; margin-bottom: 4px; padding-right: 32px;">
+        <span style="font-size: 0.8rem; font-weight: bold; flex: 1;">Dose</span>
+        <span style="font-size: 0.8rem; font-weight: bold; width: 130px; text-align: center;">Time</span>
+        </div>
+    
+        <div id="enteragram-container"></div>
+    </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
 
