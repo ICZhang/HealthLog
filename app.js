@@ -42,12 +42,14 @@ const bmContainer = document.getElementById("bm-container");
 const medsContainer = document.getElementById("meds-container");
 const formulaContainer = document.getElementById("formula-container");
 const activitiesContainer = document.getElementById("activities-container");
+const waterContainer = document.getElementById("water-container");
 
 // Add Row Buttons
 const addBmBtn = document.getElementById("add-bm-btn");
 const addMedBtn = document.getElementById("add-med-btn");
 const addFormulaBtn = document.getElementById("add-formula-btn");
 const addActivityBtn = document.getElementById("add-activity-btn");
+const addWaterBtn = document.getElementById("add-water-btn");
 
 // Delete Entry Handler
 async function deleteLogRecord(docId) {
@@ -300,6 +302,7 @@ function resetForm() {
   medsContainer.innerHTML = "";
   formulaContainer.innerHTML = "";
   activitiesContainer.innerHTML = "";
+  waterContainer.innerHTML = "";
 
   addBmRow(); addBmRow();
   addTextRow(medsContainer, "med-row", "1st Med Dose (Time / Notes)");
@@ -308,6 +311,7 @@ function resetForm() {
   addTextRow(formulaContainer, "formula-row", "2nd Formula/Hydration Entry");
   addTextRow(activitiesContainer, "activity-row", "#1 Activity");
   addTextRow(activitiesContainer, "activity-row", "#2 Activity");
+  addWaterRow();
 }
 
 cancelEditBtn.addEventListener("click", resetForm);
@@ -335,6 +339,15 @@ function getFormData() {
     return vals;
   };
 
+    const waterData = [];
+    document.querySelectorAll(".water-row").forEach(row => {
+        const cups = row.querySelector(".water-cups").value.trim();
+        const time = row.querySelector(".water-time").value;
+        if (cups || time) {
+            waterData.push({ cups, time });
+        }
+    });
+
   const foodData = [];
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
@@ -356,10 +369,7 @@ function getFormData() {
     herbalMedsTime: document.getElementById("herbal-meds-time").value,
     enteragram: document.getElementById("enteragram").value,
     formulaHydration: getValues(".formula-row"),
-    warmWater: {
-      cups: document.getElementById("warm-water-cups").value,
-      time: document.getElementById("warm-water-time").value
-    },
+    warmWater: waterData,
     activities: getValues(".activity-row"),
     enzymes: {
       noFenol: { checked: document.getElementById("enzyme-no-fenol").checked, notes: document.getElementById("enzyme-no-fenol-notes").value },
@@ -418,6 +428,16 @@ function populateFormForEdit(id, data) {
   } else {
     addTextRow(medsContainer, "med-row", "Med Dose");
   }
+
+    waterContainer.innerHTML = "";
+    if (Array.isArray(data.warmWater) && data.warmWater.length > 0) {
+        data.warmWater.forEach(w => addWaterRow(w));
+    } else if (data.warmWater?.cups) {
+    // Fallback support for legacy single-object records
+        addWaterRow({ cups: data.warmWater.cups, time: data.warmWater.time });
+    } else {
+        addWaterRow();
+    }
 
   document.getElementById("herbal-meds-time").value = data.herbalMedsTime || "";
   document.getElementById("enteragram").value = data.enteragram || "";
@@ -487,7 +507,12 @@ function showViewModal(data) {
         ${data.medications?.length ? data.medications.map(m => `<li>${m}</li>`).join('') : '<li>None recorded</li>'}
       </ul>
   
-      <p><strong>Warm Water:</strong> ${data.warmWater?.cups || 0} cups (Time: ${data.warmWater?.time || 'N/A'})</p>
+      <p><strong>Warm Water Log:</strong></p>
+        <ul>
+        ${Array.isArray(data.warmWater) && data.warmWater.length 
+            ? data.warmWater.map(w => `<li>${w.cups || 0} cup(s) at ${w.time || 'N/A'}</li>`).join('')
+            : (data.warmWater?.cups ? `<li>${data.warmWater.cups} cup(s) at ${data.warmWater.time || 'N/A'}</li>` : '<li>None recorded</li>')}
+        </ul>
   
       <p><strong>Formula / Hydration:</strong></p>
       <ul>
@@ -514,3 +539,22 @@ function showViewModal(data) {
   document.getElementById("close-modal-btn")?.addEventListener("click", () => {
     document.getElementById("view-modal").classList.add("hidden");
   });
+
+
+function addWaterRow(data = {}) {
+    const row = document.createElement("div");
+    row.className = "dynamic-row water-row";
+    row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
+    
+    row.innerHTML = `
+      <input type="number" class="water-cups" placeholder="Cups (e.g., 1)" value="${data.cups || ''}" style="flex: 1; margin: 0;" step="0.5" min="0" />
+      <input type="time" class="water-time" value="${data.time || ''}" style="flex: 1; margin: 0;" />
+      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0;">X</button>
+    `;
+    
+    row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+    waterContainer.appendChild(row);
+}
+  
+// Button Listener
+addWaterBtn?.addEventListener("click", () => addWaterRow());

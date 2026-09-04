@@ -98,7 +98,7 @@
 
         <!-- Formula & Hydration (Dynamic Rows) -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3 style="margin:0;">Formula & Hydration</h3>
+        <h3 style="margin:0;">Formula</h3>
         <button type="button" id="add-formula-btn" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin:0;">+ Add Row</button>
         </div>
         <div id="formula-container">
@@ -108,17 +108,14 @@
         <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
 
         <!-- Warm Water Tracking (Dedicated Section) -->
-        <h3 style="margin-bottom: 10px;">Warm Water</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-            <label for="warm-water-cups"><strong>Cups Drunk</strong></label>
-            <input type="number" id="warm-water-cups" min="0" step="0.5" placeholder="e.g. 2" style="width: 100%; margin-top: 4px;" />
+        <!-- Warm Water Section -->
+    <div class="form-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="margin: 0;">Warm Water</h4>
+        <button type="button" id="add-water-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Water</button>
         </div>
-        <div>
-            <label for="warm-water-time"><strong>Time</strong></label>
-            <input type="time" id="warm-water-time" />
-        </div>
-        </div>
+        <div id="water-container"></div>
+    </div>
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
@@ -276,7 +273,7 @@
         <h3>Past Care Records</h3>
         
         <!-- Search & Filter Controls -->
-        <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 8px; margin-bottom: 30px; flex-wrap: wrap;">
           <input type="text" id="search-input" placeholder="Search notes, foods, meds..." style="flex: 2; min-width: 150px; margin: 0;" />
           <input type="date" id="filter-date-input" style="flex: 1; min-width: 120px; margin: 0;" />
           <button type="button" id="clear-filter-btn" style="width: auto; padding: 4px 10px; background: #888; margin: 0;">Clear</button>
