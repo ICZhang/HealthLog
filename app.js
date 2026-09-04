@@ -564,9 +564,10 @@ function addWaterRow(data = {}) {
     row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
     
     row.innerHTML = `
-      <span class="water-label" style="font-size: 0.9rem; font-weight: bold; min-width: 75px;">1st Cup:</span>
-      <input type="time" class="water-time" value="${data.time || ''}" style="flex: 1; margin: 0;" />
-      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0;">X</button>
+    <span class="water-label" style="font-size: 0.9rem; font-weight: bold; min-width: 75px;">1st Cup:</span>
+    <!-- Changed flex: 1 to width: 140px for a compact time box -->
+    <input type="time" class="water-time" value="${data.time || ''}" style="width: 140px; margin: 0;" />
+    <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0;">X</button>
     `;
     
     row.querySelector(".remove-row-btn").addEventListener("click", () => {
