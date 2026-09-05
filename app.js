@@ -1218,3 +1218,18 @@ openAnalyticsBtn?.addEventListener("click", () => {
         renderPainChart();
     }, 100);
 });
+
+const startDateInput = document.getElementById("analytics-start-date");
+const endDateInput = document.getElementById("analytics-end-date");
+
+// Trigger native date picker on click anywhere inside the input box
+[startDateInput, endDateInput].forEach(input => {
+  if (input) {
+    input.style.cursor = "pointer";
+    input.addEventListener("click", () => {
+      if (typeof input.showPicker === "function") {
+        input.showPicker();
+      }
+    });
+  }
+});
