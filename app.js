@@ -126,31 +126,25 @@ function renderPastRecords(recordsToRender) {
   }
   
   // Filter records by number (#1, 1), keywords, or date
-function filterPastRecords() {
+  function filterPastRecords() { 
     const searchInput = (document.getElementById("search-records")?.value || "").trim().toLowerCase();
     const dateInput = document.getElementById("search-date")?.value || "";
-  
     const allRecords = window.allRecords || [];
   
     const filtered = allRecords.filter((item, index) => {
       const data = item.data || item;
       const recordNumStr = String(index + 1);
-  
-      // Check if input matches number format "1" or "#1"
+      
       const matchesNumber = searchInput === recordNumStr || searchInput === `#${recordNumStr}`;
-  
-      // Search across entire log JSON string or number match
       const jsonString = JSON.stringify(data).toLowerCase();
       const matchesText = !searchInput || jsonString.includes(searchInput) || matchesNumber;
-  
-      // Filter by specific date
       const matchesDate = !dateInput || data.date === dateInput;
   
       return matchesText && matchesDate;
     });
   
     renderPastRecords(filtered);
-}
+  }
 
 // Load Firestore Records into Cache & Add Listeners
 function loadPastRecords(userId) {
