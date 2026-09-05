@@ -1432,8 +1432,10 @@ function renderBMCalendar(startDate, endDate, records) {
   
         if (!bmMap[logDate]) bmMap[logDate] = [];
         bmMap[logDate].push({
-          time: formatTo12Hour(bm.time),
-          type: bm.type
+            time: formatTo12Hour(bm.time),
+            type: bm.type,
+            amount: bm.amount || bm.size || "", 
+            color: bm.color || ""             
         });
       });
     });
