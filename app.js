@@ -140,16 +140,18 @@ function applySearchAndFilter() {
 
 // Load Firestore Records into Cache & Add Listeners
 function loadPastRecords(userId) {
-  const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
-  
-  unsubscribeLogs = onSnapshot(q, (snapshot) => {
-    allPastRecords = [];
-    snapshot.forEach((docSnap) => {
-      allPastRecords.push({ docId: docSnap.id, data: docSnap.data() });
-    });
+    const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
     
-    applySearchAndFilter();
-  });
+    unsubscribeLogs = onSnapshot(q, (snapshot) => {
+      allPastRecords = [];
+      snapshot.forEach((docSnap) => {
+        allPastRecords.push({ docId: docSnap.id, data: docSnap.data() });
+      });
+      
+      window.allRecords = allPastRecords;
+  
+      applySearchAndFilter();
+    });
 }
 
 // Search and Filter Event Listeners
@@ -941,31 +943,28 @@ function renderPainChart() {
     };
 
     records.forEach(item => {
-      // Handle both Firestore document objects ({ data: {...} }) and plain objects
-      const dataObj = item.data ? item.data : item;
-      const logDate = dataObj.date;
-
-      // Match selected month (e.g., "2026-09")
-      if (!logDate || !logDate.startsWith(selectedMonth)) return;
-
-      const painLogs = dataObj.painLogs || [];
-
-      painLogs.forEach(log => {
-        // Handle log objects or plain string values
-        const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
-        const levelStr = String(levelVal).trim().toLowerCase();
-
-        if (!levelStr) return;
-
-        // Flexible string matching
-        if (levelStr.includes("no")) {
-          daysByPain["No Pain"].add(logDate);
-        } else if (levelStr.includes("minor") || levelStr.includes("low") || levelStr.includes("mild")) {
-          daysByPain["Minor Pain"].add(logDate);
-        } else if (levelStr.includes("severe") || levelStr.includes("high") || levelStr.includes("intense")) {
-          daysByPain["Severe Pain"].add(logDate);
-        }
-      });
+        // Grab the inner data object
+        const logData = item.data || item;
+        const logDate = logData.date; // Expects "YYYY-MM-DD"
+      
+        if (!logDate || !logDate.startsWith(selectedMonth)) return;
+      
+        const painLogs = logData.painLogs || [];
+      
+        painLogs.forEach(log => {
+          const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
+          const levelStr = String(levelVal).trim().toLowerCase();
+      
+          if (!levelStr) return;
+      
+          if (levelStr.includes("no")) {
+            daysByPain["No Pain"].add(logDate);
+          } else if (levelStr.includes("minor") || levelStr.includes("low") || levelStr.includes("mild")) {
+            daysByPain["Minor Pain"].add(logDate);
+          } else if (levelStr.includes("severe") || levelStr.includes("high") || levelStr.includes("intense")) {
+            daysByPain["Severe Pain"].add(logDate);
+          }
+        });
     });
 
     const chartData = [
