@@ -1013,9 +1013,9 @@ function renderPainCalendar(selectedMonth, records) {
   
     const [yearStr, monthStr] = selectedMonth.split("-");
     const year = parseInt(yearStr, 10);
-    const month = parseInt(monthStr, 10) - 1; // 0-indexed month
+    const month = parseInt(monthStr, 10) - 1;
   
-    // Map dates to maximum recorded pain level for that day
+    // Map each date to an array of all logged pain entries
     const datePainMap = {};
   
     records.forEach(item => {
@@ -1028,19 +1028,25 @@ function renderPainCalendar(selectedMonth, records) {
         const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
         const levelStr = String(levelVal).trim().toLowerCase();
   
-        // Priority ranking: severe > minor > no pain
-        let rank = 0;
-        if (levelStr === "severe pain" || levelStr === "severe") rank = 3;
-        else if (levelStr === "minor pain" || levelStr === "minor") rank = 2;
-        else if (levelStr === "no pain" || levelStr === "no") rank = 1;
+        let color = null;
+        let label = "";
   
-        const currentRank = datePainMap[logDate]?.rank || 0;
-        if (rank > currentRank) {
-          datePainMap[logDate] = {
-            rank: rank,
-            color: rank === 3 ? "#e74c3c" : rank === 2 ? "#f1c40f" : "#2ecc71",
-            label: rank === 3 ? "Severe" : rank === 2 ? "Minor" : "No Pain"
-          };
+        if (levelStr === "severe pain" || levelStr === "severe") {
+          color = "#e74c3c";
+          label = "Severe";
+        } else if (levelStr === "minor pain" || levelStr === "minor") {
+          color = "#f1c40f";
+          label = "Minor";
+        } else if (levelStr === "no pain" || levelStr === "no") {
+          color = "#2ecc71";
+          label = "No Pain";
+        }
+  
+        if (color) {
+          if (!datePainMap[logDate]) {
+            datePainMap[logDate] = [];
+          }
+          datePainMap[logDate].push({ color, label });
         }
       });
     });
@@ -1050,7 +1056,7 @@ function renderPainCalendar(selectedMonth, records) {
     dayNames.forEach(day => {
       const header = document.createElement("div");
       header.style.fontWeight = "bold";
-      header.style.padding = "5px 0";
+      header.style.padding = "4px 0";
       header.innerText = day;
       grid.appendChild(header);
     });
@@ -1058,27 +1064,53 @@ function renderPainCalendar(selectedMonth, records) {
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
   
-    // Render empty padding cells for proper alignment
+    // Padding cells
     for (let i = 0; i < firstDayIndex; i++) {
       grid.appendChild(document.createElement("div"));
     }
   
-    // Render day numbers with color indicators
+    // Render day cells
     for (let d = 1; d <= totalDays; d++) {
       const dayStr = String(d).padStart(2, '0');
       const fullDateKey = `${selectedMonth}-${dayStr}`;
-      const entry = datePainMap[fullDateKey];
+      const entries = datePainMap[fullDateKey] || [];
   
       const cell = document.createElement("div");
       cell.style.border = "1px solid #e0e0e0";
       cell.style.borderRadius = "4px";
-      cell.style.padding = "6px 2px";
-      cell.style.backgroundColor = entry ? entry.color : "#ffffff";
-      cell.style.color = entry ? "#ffffff" : "#333333";
-      cell.style.fontWeight = entry ? "bold" : "normal";
-      cell.title = entry ? `${fullDateKey}: ${entry.label}` : fullDateKey;
-      cell.innerText = d;
+      cell.style.padding = "4px 2px";
+      cell.style.minHeight = "48px";
+      cell.style.backgroundColor = "#ffffff";
+      cell.style.display = "flex";
+      cell.style.flexDirection = "column";
+      cell.style.alignItems = "center";
   
+      // Day Number
+      const numSpan = document.createElement("span");
+      numSpan.style.fontWeight = "bold";
+      numSpan.style.fontSize = "0.8rem";
+      numSpan.style.marginBottom = "2px";
+      numSpan.innerText = d;
+      cell.appendChild(numSpan);
+  
+      // Container for log indicators
+      const badgeContainer = document.createElement("div");
+      badgeContainer.style.display = "flex";
+      badgeContainer.style.flexWrap = "wrap";
+      badgeContainer.style.gap = "2px";
+      badgeContainer.style.justifyContent = "center";
+  
+      entries.forEach(entry => {
+        const badge = document.createElement("span");
+        badge.style.width = "8px";
+        badge.style.height = "8px";
+        badge.style.borderRadius = "50%";
+        badge.style.backgroundColor = entry.color;
+        badge.title = entry.label;
+        badgeContainer.appendChild(badge);
+      });
+  
+      cell.appendChild(badgeContainer);
       grid.appendChild(cell);
     }
 }
