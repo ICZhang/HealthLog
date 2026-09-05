@@ -931,13 +931,17 @@ openAnalyticsBtn?.addEventListener("click", () => {
 });
   
 function renderPainChart() {
-    const selectedMonth = analyticsMonthInput.value; // "YYYY-MM"
+    const startDateInput = document.getElementById("analytics-start-date");
+    const endDateInput = document.getElementById("analytics-end-date");
     const canvas = document.getElementById("painChart");
-    if (!selectedMonth || !canvas) return;
+    
+    if (!startDateInput || !endDateInput || !canvas) return;
+
+    const startDate = startDateInput.value; // Format: "YYYY-MM-DD"
+    const endDate = endDateInput.value;     // Format: "YYYY-MM-DD"
 
     const records = window.allRecords || [];
 
-    // Switch from Set() to simple counters
     const painCounts = {
       "No Pain": 0,
       "Minor Pain": 0,
@@ -948,24 +952,26 @@ function renderPainChart() {
       const logData = item.data || item;
       const logDate = logData.date; // Expects "YYYY-MM-DD"
 
-      if (!logDate || !logDate.startsWith(selectedMonth)) return;
+      if (!logDate) return;
+      
+      // Range Check
+      if (startDate && logDate < startDate) return;
+      if (endDate && logDate > endDate) return;
 
       const painLogs = logData.painLogs || [];
 
       painLogs.forEach(log => {
-        // Retrieve string value whether log is an object or string
         const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
         const levelStr = String(levelVal).trim().toLowerCase();
 
         if (!levelStr) return;
 
-        // Pattern matching
         if (levelStr === "no pain" || levelStr === "no") {
-            painCounts["No Pain"] += 1;
+          painCounts["No Pain"] += 1;
         } else if (levelStr === "minor pain" || levelStr === "minor") {
-            painCounts["Minor Pain"] += 1;
+          painCounts["Minor Pain"] += 1;
         } else if (levelStr === "severe pain" || levelStr === "severe") {
-            painCounts["Severe Pain"] += 1;
+          painCounts["Severe Pain"] += 1;
         }
       });
     });
@@ -995,9 +1001,7 @@ function renderPainChart() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
+        plugins: { legend: { display: false } },
         scales: {
           y: {
             beginAtZero: true,
@@ -1008,7 +1012,8 @@ function renderPainChart() {
       }
     });
 
-    renderPainCalendar(selectedMonth, records);
+    // Update Calendar with Range
+    renderPainCalendar(startDate, endDate, records);
 }
 
 
@@ -1183,10 +1188,32 @@ closeAnalyticsBtn?.addEventListener("click", () => {
     setActiveTab(isPastVisible ? tabPastBtn : tabNewBtn);
 });
 
-function getCurrentHHMM() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
-  }
+// Attach listeners to date inputs
+document.getElementById("analytics-start-date")?.addEventListener("change", renderPainChart);
+document.getElementById("analytics-end-date")?.addEventListener("change", renderPainChart);
 
+// Set defaults when opening analytics tab/modal
+openAnalyticsBtn?.addEventListener("click", () => {
+    const startDateInput = document.getElementById("analytics-start-date");
+    const endDateInput = document.getElementById("analytics-end-date");
+
+    if (!startDateInput.value || !endDateInput.value) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        
+        // Default start: First day of current month
+        startDateInput.value = `${year}-${month}-01`;
+        
+        // Default end: Last day of current month
+        const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+        endDateInput.value = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+    }
+
+    analyticsModal.style.display = "flex";
+    analyticsModal.classList.remove("hidden");
+    
+    setTimeout(() => {
+        renderPainChart();
+    }, 100);
+});

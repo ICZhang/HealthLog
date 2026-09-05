@@ -393,9 +393,12 @@
             <h3 style="margin: 0; text-align: center; color: #2c3e50;">📊 Monthly Care Analytics</h3>
           </div>
           
-          <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0;">
-            <label for="analytics-month" style="font-weight: bold; font-size: 0.9rem;">Select Month:</label>
-            <input type="month" id="analytics-month" style="padding: 4px 8px; font-size: 0.9rem;" />
+          <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0; flex-wrap: wrap;">
+            <label style="font-weight: bold; font-size: 0.85rem;">From:</label>
+            <input type="date" id="analytics-start-date" style="padding: 4px 8px; font-size: 0.85rem; border: 1px solid #ccc; border-radius: 4px;" />
+            
+            <label style="font-weight: bold; font-size: 0.85rem;">To:</label>
+            <input type="date" id="analytics-end-date" style="padding: 4px 8px; font-size: 0.85rem; border: 1px solid #ccc; border-radius: 4px;" />
           </div>
       
           <!-- 1. GRAPH SECTION -->
@@ -406,7 +409,7 @@
             </div>
           </div>
       
-          <!-- 2. CALENDAR SECTION (STACKED DIRECTLY UNDER GRAPH) -->
+          <!-- 2. CALENDAR SECTION ( -->
           <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
             <h4 style="margin: 0 0 10px 0; text-align: center;">Monthly Pain Calendar</h4>
             <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85rem;">
