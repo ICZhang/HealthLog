@@ -1253,7 +1253,6 @@ function renderAnalyticsChart() {
         // Filter by overall range OR active month selected via calendar nav
         if (startDate && logData.date < startDate) return;
         if (endDate && logData.date > endDate) return;
-        if (window.activeCalendarMonth && !logData.date.startsWith(window.activeCalendarMonth)) return;
   
         (logData.painLogs || []).forEach(log => {
           const val = String(typeof log === "string" ? log : log.level || log.painLevel || "").toLowerCase();
@@ -1283,7 +1282,6 @@ function renderAnalyticsChart() {
         // Filter by overall range OR active month selected via calendar nav
         if (startDate && logData.date < startDate) return;
         if (endDate && logData.date > endDate) return;
-        if (window.activeCalendarMonth && !logData.date.startsWith(window.activeCalendarMonth)) return;
   
         (logData.bowelMovements || []).forEach(bm => {
           if (!bm.type) return;
