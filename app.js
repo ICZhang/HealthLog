@@ -499,22 +499,6 @@ function getFormData() {
     if (type || time) {
         behaviorLogs.push({ type, time });
     }
-
-
-    const painRows = document.querySelectorAll("#pain-container .dynamic-row");
-const painLogs = [];
-
-painRows.forEach(row => {
-  const levelSelect = row.querySelector("select");
-  const timeInput = row.querySelector("input[type='time']");
-
-  if (levelSelect && levelSelect.value) {
-    painLogs.push({
-      level: levelSelect.value,
-      time: timeInput ? timeInput.value : ""
-    });
-  }
-});
 });
 
   return {
