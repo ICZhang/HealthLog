@@ -1247,7 +1247,12 @@ function renderAnalyticsChart() {
       
       records.forEach(item => {
         const logData = item.data || item;
-        if (!logData.date || (startDate && logData.date < startDate) || (endDate && logData.date > endDate)) return;
+        if (!logData.date) return;
+  
+        // Filter by overall range OR active month selected via calendar nav
+        if (startDate && logData.date < startDate) return;
+        if (endDate && logData.date > endDate) return;
+        if (window.activeCalendarMonth && !logData.date.startsWith(window.activeCalendarMonth)) return;
   
         (logData.painLogs || []).forEach(log => {
           const val = String(typeof log === "string" ? log : log.level || log.painLevel || "").toLowerCase();
@@ -1257,32 +1262,48 @@ function renderAnalyticsChart() {
         });
       });
   
-      drawChart(canvas, ["No Pain", "Minor Pain", "Severe Pain"], [painCounts["No Pain"], painCounts["Minor Pain"], painCounts["Severe Pain"]], ["#2ecc71", "#f1c40f", "#e74c3c"]);
+      drawChart(
+        canvas, 
+        ["No Pain", "Minor Pain", "Severe Pain"], 
+        [painCounts["No Pain"], painCounts["Minor Pain"], painCounts["Severe Pain"]], 
+        ["#2ecc71", "#f1c40f", "#e74c3c"]
+      );
       renderPainCalendar(startDate, endDate, records);
   
     } else if (window.activeAnalyticsTab === "bm") {
-        if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
-    
-        const typeCounts = {};
-        
-        records.forEach(item => {
-          const logData = item.data || item;
-          if (!logData.date || (startDate && logData.date < startDate) || (endDate && logData.date > endDate)) return;
-    
-          (logData.bowelMovements || []).forEach(bm => {
-            // Skip if type is empty, null, or undefined
-            if (!bm.type) return;
-    
-            const label = `Type ${bm.type}`;
-            typeCounts[label] = (typeCounts[label] || 0) + 1;
-          });
+      if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
+  
+      const typeCounts = {};
+      
+      records.forEach(item => {
+        const logData = item.data || item;
+        if (!logData.date) return;
+  
+        // Filter by overall range OR active month selected via calendar nav
+        if (startDate && logData.date < startDate) return;
+        if (endDate && logData.date > endDate) return;
+        if (window.activeCalendarMonth && !logData.date.startsWith(window.activeCalendarMonth)) return;
+  
+        (logData.bowelMovements || []).forEach(bm => {
+          if (!bm.type) return;
+  
+          const label = `Type ${bm.type}`;
+          typeCounts[label] = (typeCounts[label] || 0) + 1;
         });
-    
-        const labels = Object.keys(typeCounts).length ? Object.keys(typeCounts) : ["No Logged Types"];
-        const data = Object.keys(typeCounts).length ? Object.values(typeCounts) : [0];
-    
-        drawChart(canvas, labels, data, "#8e44ad");
-        renderBMCalendar(startDate, endDate, records);
+      });
+  
+      // Sort labels numerically (e.g., Type 1, Type 2, Type 3)
+      const sortedKeys = Object.keys(typeCounts).sort((a, b) => {
+        const numA = parseInt(a.replace("Type ", ""), 10);
+        const numB = parseInt(b.replace("Type ", ""), 10);
+        return numA - numB;
+      });
+  
+      const labels = sortedKeys.length ? sortedKeys : ["No Logged Types"];
+      const data = sortedKeys.length ? sortedKeys.map(k => typeCounts[k]) : [0];
+  
+      drawChart(canvas, labels, data, "#8e44ad");
+      renderBMCalendar(startDate, endDate, records);
     }
 }
   
@@ -1310,26 +1331,85 @@ function drawChart(canvas, labels, data, colors) {
     });
 }
 
-function renderBMCalendar (startDate, endDate, records) {
+function renderBMCalendar(startDate, endDate, records) {
     const grid = document.getElementById("calendar-grid");
     const titleHeader = document.getElementById("calendar-title");
+    const navContainer = document.getElementById("calendar-month-nav");
     if (!grid) return;
     grid.innerHTML = "";
   
-    const activeMonthKey = window.activeCalendarMonth || (startDate ? startDate.substring(0, 7) : new Date().toISOString().substring(0, 7));
-    const [activeYear, activeMonth] = activeMonthKey.split("-").map(Number);
-    const activeMonthIndex = activeMonth - 1;
+    if (!startDate || !endDate) return;
   
+    // Extract all "YYYY-MM" months in range
+    const monthsInRange = [];
+    let curr = new Date(startDate + "T00:00:00");
+    const last = new Date(endDate + "T00:00:00");
+    while (curr <= last) {
+      const yyyy = curr.getFullYear();
+      const mm = String(curr.getMonth() + 1).padStart(2, "0");
+      const key = `${yyyy}-${mm}`;
+      if (!monthsInRange.includes(key)) monthsInRange.push(key);
+      curr.setMonth(curr.getMonth() + 1);
+      curr.setDate(1);
+    }
+  
+    if (!window.activeCalendarMonth || !monthsInRange.includes(window.activeCalendarMonth)) {
+      window.activeCalendarMonth = monthsInRange[0];
+    }
+  
+    const [activeYearStr, activeMonthStr] = window.activeCalendarMonth.split("-");
+    const activeYear = parseInt(activeYearStr, 10);
+    const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+  
+    // Render Month Navigation Buttons for BM
+    if (navContainer) {
+      navContainer.innerHTML = "";
+      if (monthsInRange.length > 1) {
+        monthsInRange.forEach(mKey => {
+          const [yStr, mStr] = mKey.split("-");
+          const mDate = new Date(parseInt(yStr, 10), parseInt(mStr, 10) - 1, 1);
+          const btnLabel = mDate.toLocaleString("default", { month: "short", year: "numeric" });
+          
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.innerText = btnLabel;
+          btn.style.padding = "4px 10px";
+          btn.style.fontSize = "0.8rem";
+          btn.style.borderRadius = "4px";
+          btn.style.border = "1px solid #ccc";
+          btn.style.cursor = "pointer";
+  
+          if (mKey === window.activeCalendarMonth) {
+            btn.style.backgroundColor = "#8e44ad"; // BM theme color
+            btn.style.color = "#ffffff";
+            btn.style.fontWeight = "bold";
+          } else {
+            btn.style.backgroundColor = "#ffffff";
+            btn.style.color = "#333333";
+          }
+  
+          btn.addEventListener("click", () => {
+            window.activeCalendarMonth = mKey;
+            renderAnalyticsChart();
+          });
+  
+          navContainer.appendChild(btn);
+        });
+      }
+    }
+  
+    // Update Header Title
     if (titleHeader) {
       const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
       titleHeader.innerText = `${monthName} ${activeYear} BM Calendar`;
     }
   
+    // Map BM records for active month
     const bmMap = {};
-    records.forEach (item => {
+    records.forEach(item => {
       const logData = item.data || item;
       const logDate = logData.date;
-      if (!logDate || !logDate.startsWith(`${activeYear}-${String(activeMonth).padStart(2, '0')}`)) return;
+      if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
   
       (logData.bowelMovements || []).forEach(bm => {
         if (!bm.type) return;
@@ -1342,6 +1422,7 @@ function renderBMCalendar (startDate, endDate, records) {
       });
     });
   
+    // Render Day Headers & Days Grid
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     dayNames.forEach(day => {
       const header = document.createElement("div");
@@ -1353,10 +1434,14 @@ function renderBMCalendar (startDate, endDate, records) {
     const firstDayIndex = new Date(activeYear, activeMonthIndex, 1).getDay();
     const totalDays = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
   
-    for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
+    for (let i = 0; i < firstDayIndex; i++) {
+      grid.appendChild(document.createElement("div"));
+    }
   
     for (let d = 1; d <= totalDays; d++) {
-      const fullDateKey = `${activeYear}-${String(activeMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
+      const dayStrFormatted = String(d).padStart(2, '0');
+      const fullDateKey = `${activeYear}-${monthStrFormatted}-${dayStrFormatted}`;
       const entries = bmMap[fullDateKey] || [];
   
       const cell = document.createElement("div");
@@ -1385,7 +1470,7 @@ function renderBMCalendar (startDate, endDate, records) {
         badge.style.borderRadius = "3px";
         badge.style.padding = "1px 3px";
         badge.style.fontSize = "0.6rem";
-        badge.innerText = `${entry.time}`;
+        badge.innerText = entry.time;
         badge.title = `Type: ${entry.type} at ${entry.time}`;
         container.appendChild(badge);
       });
@@ -1393,4 +1478,4 @@ function renderBMCalendar (startDate, endDate, records) {
       cell.appendChild(container);
       grid.appendChild(cell);
     }
-}
+  }
