@@ -1310,7 +1310,7 @@ function drawChart(canvas, labels, data, colors) {
     });
 }
 
-function renderBMCalendar(startDate, endDate, records) {
+function renderBMCalendar (startDate, endDate, records) {
     const grid = document.getElementById("calendar-grid");
     const titleHeader = document.getElementById("calendar-title");
     if (!grid) return;
@@ -1326,17 +1326,18 @@ function renderBMCalendar(startDate, endDate, records) {
     }
   
     const bmMap = {};
-  
-    records.forEach(item => {
+    records.forEach (item => {
       const logData = item.data || item;
       const logDate = logData.date;
       if (!logDate || !logDate.startsWith(`${activeYear}-${String(activeMonth).padStart(2, '0')}`)) return;
   
       (logData.bowelMovements || []).forEach(bm => {
+        if (!bm.type) return;
+  
         if (!bmMap[logDate]) bmMap[logDate] = [];
         bmMap[logDate].push({
           time: formatTo12Hour(bm.time),
-          type: bm.type || "BM"
+          type: bm.type
         });
       });
     });
