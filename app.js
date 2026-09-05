@@ -166,17 +166,20 @@ document.getElementById("clear-filter-btn")?.addEventListener("click", () => {
 
 // Toggle Handler
 function handleAuthToggle() {
-  isSignUp = !isSignUp;
-  document.getElementById("auth-title").textContent = isSignUp ? "Sign Up" : "Sign In";
-  document.getElementById("auth-btn").textContent = isSignUp ? "Sign Up" : "Sign In";
-  document.getElementById("toggle-wrapper").innerHTML = isSignUp 
-    ? `Already have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign In</span>`
-    : `Don't have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign Up</span>`;
-  
-  document.getElementById("toggle-auth")?.addEventListener("click", handleAuthToggle);
+    isSignUp = !isSignUp;
+    document.getElementById("auth-title").textContent = isSignUp ? "Sign Up" : "Sign In";
+    document.getElementById("auth-btn").textContent = isSignUp ? "Sign Up" : "Sign In";
+    
+    document.getElementById("toggle-wrapper").innerHTML = isSignUp 
+      ? `Already have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign In</span>`
+      : `Don't have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign Up</span>`;
 }
-
-document.getElementById("toggle-auth")?.addEventListener("click", handleAuthToggle);
+  
+document.getElementById("toggle-wrapper")?.addEventListener("click", (e) => {
+    if (e.target && e.target.id === "toggle-auth") {
+        handleAuthToggle();
+    }
+});
 
 // Authentication State Tracker
 onAuthStateChanged(auth, (user) => {
@@ -202,13 +205,6 @@ document.getElementById("logout-btn")?.addEventListener("click", () => {
 });
 
 // Tab Switcher
-tabNewBtn.addEventListener("click", () => {
-  tabNewBtn.style.backgroundColor = "#4A90E2";
-  tabPastBtn.style.backgroundColor = "#888";
-  sectionNewEntry.classList.remove("hidden");
-  sectionPastRecords.classList.add("hidden");
-});
-
 tabPastBtn.addEventListener("click", () => {
   tabPastBtn.style.backgroundColor = "#4A90E2";
   tabNewBtn.style.backgroundColor = "#888";
@@ -933,17 +929,6 @@ closeAnalyticsBtn?.addEventListener("click", () => {
 analyticsMonthInput?.addEventListener("change", () => {
     renderAnalyticsChart();
 });
-  
-// Open Modal & Trigger Chart Rendering with Delay
-openAnalyticsBtn?.addEventListener("click", () => {
-    analyticsModal.style.display = "flex";
-    analyticsModal.classList.remove("hidden");
-    
-    setTimeout(() => {
-        renderAnalyticsChart();
-    }, 100);
-});
-
 
 function setActiveTab(activeBtn) {
     [tabNewBtn, tabPastBtn, openAnalyticsBtn].forEach(btn => {
@@ -967,18 +952,6 @@ tabPastBtn?.addEventListener("click", () => {
     document.getElementById("section-new-entry")?.classList.add("hidden");
 });
 
-// Analytics Modal Button
-openAnalyticsBtn?.addEventListener("click", () => {
-    setActiveTab(openAnalyticsBtn);
-    
-    analyticsModal.style.display = "flex";
-    analyticsModal.classList.remove("hidden");
-    
-    setTimeout(() => {
-        renderAnalyticsChart();
-    }, 100);
-});
-
 // Reset highlight back to the visible tab when modal closes
 closeAnalyticsBtn?.addEventListener("click", () => {
     analyticsModal.style.display = "none";
@@ -999,46 +972,31 @@ document.getElementById("analytics-start-date")?.addEventListener("change", () =
     renderAnalyticsChart();
 });
 
-// Set defaults when opening analytics tab/modal
 openAnalyticsBtn?.addEventListener("click", () => {
+    setActiveTab(openAnalyticsBtn);
+    
     const startDateInput = document.getElementById("analytics-start-date");
     const endDateInput = document.getElementById("analytics-end-date");
-
-    if (!startDateInput.value || !endDateInput.value) {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        
-        // Default start: First day of current month
-        startDateInput.value = `${year}-${month}-01`;
-        
-        // Default end: Last day of current month
-        const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
-        endDateInput.value = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+  
+    if (startDateInput && endDateInput && (!startDateInput.value || !endDateInput.value)) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      startDateInput.value = `${year}-${month}-01`;
+      const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+      endDateInput.value = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
     }
-
+  
     analyticsModal.style.display = "flex";
     analyticsModal.classList.remove("hidden");
-    
+  
     setTimeout(() => {
-        renderAnalyticsChart();
+      renderAnalyticsChart();
     }, 100);
 });
 
 const startDateInput = document.getElementById("analytics-start-date");
 const endDateInput = document.getElementById("analytics-end-date");
-
-// Trigger native date picker on click anywhere inside the input box
-[startDateInput, endDateInput].forEach(input => {
-  if (input) {
-    input.style.cursor = "pointer";
-    input.addEventListener("click", () => {
-      if (typeof input.showPicker === "function") {
-        input.showPicker();
-      }
-    });
-  }
-});
 
 document.querySelectorAll('input[type="date"]').forEach(input => {
     input.style.cursor = "pointer";
