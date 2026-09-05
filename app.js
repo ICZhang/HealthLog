@@ -499,7 +499,23 @@ function getFormData() {
     if (type || time) {
         behaviorLogs.push({ type, time });
     }
-  });
+
+
+    const painRows = document.querySelectorAll("#pain-container .dynamic-row");
+const painLogs = [];
+
+painRows.forEach(row => {
+  const levelSelect = row.querySelector("select");
+  const timeInput = row.querySelector("input[type='time']");
+
+  if (levelSelect && levelSelect.value) {
+    painLogs.push({
+      level: levelSelect.value,
+      time: timeInput ? timeInput.value : ""
+    });
+  }
+});
+});
 
   return {
     date: document.getElementById("log-date").value,
@@ -1027,10 +1043,29 @@ function renderPainCalendar(selectedMonth, records) {
       painLogs.forEach(log => {
         const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
         const levelStr = String(levelVal).trim().toLowerCase();
-  
+      
+        // Extract time from object properties or fallback to parent entry time
+        let rawTime = "";
+        if (typeof log === "object" && log !== null) {
+          rawTime = log.time || log.logTime || log.timestamp || "";
+        }
+        if (!rawTime) {
+          rawTime = logData.time || "";
+        }
+      
+        // Format 24-hour "14:30" to 12-hour "2:30 PM" if needed
+        let displayTime = rawTime;
+        if (rawTime && rawTime.includes(":")) {
+          const [h, m] = rawTime.split(":");
+          let hours = parseInt(h, 10);
+          const suffix = hours >= 12 ? "PM" : "AM";
+          hours = hours % 12 || 12;
+          displayTime = `${hours}:${m} ${suffix}`;
+        }
+      
         let color = null;
         let label = "";
-  
+      
         if (levelStr === "severe pain" || levelStr === "severe") {
           color = "#e74c3c";
           label = "Severe";
@@ -1041,12 +1076,12 @@ function renderPainCalendar(selectedMonth, records) {
           color = "#2ecc71";
           label = "No Pain";
         }
-  
+      
         if (color) {
           if (!datePainMap[logDate]) {
             datePainMap[logDate] = [];
           }
-          datePainMap[logDate].push({ color, label });
+          datePainMap[logDate].push({ color, label, time: displayTime });
         }
       });
     });
