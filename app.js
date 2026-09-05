@@ -381,7 +381,11 @@ function resetForm() {
   cancelEditBtn.classList.add("hidden");
 
   const now = new Date();
-  document.getElementById("log-date").value = now.toISOString().split("T")[0];
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  
+  document.getElementById("log-date").value = `${year}-${month}-${day}`;
   document.getElementById("log-time").value = now.toTimeString().slice(0, 5);
 
   bmContainer.innerHTML = "";
@@ -500,11 +504,19 @@ function getFormData() {
     if (type || time) {
         behaviorLogs.push({ type, time });
     }
-});
+  });
+
+   // Local date fallback calculation
+   const now = new Date();
+   const year = now.getFullYear();
+   const month = String(now.getMonth() + 1).padStart(2, '0');
+   const day = String(now.getDate()).padStart(2, '0');
+   const localToday = `${year}-${month}-${day}`;
+
 
   return {
-    date: document.getElementById("log-date").value,
-    time: document.getElementById("log-time").value,
+    date: document.getElementById("log-date")?.value || localToday,
+    time: document.getElementById("log-time")?.value || "",
     bowelMovements: bmData,
     cromolynMeds,
     herbalMeds,
@@ -521,7 +533,7 @@ function getFormData() {
     painLogs,
     moodLogs,
     behaviorLogs,
-    notes: document.getElementById("day-notes").value,
+    notes: document.getElementById("day-notes")?.value || "",
     updatedAt: new Date()
   };
 }
