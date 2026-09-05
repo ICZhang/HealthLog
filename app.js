@@ -1001,6 +1001,86 @@ function renderPainChart() {
         }
       }
     });
+
+    renderPainCalendar(selectedMonth, records);
+}
+
+
+function renderPainCalendar(selectedMonth, records) {
+    const grid = document.getElementById("calendar-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+  
+    const [yearStr, monthStr] = selectedMonth.split("-");
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10) - 1; // 0-indexed month
+  
+    // Map dates to maximum recorded pain level for that day
+    const datePainMap = {};
+  
+    records.forEach(item => {
+      const logData = item.data || item;
+      const logDate = logData.date; // "YYYY-MM-DD"
+      if (!logDate || !logDate.startsWith(selectedMonth)) return;
+  
+      const painLogs = logData.painLogs || [];
+      painLogs.forEach(log => {
+        const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
+        const levelStr = String(levelVal).trim().toLowerCase();
+  
+        // Priority ranking: severe > minor > no pain
+        let rank = 0;
+        if (levelStr === "severe pain" || levelStr === "severe") rank = 3;
+        else if (levelStr === "minor pain" || levelStr === "minor") rank = 2;
+        else if (levelStr === "no pain" || levelStr === "no") rank = 1;
+  
+        const currentRank = datePainMap[logDate]?.rank || 0;
+        if (rank > currentRank) {
+          datePainMap[logDate] = {
+            rank: rank,
+            color: rank === 3 ? "#e74c3c" : rank === 2 ? "#f1c40f" : "#2ecc71",
+            label: rank === 3 ? "Severe" : rank === 2 ? "Minor" : "No Pain"
+          };
+        }
+      });
+    });
+  
+    // Render Day Headers
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    dayNames.forEach(day => {
+      const header = document.createElement("div");
+      header.style.fontWeight = "bold";
+      header.style.padding = "5px 0";
+      header.innerText = day;
+      grid.appendChild(header);
+    });
+  
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+  
+    // Render empty padding cells for proper alignment
+    for (let i = 0; i < firstDayIndex; i++) {
+      grid.appendChild(document.createElement("div"));
+    }
+  
+    // Render day numbers with color indicators
+    for (let d = 1; d <= totalDays; d++) {
+      const dayStr = String(d).padStart(2, '0');
+      const fullDateKey = `${selectedMonth}-${dayStr}`;
+      const entry = datePainMap[fullDateKey];
+  
+      const cell = document.createElement("div");
+      cell.style.border = "1px solid #e0e0e0";
+      cell.style.borderRadius = "4px";
+      cell.style.padding = "6px 2px";
+      cell.style.backgroundColor = entry ? entry.color : "#ffffff";
+      cell.style.color = entry ? "#ffffff" : "#333333";
+      cell.style.fontWeight = entry ? "bold" : "normal";
+      cell.title = entry ? `${fullDateKey}: ${entry.label}` : fullDateKey;
+      cell.innerText = d;
+  
+      grid.appendChild(cell);
+    }
 }
 
 function setActiveTab(activeBtn) {
