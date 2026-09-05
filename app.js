@@ -1106,7 +1106,7 @@ function renderPainCalendar(selectedMonth, records) {
         badge.style.height = "8px";
         badge.style.borderRadius = "50%";
         badge.style.backgroundColor = entry.color;
-        badge.title = entry.label;
+        badge.title = `${entry.label}: ${entry.time || "No time specified"}`;
         badgeContainer.appendChild(badge);
       });
   
