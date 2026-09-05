@@ -927,10 +927,13 @@ function renderPainChart() {
     const canvas = document.getElementById("painChart");
     if (!selectedMonth || !canvas) return;
 
-    // Safely retrieve array of records (adjust source variable if needed)
+    // Retrieve records array safely
     const records = window.allRecords || [];
 
-    // Track unique days for each pain level
+    // Debugging: check your browser developer console (F12) to see raw logs
+    console.log("Analytics Filter Month:", selectedMonth);
+    console.log("All Records Available:", records);
+
     const daysByPain = {
       "No Pain": new Set(),
       "Minor Pain": new Set(),
@@ -938,21 +941,28 @@ function renderPainChart() {
     };
 
     records.forEach(item => {
-      // Support both item.data.date and item.date
-      const logDate = item.data?.date || item.date;
+      // Handle both Firestore document objects ({ data: {...} }) and plain objects
+      const dataObj = item.data ? item.data : item;
+      const logDate = dataObj.date;
+
+      // Match selected month (e.g., "2026-09")
       if (!logDate || !logDate.startsWith(selectedMonth)) return;
 
-      const painLogs = item.data?.painLogs || item.painLogs || [];
+      const painLogs = dataObj.painLogs || [];
 
       painLogs.forEach(log => {
-        const levelStr = (log.level || log.painLevel || "").trim().toLowerCase();
+        // Handle log objects or plain string values
+        const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
+        const levelStr = String(levelVal).trim().toLowerCase();
+
         if (!levelStr) return;
 
+        // Flexible string matching
         if (levelStr.includes("no")) {
           daysByPain["No Pain"].add(logDate);
-        } else if (levelStr.includes("minor")) {
+        } else if (levelStr.includes("minor") || levelStr.includes("low") || levelStr.includes("mild")) {
           daysByPain["Minor Pain"].add(logDate);
-        } else if (levelStr.includes("severe")) {
+        } else if (levelStr.includes("severe") || levelStr.includes("high") || levelStr.includes("intense")) {
           daysByPain["Severe Pain"].add(logDate);
         }
       });
@@ -964,7 +974,9 @@ function renderPainChart() {
       daysByPain["Severe Pain"].size
     ];
 
-    // Destroy existing instance before re-creating
+    console.log("Chart Bar Counts [No, Minor, Severe]:", chartData);
+
+    // Re-draw chart
     if (window.painChartInstance) {
       window.painChartInstance.destroy();
     }
