@@ -954,11 +954,11 @@ function renderPainChart() {
         if (!levelStr) return;
 
         // Pattern matching
-        if (levelStr.includes("No")) {
+        if (levelStr.includes("no")) {
           painCounts["No Pain"] += 1;
-        } else if (levelStr.includes("Minor")) {
+        } else if (levelStr.includes("minor")) {
           painCounts["Minor Pain"] += 1;
-        } else if (levelStr.includes("Severe")) {
+        } else if (levelStr.includes("severe")) {
           painCounts["Severe Pain"] += 1;
         }
       });
