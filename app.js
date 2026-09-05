@@ -1017,38 +1017,37 @@ function renderPainChart() {
 }
 
 
-function renderPainCalendar(selectedMonth, records) {
+function renderPainCalendar(startDate, endDate, records) {
     const grid = document.getElementById("calendar-grid");
     if (!grid) return;
     grid.innerHTML = "";
   
-    const [yearStr, monthStr] = selectedMonth.split("-");
-    const year = parseInt(yearStr, 10);
-    const month = parseInt(monthStr, 10) - 1;
+    if (!startDate) return;
   
-    // Map each date to an array of all logged pain entries
+    // Derive target year and month from start date (YYYY-MM-DD)
+    const [yearStr, monthStr] = startDate.split("-");
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10) - 1; // 0-indexed
+  
     const datePainMap = {};
   
     records.forEach(item => {
       const logData = item.data || item;
-      const logDate = logData.date; // "YYYY-MM-DD"
-      if (!logDate || !logDate.startsWith(selectedMonth)) return;
+      const logDate = logData.date;
+      
+      if (!logDate) return;
+      if (startDate && logDate < startDate) return;
+      if (endDate && logDate > endDate) return;
   
       const painLogs = logData.painLogs || [];
       painLogs.forEach(log => {
         const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
         const levelStr = String(levelVal).trim().toLowerCase();
-      
-        // Extract time from object properties or fallback to parent entry time
-        let rawTime = "";
-        if (typeof log === "object" && log !== null) {
-          rawTime = log.time || log.logTime || log.timestamp || "";
-        }
-        if (!rawTime) {
-          rawTime = logData.time || "";
-        }
-      
-        // Format 24-hour "14:30" to 12-hour "2:30 PM" if needed
+  
+        // Extract and format time to 12-hour AM/PM
+        let rawTime = (typeof log === "object" && log !== null) ? (log.time || log.logTime || "") : "";
+        if (!rawTime) rawTime = logData.time || "";
+  
         let displayTime = rawTime;
         if (rawTime && rawTime.includes(":")) {
           const [h, m] = rawTime.split(":");
@@ -1057,10 +1056,10 @@ function renderPainCalendar(selectedMonth, records) {
           hours = hours % 12 || 12;
           displayTime = `${hours}:${m} ${suffix}`;
         }
-      
+  
         let color = null;
         let label = "";
-      
+  
         if (levelStr === "severe pain" || levelStr === "severe") {
           color = "#e74c3c";
           label = "Severe";
@@ -1071,7 +1070,7 @@ function renderPainCalendar(selectedMonth, records) {
           color = "#2ecc71";
           label = "No Pain";
         }
-      
+  
         if (color) {
           if (!datePainMap[logDate]) {
             datePainMap[logDate] = [];
@@ -1081,7 +1080,7 @@ function renderPainCalendar(selectedMonth, records) {
       });
     });
   
-    // Render Day Headers
+    // Day Headers
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     dayNames.forEach(day => {
       const header = document.createElement("div");
@@ -1094,49 +1093,51 @@ function renderPainCalendar(selectedMonth, records) {
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
   
-    // Padding cells
     for (let i = 0; i < firstDayIndex; i++) {
       grid.appendChild(document.createElement("div"));
     }
   
-    // Render day cells
     for (let d = 1; d <= totalDays; d++) {
       const dayStr = String(d).padStart(2, '0');
-      const fullDateKey = `${selectedMonth}-${dayStr}`;
+      const monthStrFormatted = String(month + 1).padStart(2, '0');
+      const fullDateKey = `${year}-${monthStrFormatted}-${dayStr}`;
       const entries = datePainMap[fullDateKey] || [];
   
       const cell = document.createElement("div");
       cell.style.border = "1px solid #e0e0e0";
       cell.style.borderRadius = "4px";
       cell.style.padding = "4px 2px";
-      cell.style.minHeight = "48px";
+      cell.style.minHeight = "55px";
       cell.style.backgroundColor = "#ffffff";
       cell.style.display = "flex";
       cell.style.flexDirection = "column";
       cell.style.alignItems = "center";
   
-      // Day Number
       const numSpan = document.createElement("span");
       numSpan.style.fontWeight = "bold";
       numSpan.style.fontSize = "0.8rem";
-      numSpan.style.marginBottom = "2px";
+      numSpan.style.marginBottom = "3px";
       numSpan.innerText = d;
       cell.appendChild(numSpan);
   
-      // Container for log indicators
       const badgeContainer = document.createElement("div");
       badgeContainer.style.display = "flex";
-      badgeContainer.style.flexWrap = "wrap";
+      badgeContainer.style.flexDirection = "column";
       badgeContainer.style.gap = "2px";
-      badgeContainer.style.justifyContent = "center";
+      badgeContainer.style.width = "100%";
+      badgeContainer.style.alignItems = "center";
   
       entries.forEach(entry => {
         const badge = document.createElement("span");
-        badge.style.width = "8px";
-        badge.style.height = "8px";
-        badge.style.borderRadius = "50%";
         badge.style.backgroundColor = entry.color;
-        badge.title = `${entry.label}: ${entry.time || "No time specified"}`;
+        badge.style.color = entry.color === "#f1c40f" ? "#333" : "#fff";
+        badge.style.borderRadius = "3px";
+        badge.style.padding = "1px 3px";
+        badge.style.fontSize = "0.65rem";
+        badge.style.fontWeight = "600";
+        badge.style.whiteSpace = "nowrap";
+        badge.innerText = entry.time ? entry.time : entry.label;
+        badge.title = `${entry.label}${entry.time ? ' at ' + entry.time : ''}`;
         badgeContainer.appendChild(badge);
       });
   
