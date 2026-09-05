@@ -1300,26 +1300,28 @@ function renderAnalyticsChart() {
       renderPainCalendar(startDate, endDate, records);
   
     } else if (window.activeAnalyticsTab === "bm") {
-      if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
-  
-      const typeCounts = {};
-      
-      records.forEach(item => {
-        const logData = item.data || item;
-        if (!logData.date || (startDate && logData.date < startDate) || (endDate && logData.date > endDate)) return;
-  
-        (logData.bowelMovements || []).forEach(bm => {
-          const rawType = bm.type;
-          const label = rawType ? `Type ${rawType}` : "Unspecified";
-          typeCounts[label] = (typeCounts[label] || 0) + 1;
+        if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
+    
+        const typeCounts = {};
+        
+        records.forEach(item => {
+          const logData = item.data || item;
+          if (!logData.date || (startDate && logData.date < startDate) || (endDate && logData.date > endDate)) return;
+    
+          (logData.bowelMovements || []).forEach(bm => {
+            // Skip if type is empty, null, or undefined
+            if (!bm.type) return;
+    
+            const label = `Type ${bm.type}`;
+            typeCounts[label] = (typeCounts[label] || 0) + 1;
+          });
         });
-      });
-  
-      const labels = Object.keys(typeCounts).length ? Object.keys(typeCounts) : ["No Logged BMs"];
-      const data = Object.keys(typeCounts).length ? Object.values(typeCounts) : [0];
-  
-      drawChart(canvas, labels, data, "#8e44ad");
-      renderBMCalendar(startDate, endDate, records);
+    
+        const labels = Object.keys(typeCounts).length ? Object.keys(typeCounts) : ["No Logged Types"];
+        const data = Object.keys(typeCounts).length ? Object.values(typeCounts) : [0];
+    
+        drawChart(canvas, labels, data, "#8e44ad");
+        renderBMCalendar(startDate, endDate, records);
     }
 }
   
