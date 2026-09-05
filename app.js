@@ -891,6 +891,7 @@ if (analyticsMonthInput) {
   
 // Event Listeners
 closeAnalyticsBtn?.addEventListener("click", () => {
+    analyticsModal.style.display = "none";
     analyticsModal.classList.add("hidden");
 });
   
@@ -900,36 +901,40 @@ analyticsMonthInput?.addEventListener("change", () => {
   
 // Open Modal & Trigger Chart Rendering with Delay
 openAnalyticsBtn?.addEventListener("click", () => {
+    analyticsModal.style.display = "flex";
     analyticsModal.classList.remove("hidden");
-    // Brief delay ensures modal CSS layout is computed before Chart.js measures dimensions
+    
     setTimeout(() => {
       renderPainChart();
-    }, 50);
+    }, 100);
 });
   
 function renderPainChart() {
     const selectedMonth = analyticsMonthInput.value; // Format: "YYYY-MM"
     const canvas = document.getElementById("painChart");
-    if (!selectedMonth || !canvas || !window.allRecords) return;
-  
-    // Filter records by selected YYYY-MM
-    const monthRecords = window.allRecords.filter(item => item.data.date && item.data.date.startsWith(selectedMonth));
-  
+    if (!selectedMonth || !canvas) return;
+
+    // Safely retrieve array of records (adjust source variable if needed)
+    const records = window.allRecords || [];
+
     // Track unique days for each pain level
     const daysByPain = {
       "No Pain": new Set(),
       "Minor Pain": new Set(),
       "Severe Pain": new Set()
     };
-  
-    monthRecords.forEach(item => {
-      const logDate = item.data.date;
-      const painLogs = item.data.painLogs || [];
-  
+
+    records.forEach(item => {
+      // Support both item.data.date and item.date
+      const logDate = item.data?.date || item.date;
+      if (!logDate || !logDate.startsWith(selectedMonth)) return;
+
+      const painLogs = item.data?.painLogs || item.painLogs || [];
+
       painLogs.forEach(log => {
-        if (!log.level) return;
-        const levelStr = log.level.trim().toLowerCase();
-  
+        const levelStr = (log.level || log.painLevel || "").trim().toLowerCase();
+        if (!levelStr) return;
+
         if (levelStr.includes("no")) {
           daysByPain["No Pain"].add(logDate);
         } else if (levelStr.includes("minor")) {
@@ -939,31 +944,27 @@ function renderPainChart() {
         }
       });
     });
-  
+
     const chartData = [
       daysByPain["No Pain"].size,
       daysByPain["Minor Pain"].size,
       daysByPain["Severe Pain"].size
     ];
-  
-    // Destroy existing chart instance to prevent duplicate rendering bugs
-    if (painChartInstance) {
-      painChartInstance.destroy();
+
+    // Destroy existing instance before re-creating
+    if (window.painChartInstance) {
+      window.painChartInstance.destroy();
     }
-  
+
     const ctx = canvas.getContext("2d");
-    painChartInstance = new Chart(ctx, {
+    window.painChartInstance = new Chart(ctx, {
       type: "bar",
       data: {
         labels: ["No Pain", "Minor Pain", "Severe Pain"],
         datasets: [{
           label: "Days",
           data: chartData,
-          backgroundColor: [
-            "#2ecc71", // Green
-            "#f1c40f", // Yellow
-            "#e74c3c"  // Red
-          ],
+          backgroundColor: ["#2ecc71", "#f1c40f", "#e74c3c"],
           borderRadius: 4
         }]
       },
