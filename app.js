@@ -1019,15 +1019,22 @@ function renderPainChart() {
 
 function renderPainCalendar(startDate, endDate, records) {
     const grid = document.getElementById("calendar-grid");
+    const titleHeader = document.getElementById("calendar-title");
     if (!grid) return;
     grid.innerHTML = "";
   
     if (!startDate) return;
   
-    // Derive target year and month from start date (YYYY-MM-DD)
+    // Parse YYYY-MM-DD
     const [yearStr, monthStr] = startDate.split("-");
     const year = parseInt(yearStr, 10);
     const month = parseInt(monthStr, 10) - 1; // 0-indexed
+  
+    // Update Section Title dynamically
+    if (titleHeader) {
+      const monthName = new Date(year, month, 1).toLocaleString("default", { month: "Long" });
+      titleHeader.innerText = `${monthName} ${year} Pain Calendar`;
+    }
   
     const datePainMap = {};
   
@@ -1044,7 +1051,6 @@ function renderPainCalendar(startDate, endDate, records) {
         const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
         const levelStr = String(levelVal).trim().toLowerCase();
   
-        // Extract and format time to 12-hour AM/PM
         let rawTime = (typeof log === "object" && log !== null) ? (log.time || log.logTime || "") : "";
         if (!rawTime) rawTime = logData.time || "";
   
@@ -1090,11 +1096,13 @@ function renderPainCalendar(startDate, endDate, records) {
       grid.appendChild(header);
     });
   
+    // Align day cells correctly under Sunday (0) through Saturday (6)
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
   
     for (let i = 0; i < firstDayIndex; i++) {
-      grid.appendChild(document.createElement("div"));
+      const emptyCell = document.createElement("div");
+      grid.appendChild(emptyCell);
     }
   
     for (let d = 1; d <= totalDays; d++) {
@@ -1144,7 +1152,16 @@ function renderPainCalendar(startDate, endDate, records) {
       cell.appendChild(badgeContainer);
       grid.appendChild(cell);
     }
-}
+  }
+  
+  // Make date input box clickable anywhere
+  document.querySelectorAll('input[type="date"]').forEach(input => {
+    input.addEventListener("click", function() {
+      if (typeof this.showPicker === "function") {
+        this.showPicker();
+      }
+    });
+});
 
 function setActiveTab(activeBtn) {
     [tabNewBtn, tabPastBtn, openAnalyticsBtn].forEach(btn => {
