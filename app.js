@@ -21,6 +21,7 @@ let currentUser = null;
 let unsubscribeLogs = null;
 let isSignUp = false;
 let allPastRecords = [];
+let painChartInstance = null;
 
 // DOM Elements
 const userEmailEl = document.getElementById("user-email");
@@ -35,6 +36,12 @@ const tabPastBtn = document.getElementById("tab-past-btn");
 const sectionNewEntry = document.getElementById("section-new-entry");
 const sectionPastRecords = document.getElementById("section-past-records");
 const logList = document.getElementById("log-list");
+
+// Analytics Elements
+const openAnalyticsBtn = document.getElementById("open-analytics-btn");
+const closeAnalyticsBtn = document.getElementById("close-analytics-btn");
+const analyticsModal = document.getElementById("analytics-modal");
+const analyticsMonthInput = document.getElementById("analytics-month");
 
 // Containers
 const bmContainer = document.getElementById("bm-container");
@@ -873,3 +880,96 @@ document.getElementById("close-modal-btn")?.addEventListener("click", () => {
   document.getElementById("view-modal").classList.add("hidden");
 });
 
+
+// Initialize month input to current month (YYYY-MM)
+if (analyticsMonthInput) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    analyticsMonthInput.value = `${year}-${month}`;
+}
+  
+  // Event Listeners
+openAnalyticsBtn?.addEventListener("click", () => {
+    analyticsModal.classList.remove("hidden");
+    renderPainChart();
+});
+  
+closeAnalyticsBtn?.addEventListener("click", () => {
+    analyticsModal.classList.add("hidden");
+});
+  
+analyticsMonthInput?.addEventListener("change", () => {
+    renderPainChart();
+});
+  
+  // Render Monthly Pain Chart
+function renderPainChart() {
+    const selectedMonth = analyticsMonthInput.value; // "YYYY-MM"
+    if (!selectedMonth || !window.allRecords) return;
+  
+    // Filter records matching the selected YYYY-MM
+    const monthRecords = window.allRecords.filter(item => {
+      return item.data.date && item.data.date.startsWith(selectedMonth);
+    });
+  
+    // Track unique days each pain level occurred
+    const daysByPain = {
+      "No Pain": new Set(),
+      "Minor Pain": new Set(),
+      "Severe Pain": new Set()
+    };
+  
+    monthRecords.forEach(item => {
+      const logDate = item.data.date;
+      const painLogs = item.data.painLogs || [];
+  
+      painLogs.forEach(log => {
+        if (log.level && daysByPain[log.level]) {
+          daysByPain[log.level].add(logDate);
+        }
+      });
+    });
+  
+    const chartData = [
+      daysByPain["No Pain"].size,
+      daysByPain["Minor Pain"].size,
+      daysByPain["Severe Pain"].size
+    ];
+  
+    // Destroy previous chart instance if re-rendering
+    if (painChartInstance) {
+      painChartInstance.destroy();
+    }
+  
+    const ctx = document.getElementById("painChart").getContext("2d");
+    painChartInstance = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["No Pain", "Minor Pain", "Severe Pain"],
+        datasets: [{
+          label: "Number of Days",
+          data: chartData,
+          backgroundColor: [
+            "#2ecc71", // Green for No Pain
+            "#f1c40f", // Yellow for Minor Pain
+            "#e74c3c"  // Red for Severe Pain
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1, precision: 0 },
+            title: { display: true, text: "Days Count" }
+          }
+        }
+      }
+    });
+}
