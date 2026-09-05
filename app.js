@@ -1486,13 +1486,19 @@ function renderBMCalendar(startDate, endDate, records) {
         const typeColor = BM_TYPE_COLORS[entry.type] || "#8e44ad";
         
         badge.style.backgroundColor = typeColor;
-        // Use dark text for the yellow badge for readability
         badge.style.color = typeColor === "#f1c40f" ? "#333" : "#fff";
         badge.style.borderRadius = "3px";
         badge.style.padding = "1px 3px";
         badge.style.fontSize = "0.6rem";
-        badge.innerText = `${entry.time} (T${entry.type})`;
-        badge.title = `Type: ${entry.type} at ${entry.time}`;
+        badge.style.cursor = "pointer";
+        badge.innerText = entry.time;
+      
+        // Construct dynamic hover tooltip
+        let tooltipText = `Type: ${entry.type} at ${entry.time}`;
+        if (entry.amount) tooltipText += `\nAmount: ${entry.amount.toUpperCase()}`;
+        if (entry.color) tooltipText += `\nColor: ${entry.color}`;
+      
+        badge.title = tooltipText;
         container.appendChild(badge);
       });
   
