@@ -925,57 +925,51 @@ openAnalyticsBtn?.addEventListener("click", () => {
 });
   
 function renderPainChart() {
-    const selectedMonth = analyticsMonthInput.value; // Format: "YYYY-MM"
+    const selectedMonth = analyticsMonthInput.value; // "YYYY-MM"
     const canvas = document.getElementById("painChart");
     if (!selectedMonth || !canvas) return;
 
-    // Retrieve records array safely
     const records = window.allRecords || [];
 
-    // Debugging: check your browser developer console (F12) to see raw logs
-    console.log("Analytics Filter Month:", selectedMonth);
-    console.log("All Records Available:", records);
-
-    const daysByPain = {
-      "No Pain": new Set(),
-      "Minor Pain": new Set(),
-      "Severe Pain": new Set()
+    // Switch from Set() to simple counters
+    const painCounts = {
+      "No Pain": 0,
+      "Minor Pain": 0,
+      "Severe Pain": 0
     };
 
     records.forEach(item => {
-        // Grab the inner data object
-        const logData = item.data || item;
-        const logDate = logData.date; // Expects "YYYY-MM-DD"
-      
-        if (!logDate || !logDate.startsWith(selectedMonth)) return;
-      
-        const painLogs = logData.painLogs || [];
-      
-        painLogs.forEach(log => {
-          const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
-          const levelStr = String(levelVal).trim().toLowerCase();
-      
-          if (!levelStr) return;
-      
-          if (levelStr.includes("no")) {
-            daysByPain["No Pain"].add(logDate);
-          } else if (levelStr.includes("minor") || levelStr.includes("low") || levelStr.includes("mild")) {
-            daysByPain["Minor Pain"].add(logDate);
-          } else if (levelStr.includes("severe") || levelStr.includes("high") || levelStr.includes("intense")) {
-            daysByPain["Severe Pain"].add(logDate);
-          }
-        });
+      const logData = item.data || item;
+      const logDate = logData.date; // Expects "YYYY-MM-DD"
+
+      if (!logDate || !logDate.startsWith(selectedMonth)) return;
+
+      const painLogs = logData.painLogs || [];
+
+      painLogs.forEach(log => {
+        // Retrieve string value whether log is an object or string
+        const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
+        const levelStr = String(levelVal).trim().toLowerCase();
+
+        if (!levelStr) return;
+
+        // Pattern matching
+        if (levelStr.includes("no")) {
+          painCounts["No Pain"] += 1;
+        } else if (levelStr.includes("minor") || levelStr.includes("low") || levelStr.includes("mild")) {
+          painCounts["Minor Pain"] += 1;
+        } else if (levelStr.includes("severe") || levelStr.includes("high") || levelStr.includes("intense")) {
+          painCounts["Severe Pain"] += 1;
+        }
+      });
     });
 
     const chartData = [
-      daysByPain["No Pain"].size,
-      daysByPain["Minor Pain"].size,
-      daysByPain["Severe Pain"].size
+      painCounts["No Pain"],
+      painCounts["Minor Pain"],
+      painCounts["Severe Pain"]
     ];
 
-    console.log("Chart Bar Counts [No, Minor, Severe]:", chartData);
-
-    // Re-draw chart
     if (window.painChartInstance) {
       window.painChartInstance.destroy();
     }
@@ -986,7 +980,7 @@ function renderPainChart() {
       data: {
         labels: ["No Pain", "Minor Pain", "Severe Pain"],
         datasets: [{
-          label: "Days",
+          label: "Entries",
           data: chartData,
           backgroundColor: ["#2ecc71", "#f1c40f", "#e74c3c"],
           borderRadius: 4
@@ -1002,7 +996,7 @@ function renderPainChart() {
           y: {
             beginAtZero: true,
             ticks: { stepSize: 1, precision: 0 },
-            title: { display: true, text: "Number of Days" }
+            title: { display: true, text: "Total Entries" }
           }
         }
       }
