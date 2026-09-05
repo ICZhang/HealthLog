@@ -383,44 +383,40 @@
 
     <!-- Analytics Modal -->
     <div id="analytics-modal" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-        <div style="background: white; border-radius: 8px; padding: 20px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; position: relative;">
-        <button type="button" id="close-analytics-btn" style="position: absolute; top: 10px; right: 10px; background: #e74c3c; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">X</button>
-        <br><br>
-        <div style="padding-top: 15px;">
+  
+        <!-- SINGLE CARD CONTAINER -->
+        <div style="background: white; border-radius: 8px; padding: 20px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+          
+          <button type="button" id="close-analytics-btn" style="position: absolute; top: 10px; right: 10px; background: #e74c3c; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">X</button>
+            <br><br>
+          <div style="padding-top: 10px;">
             <h3 style="margin: 0; text-align: center; color: #2c3e50;">📊 Monthly Care Analytics</h3>
-        </div>
-        
-        <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0;">
+          </div>
+          
+          <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0;">
             <label for="analytics-month" style="font-weight: bold; font-size: 0.9rem;">Select Month:</label>
             <input type="month" id="analytics-month" style="padding: 4px 8px; font-size: 0.9rem;" />
-        </div>
-    
-        <div style="margin-top: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
-            <h4 style="margin: 0 0 10px 0; text-align: center;">Days Experienced per Pain Level</h4>
-            <div style="position: relative; height: 260px; width: 100%;">
-            <canvas id="painChart"></canvas>
-            </div>
-        </div>
-        </div>
-
-        <div style="background: white; padding: 20px; border-radius: 8px; max-width: 600px; width: 100%; margin: 20px auto;">
-  
-            <!-- Select Month & Chart Section -->
-            <div style="margin-bottom: 20px;">
-              <canvas id="painChart" style="max-height: 250px;"></canvas>
-            </div>
-          
-            <!-- Monthly Pain Calendar (Placed directly under the chart) -->
-            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
-              <h4 style="margin: 0 0 10px 0; text-align: center;">Monthly Pain Calendar</h4>
-              <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85rem;">
-                <!-- JavaScript inserts calendar cells here -->
-              </div>
-            </div>
-          
           </div>
-
-    </div>
+      
+          <!-- 1. GRAPH SECTION -->
+          <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 10px 0; text-align: center;">Days Experienced per Pain Level</h4>
+            <div style="position: relative; height: 240px; width: 100%;">
+              <canvas id="painChart"></canvas>
+            </div>
+          </div>
+      
+          <!-- 2. CALENDAR SECTION (STACKED DIRECTLY UNDER GRAPH) -->
+          <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+            <h4 style="margin: 0 0 10px 0; text-align: center;">Monthly Pain Calendar</h4>
+            <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85rem;">
+              <!-- JavaScript renders calendar cells here -->
+            </div>
+          </div>
+      
+        </div>
+      
+      </div>
     
 
 </body>
