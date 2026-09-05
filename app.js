@@ -90,7 +90,7 @@ function renderRecordsList(records) {
     
     li.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
-        <strong>📅 ${data.date} at ${data.time || 'N/A'}</strong>
+      <strong>📅 ${data.date} at ${formatTo12Hour(data.time)}</strong>
         <div style="display: flex; gap: 6px;">
           <button type="button" class="view-log-btn" style="width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0; background: #2ecc71;">View</button>
           <button type="button" class="edit-log-btn" style="width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0; background: #4A90E2;">Edit</button>
@@ -765,10 +765,10 @@ function formatTo12Hour(time24) {
     if (!time24) return 'N/A';
     const [hoursStr, minutes] = time24.split(':');
     let hours = parseInt(hoursStr, 10);
-    if (isNaN(hours)) return time24; // Fallback if string isn't standard time
+    if (isNaN(hours)) return time24; 
     
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12; // Convert 0 to 12 for midnight
+    hours = hours % 12 || 12; 
     return `${hours}:${minutes} ${ampm}`;
 }
 
@@ -779,6 +779,8 @@ function showViewModal(data) {
 
   modalBody.innerHTML = `
     <div style="padding-top: 15px; margin-bottom: 12px; text-align: left;">
+        <br>
+        <br>
         <h3 style="margin: 0; color: #2c3e50; font-size: 1.3rem;">📅 Care Log Summary</h3>
         <p style="margin: 6px 0 0 0; color: #555; font-size: 0.95rem; font-weight: bold;">
             Date: <span style="font-weight: normal; color: #333;">${data.date || 'N/A'}</span>
