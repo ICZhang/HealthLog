@@ -984,3 +984,46 @@ function renderPainChart() {
       }
     });
 }
+
+function setActiveTab(activeBtn) {
+    [tabNewBtn, tabPastBtn, openAnalyticsBtn].forEach(btn => {
+        if (btn) {
+            btn.style.backgroundColor = (btn === activeBtn) ? "#4A90E2" : "#888";
+        }
+    });
+}
+
+// New Entry Tab
+tabNewBtn?.addEventListener("click", () => {
+    setActiveTab(tabNewBtn);
+    document.getElementById("section-new-entry")?.classList.remove("hidden");
+    document.getElementById("section-past-records")?.classList.add("hidden");
+});
+
+// Past Records Tab
+tabPastBtn?.addEventListener("click", () => {
+    setActiveTab(tabPastBtn);
+    document.getElementById("section-past-records")?.classList.remove("hidden");
+    document.getElementById("section-new-entry")?.classList.add("hidden");
+});
+
+// Analytics Modal Button
+openAnalyticsBtn?.addEventListener("click", () => {
+    setActiveTab(openAnalyticsBtn);
+    
+    analyticsModal.style.display = "flex";
+    analyticsModal.classList.remove("hidden");
+    
+    setTimeout(() => {
+        renderPainChart();
+    }, 100);
+});
+
+// Reset highlight back to the visible tab when modal closes
+closeAnalyticsBtn?.addEventListener("click", () => {
+    analyticsModal.style.display = "none";
+    analyticsModal.classList.add("hidden");
+    
+    const isPastVisible = !document.getElementById("section-past-records")?.classList.contains("hidden");
+    setActiveTab(isPastVisible ? tabPastBtn : tabNewBtn);
+});
