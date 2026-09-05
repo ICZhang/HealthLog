@@ -506,6 +506,7 @@ function getFormData() {
     date: document.getElementById("log-date").value,
     time: document.getElementById("log-time").value,
     bowelMovements: bmData,
+    cromolynMeds,
     herbalMeds,
     enteragramDoses,
     formulaHydration: getValues(".formula-row"),
@@ -1234,31 +1235,39 @@ function renderPainCalendar(startDate, endDate, records) {
   }
 }
 
-function switchAnalyticsTab(tab) {
+window.switchAnalyticsTab = function(tab) {
     window.activeAnalyticsTab = tab;
   
     const painBtn = document.getElementById("tab-pain-btn");
     const bmBtn = document.getElementById("tab-bm-btn");
   
     if (tab === "pain") {
-      painBtn.style.background = "#2c3e50";
-      painBtn.style.color = "white";
-      painBtn.style.borderColor = "#2c3e50";
-      bmBtn.style.background = "#f0f0f0";
-      bmBtn.style.color = "#333";
-      bmBtn.style.borderColor = "#ccc";
+      if (painBtn) {
+        painBtn.style.background = "#2c3e50";
+        painBtn.style.color = "white";
+        painBtn.style.borderColor = "#2c3e50";
+      }
+      if (bmBtn) {
+        bmBtn.style.background = "#f0f0f0";
+        bmBtn.style.color = "#333";
+        bmBtn.style.borderColor = "#ccc";
+      }
     } else {
-      bmBtn.style.background = "#8e44ad";
-      bmBtn.style.color = "white";
-      bmBtn.style.borderColor = "#8e44ad";
-      painBtn.style.background = "#f0f0f0";
-      painBtn.style.color = "#333";
-      painBtn.style.borderColor = "#ccc";
+      if (bmBtn) {
+        bmBtn.style.background = "#8e44ad";
+        bmBtn.style.color = "white";
+        bmBtn.style.borderColor = "#8e44ad";
+      }
+      if (painBtn) {
+        painBtn.style.background = "#f0f0f0";
+        painBtn.style.color = "#333";
+        painBtn.style.borderColor = "#ccc";
+      }
     }
   
     // Re-render chart and calendar for selected mode
     renderAnalyticsChart();
-}
+};
 
 
 function renderAnalyticsChart() {
@@ -1268,10 +1277,10 @@ function renderAnalyticsChart() {
     const chartTitle = document.getElementById("chart-title");
     if (!canvas) return;
   
-    const records = window.allRecords || [];
+    const records = window.allRecords || allPastRecords || [];
   
     if (window.activeAnalyticsTab === "pain") {
-      chartTitle.innerText = "Days Experienced per Pain Level";
+      if (chartTitle) chartTitle.innerText = "Days Experienced per Pain Level";
       
       const painCounts = { "No Pain": 0, "Minor Pain": 0, "Severe Pain": 0 };
       
@@ -1291,7 +1300,7 @@ function renderAnalyticsChart() {
       renderPainCalendar(startDate, endDate, records);
   
     } else if (window.activeAnalyticsTab === "bm") {
-      chartTitle.innerText = "Bowel Movements by Type";
+      if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
   
       const typeCounts = {};
       
@@ -1300,12 +1309,13 @@ function renderAnalyticsChart() {
         if (!logData.date || (startDate && logData.date < startDate) || (endDate && logData.date > endDate)) return;
   
         (logData.bowelMovements || []).forEach(bm => {
-          const type = bm.type || "Unspecified";
-          typeCounts[type] = (typeCounts[type] || 0) + 1;
+          const rawType = bm.type;
+          const label = rawType ? `Type ${rawType}` : "Unspecified";
+          typeCounts[label] = (typeCounts[label] || 0) + 1;
         });
       });
   
-      const labels = Object.keys(typeCounts).length ? Object.keys(typeCounts) : ["None"];
+      const labels = Object.keys(typeCounts).length ? Object.keys(typeCounts) : ["No Logged BMs"];
       const data = Object.keys(typeCounts).length ? Object.values(typeCounts) : [0];
   
       drawChart(canvas, labels, data, "#8e44ad");
@@ -1340,10 +1350,11 @@ function drawChart(canvas, labels, data, colors) {
 function renderBMCalendar(startDate, endDate, records) {
     const grid = document.getElementById("calendar-grid");
     const titleHeader = document.getElementById("calendar-title");
-    if (!grid || !startDate) return;
+    if (!grid) return;
     grid.innerHTML = "";
   
-    const [activeYear, activeMonth] = (window.activeCalendarMonth || startDate.substring(0, 7)).split("-").map(Number);
+    const activeMonthKey = window.activeCalendarMonth || (startDate ? startDate.substring(0, 7) : new Date().toISOString().substring(0, 7));
+    const [activeYear, activeMonth] = activeMonthKey.split("-").map(Number);
     const activeMonthIndex = activeMonth - 1;
   
     if (titleHeader) {
