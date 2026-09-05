@@ -761,19 +761,30 @@ function addCromolynRow(data = {}) {
     cromolynContainer.appendChild(row);
 }
 
+function formatTo12Hour(time24) {
+    if (!time24) return 'N/A';
+    const [hoursStr, minutes] = time24.split(':');
+    let hours = parseInt(hoursStr, 10);
+    if (isNaN(hours)) return time24; // Fallback if string isn't standard time
+    
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12; // Convert 0 to 12 for midnight
+    return `${hours}:${minutes} ${ampm}`;
+}
+
 // Render read-only record details
 function showViewModal(data) {
   const modal = document.getElementById("view-modal");
   const modalBody = document.getElementById("view-modal-body");
 
   modalBody.innerHTML = `
-    div style="padding-top: 15px; margin-bottom: 12px; text-align: center;">
+    <div style="padding-top: 15px; margin-bottom: 12px; text-align: left;">
         <h3 style="margin: 0; color: #2c3e50; font-size: 1.3rem;">📅 Care Log Summary</h3>
         <p style="margin: 6px 0 0 0; color: #555; font-size: 0.95rem; font-weight: bold;">
             Date: <span style="font-weight: normal; color: #333;">${data.date || 'N/A'}</span>
         </p>
         <p style="margin: 2px 0 0 0; color: #555; font-size: 0.9rem;">
-            Log Entry Time: <span style="font-weight: normal; color: #333;">${data.time || 'N/A'}</span>
+            Log Entry Time: <span style="font-weight: normal; color: #333;">${formatTo12Hour(data.time)}</span>
         </p>
     </div>
     <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 15px 0;" />
