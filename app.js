@@ -83,60 +83,73 @@ async function deleteLogRecord(docId) {
   }
 }
 
-// Render filtered records to DOM
-function renderRecordsList(records) {
-  logList.innerHTML = "";
 
-  if (records.length === 0) {
-    logList.innerHTML = `<li style="color: #888; font-size: 0.9rem;">No matching care records found.</li>`;
-    return;
-  }
-
-  records.forEach(({ docId, data }) => {
-    const li = document.createElement("li");
-    li.style.cssText = "background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 10px; list-style: none;";
-    
-    li.innerHTML = `
-     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 4px;">
-      <strong>📅 ${data.date} at ${formatTo12Hour(data.time)}</strong>
-        <div style="display: flex; gap: 4px; flex-shrink: 0;">
-          <button type="button" class="view-log-btn" style="width: auto; padding: 3px 6px; font-size: 0.75rem; margin:0; background: #2ecc71;">View</button>
-          <button type="button" class="edit-log-btn" style="width: auto; padding: 3px 6px; font-size: 0.75rem; margin:0; background: #4A90E2;">Edit</button>
-          <button type="button" class="delete-log-btn" style="width: auto; padding: 3px 6px; font-size: 0.75rem; margin:0; background: #e74c3c;">Delete</button>
+// Render past records with entry numbers (#1, #2, etc.)
+function renderPastRecords(recordsToRender) {
+    const container = document.getElementById("past-records-list");
+    if (!container) return;
+    container.innerHTML = "";
+  
+    if (!recordsToRender || recordsToRender.length === 0) {
+      container.innerHTML = "<p style='padding: 10px; color: #666;'>No records found matching your search.</p>";
+      return;
+    }
+  
+    recordsToRender.forEach((item, index) => {
+      const data = item.data || item;
+      const recordNum = index + 1; // Numbering starts at 1
+  
+      const card = document.createElement("div");
+      card.className = "record-card";
+      card.style.cssText = "border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px; background: #fff;";
+  
+      const dateStr = data.date || "Unknown Date";
+      const timeStr = data.time ? ` at ${data.time}` : "";
+  
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <strong style="font-size: 1.05em;">#${recordNum} 🗓️ ${dateStr}${timeStr}</strong>
+          <div>
+            <button style="background:#2ecc71; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="viewRecord('${item.id}')">View</button>
+            <button style="background:#3498db; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="editRecord('${item.id}')">Edit</button>
+            <button style="background:#e74c3c; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="deleteRecord('${item.id}')">Delete</button>
+          </div>
         </div>
-      </div>
-      <p style="margin: 6px 0; font-size: 0.9rem; color: #444;">
-        <strong>BMs:</strong> ${data.bowelMovements ? data.bowelMovements.length : 0} logged | 
-        <strong>Warm Water:</strong> ${Array.isArray(data.warmWater) ? data.warmWater.length : 0} entries
-      </p>
-      ${data.notes ? `<p style="margin: 4px 0; font-size: 0.85rem; color: #666; font-style: italic;">"${data.notes.slice(0, 60)}..."</p>` : ''}
-    `;
-
-    li.querySelector(".view-log-btn").addEventListener("click", () => showViewModal(data));
-    li.querySelector(".edit-log-btn").addEventListener("click", () => populateFormForEdit(docId, data));
-    li.querySelector(".delete-log-btn").addEventListener("click", () => deleteLogRecord(docId));
-
-    logList.appendChild(li);
-  });
-}
-
-// Filter Logic Function
-function applySearchAndFilter() {
-  const searchTerm = document.getElementById("search-input").value.toLowerCase().trim();
-  const filterDate = document.getElementById("filter-date-input").value;
-
-  const filtered = allPastRecords.filter(({ data }) => {
-    const matchesDate = !filterDate || data.date === filterDate;
-    const notesMatch = data.notes?.toLowerCase().includes(searchTerm);
-    const herbalMatch = data.herbalMeds?.some(h => h.name.toLowerCase().includes(searchTerm));
-    const foodsMatch = data.foods?.some(f => f.name.toLowerCase().includes(searchTerm));
-    
-    const matchesSearch = !searchTerm || notesMatch || herbalMatch || foodsMatch;
-
-    return matchesDate && matchesSearch;
-  });
-
-  renderRecordsList(filtered);
+        <div style="font-size: 0.9em; color: #555; margin-top: 5px;">
+          <strong>BMs:</strong> ${(data.bowelMovements || []).length} logged | 
+          <strong>Warm Water:</strong> ${(data.warmWater || []).length} entries
+        </div>
+      `;
+  
+      container.appendChild(card);
+    });
+  }
+  
+  // Filter records by number (#1, 1), keywords, or date
+function filterPastRecords() {
+    const searchInput = (document.getElementById("search-records")?.value || "").trim().toLowerCase();
+    const dateInput = document.getElementById("search-date")?.value || "";
+  
+    const allRecords = window.allRecords || [];
+  
+    const filtered = allRecords.filter((item, index) => {
+      const data = item.data || item;
+      const recordNumStr = String(index + 1);
+  
+      // Check if input matches number format "1" or "#1"
+      const matchesNumber = searchInput === recordNumStr || searchInput === `#${recordNumStr}`;
+  
+      // Search across entire log JSON string or number match
+      const jsonString = JSON.stringify(data).toLowerCase();
+      const matchesText = !searchInput || jsonString.includes(searchInput) || matchesNumber;
+  
+      // Filter by specific date
+      const matchesDate = !dateInput || data.date === dateInput;
+  
+      return matchesText && matchesDate;
+    });
+  
+    renderPastRecords(filtered);
 }
 
 // Load Firestore Records into Cache & Add Listeners
@@ -151,18 +164,12 @@ function loadPastRecords(userId) {
       
       window.allRecords = allPastRecords;
   
-      applySearchAndFilter();
+      filterPastRecords();
     });
 }
 
-// Search and Filter Event Listeners
-document.getElementById("search-input")?.addEventListener("input", applySearchAndFilter);
-document.getElementById("filter-date-input")?.addEventListener("change", applySearchAndFilter);
-document.getElementById("clear-filter-btn")?.addEventListener("click", () => {
-  document.getElementById("search-input").value = "";
-  document.getElementById("filter-date-input").value = "";
-  applySearchAndFilter();
-});
+document.getElementById("search-records")?.addEventListener("input", filterPastRecords);
+document.getElementById("search-date")?.addEventListener("change", filterPastRecords);
 
 // Toggle Handler
 function handleAuthToggle() {
@@ -172,8 +179,6 @@ function handleAuthToggle() {
   document.getElementById("toggle-wrapper").innerHTML = isSignUp 
     ? `Already have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign In</span>`
     : `Don't have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign Up</span>`;
-  
-  document.getElementById("toggle-auth")?.addEventListener("click", handleAuthToggle);
 }
 
 document.getElementById("toggle-auth")?.addEventListener("click", handleAuthToggle);
@@ -933,17 +938,6 @@ closeAnalyticsBtn?.addEventListener("click", () => {
 analyticsMonthInput?.addEventListener("change", () => {
     renderAnalyticsChart();
 });
-  
-// Open Modal & Trigger Chart Rendering with Delay
-openAnalyticsBtn?.addEventListener("click", () => {
-    analyticsModal.style.display = "flex";
-    analyticsModal.classList.remove("hidden");
-    
-    setTimeout(() => {
-        renderAnalyticsChart();
-    }, 100);
-});
-
 
 function setActiveTab(activeBtn) {
     [tabNewBtn, tabPastBtn, openAnalyticsBtn].forEach(btn => {
@@ -1289,7 +1283,7 @@ function renderAnalyticsChart() {
     const chartTitle = document.getElementById("chart-title");
     if (!canvas) return;
   
-    const records = window.allRecords || allPastRecords || [];
+    const records = window.allRecords || [];
   
     if (window.activeAnalyticsTab === "pain") {
       if (chartTitle) chartTitle.innerText = "Days Experienced per Pain Level";
