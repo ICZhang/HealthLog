@@ -1261,4 +1261,199 @@ document.querySelectorAll('input[type="date"]').forEach(input => {
         this.showPicker();
       }
     });
+});
+
+window.activeCalendarMonth = null;
+
+function renderPainCalendar(startDate, endDate, records) {
+  const grid = document.getElementById("calendar-grid");
+  const titleHeader = document.getElementById("calendar-title");
+  const navContainer = document.getElementById("calendar-month-nav");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  if (!startDate || !endDate) return;
+
+  // Extract all "YYYY-MM" months in the chosen date range
+  const monthsInRange = [];
+  let curr = new Date(startDate + "T00:00:00");
+  const last = new Date(endDate + "T00:00:00");
+
+  while (curr <= last) {
+    const yyyy = curr.getFullYear();
+    const mm = String(curr.getMonth() + 1).padStart(2, "0");
+    const key = `${yyyy}-${mm}`;
+    if (!monthsInRange.includes(key)) {
+      monthsInRange.push(key);
+    }
+    // Advance to 1st of next month
+    curr.setMonth(curr.getMonth() + 1);
+    curr.setDate(1);
+  }
+
+  // Preserve active month selection or fallback to initial month
+  if (!window.activeCalendarMonth || !monthsInRange.includes(window.activeCalendarMonth)) {
+    window.activeCalendarMonth = monthsInRange[0];
+  }
+
+  const [activeYearStr, activeMonthStr] = window.activeCalendarMonth.split("-");
+  const activeYear = parseInt(activeYearStr, 10);
+  const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  // Render Month Selector Buttons
+  if (navContainer) {
+    navContainer.innerHTML = "";
+    if (monthsInRange.length > 1) {
+      monthsInRange.forEach(mKey => {
+        const [yStr, mStr] = mKey.split("-");
+        const mDate = new Date(parseInt(yStr, 10), parseInt(mStr, 10) - 1, 1);
+        const btnLabel = mDate.toLocaleString("default", { month: "short", year: "numeric" });
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerText = btnLabel;
+        btn.style.padding = "4px 10px";
+        btn.style.fontSize = "0.8rem";
+        btn.style.borderRadius = "4px";
+        btn.style.border = "1px solid #ccc";
+        btn.style.cursor = "pointer";
+
+        if (mKey === window.activeCalendarMonth) {
+          btn.style.backgroundColor = "#2c3e50";
+          btn.style.color = "#ffffff";
+          btn.style.fontWeight = "bold";
+        } else {
+          btn.style.backgroundColor = "#ffffff";
+          btn.style.color = "#333333";
+        }
+
+        btn.addEventListener("click", () => {
+          window.activeCalendarMonth = mKey;
+          renderPainCalendar(startDate, endDate, records);
+        });
+
+        navContainer.appendChild(btn);
+      });
+    }
+  }
+
+  // Update Dynamic Title
+  if (titleHeader) {
+    const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+    titleHeader.innerText = `${monthName} ${activeYear} Pain Calendar`;
+  }
+
+  // Filter logs for selected month
+  const datePainMap = {};
+
+  records.forEach(item => {
+    const logData = item.data || item;
+    const logDate = logData.date;
+    
+    if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
+
+    const painLogs = logData.painLogs || [];
+    painLogs.forEach(log => {
+      const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
+      const levelStr = String(levelVal).trim().toLowerCase();
+
+      let rawTime = (typeof log === "object" && log !== null) ? (log.time || log.logTime || "") : "";
+      if (!rawTime) rawTime = logData.time || "";
+
+      let displayTime = rawTime;
+      if (rawTime && rawTime.includes(":")) {
+        const [h, m] = rawTime.split(":");
+        let hours = parseInt(h, 10);
+        const suffix = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12 || 12;
+        displayTime = `${hours}:${m} ${suffix}`;
+      }
+
+      let color = null;
+      let label = "";
+
+      if (levelStr === "severe pain" || levelStr === "severe") {
+        color = "#e74c3c";
+        label = "Severe";
+      } else if (levelStr === "minor pain" || levelStr === "minor") {
+        color = "#f1c40f";
+        label = "Minor";
+      } else if (levelStr === "no pain" || levelStr === "no") {
+        color = "#2ecc71";
+        label = "No Pain";
+      }
+
+      if (color) {
+        if (!datePainMap[logDate]) {
+          datePainMap[logDate] = [];
+        }
+        datePainMap[logDate].push({ color, label, time: displayTime });
+      }
+    });
   });
+
+  // Render Days Grid
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  dayNames.forEach(day => {
+    const header = document.createElement("div");
+    header.style.fontWeight = "bold";
+    header.style.padding = "4px 0";
+    header.innerText = day;
+    grid.appendChild(header);
+  });
+
+  const firstDayIndex = new Date(activeYear, activeMonthIndex, 1).getDay();
+  const totalDays = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
+
+  for (let i = 0; i < firstDayIndex; i++) {
+    grid.appendChild(document.createElement("div"));
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const dayStr = String(d).padStart(2, '0');
+    const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
+    const fullDateKey = `${activeYear}-${monthStrFormatted}-${dayStr}`;
+    const entries = datePainMap[fullDateKey] || [];
+
+    const cell = document.createElement("div");
+    cell.style.border = "1px solid #e0e0e0";
+    cell.style.borderRadius = "4px";
+    cell.style.padding = "4px 2px";
+    cell.style.minHeight = "55px";
+    cell.style.backgroundColor = "#ffffff";
+    cell.style.display = "flex";
+    cell.style.flexDirection = "column";
+    cell.style.alignItems = "center";
+
+    const numSpan = document.createElement("span");
+    numSpan.style.fontWeight = "bold";
+    numSpan.style.fontSize = "0.8rem";
+    numSpan.style.marginBottom = "3px";
+    numSpan.innerText = d;
+    cell.appendChild(numSpan);
+
+    const badgeContainer = document.createElement("div");
+    badgeContainer.style.display = "flex";
+    badgeContainer.style.flexDirection = "column";
+    badgeContainer.style.gap = "2px";
+    badgeContainer.style.width = "100%";
+    badgeContainer.style.alignItems = "center";
+
+    entries.forEach(entry => {
+      const badge = document.createElement("span");
+      badge.style.backgroundColor = entry.color;
+      badge.style.color = entry.color === "#f1c40f" ? "#333" : "#fff";
+      badge.style.borderRadius = "3px";
+      badge.style.padding = "1px 3px";
+      badge.style.fontSize = "0.65rem";
+      badge.style.fontWeight = "600";
+      badge.style.whiteSpace = "nowrap";
+      badge.innerText = entry.time ? entry.time : entry.label;
+      badge.title = `${entry.label}${entry.time ? ' at ' + entry.time : ''}`;
+      badgeContainer.appendChild(badge);
+    });
+
+    cell.appendChild(badgeContainer);
+    grid.appendChild(cell);
+  }
+}
