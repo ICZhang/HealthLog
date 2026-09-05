@@ -524,25 +524,38 @@ function getFormData() {
 
 // --- SAVE / EDIT FIRESTORE LOG ---
 logForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (!currentUser) return;
-
-  const logData = getFormData();
-  const editingId = editingDocIdInput.value;
-
-  try {
-    if (editingId) {
-      await setDoc(doc(db, "users", currentUser.uid, "logs", editingId), logData, { merge: true });
-      alert("Care Log updated successfully!");
-    } else {
-      await addDoc(collection(db, "users", currentUser.uid, "logs"), logData);
-      alert("Care Log saved successfully!");
+    e.preventDefault();
+    if (!currentUser) return;
+  
+    // 1. Get current time in HH:MM format
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+    // 2. Auto-fill any empty time inputs in the form
+    const timeInputs = logForm.querySelectorAll('input[type="time"]');
+    timeInputs.forEach(input => {
+      if (!input.value) {
+        input.value = currentTime;
+      }
+    });
+  
+    // 3. Now collect form data (which will now include the filled-in times)
+    const logData = getFormData();
+    const editingId = editingDocIdInput.value;
+  
+    try {
+      if (editingId) {
+        await setDoc(doc(db, "users", currentUser.uid, "logs", editingId), logData, { merge: true });
+        alert("Care Log updated successfully!");
+      } else {
+        await addDoc(collection(db, "users", currentUser.uid, "logs"), logData);
+        alert("Care Log saved successfully!");
+      }
+      resetForm();
+    } catch (err) {
+      console.error("Error saving record: ", err);
+      alert("Error saving record. Please try again.");
     }
-    resetForm();
-  } catch (err) {
-    console.error("Error saving record: ", err);
-    alert("Error saving record. Please try again.");
-  }
 });
 
 // Populate Form for Editing
@@ -1027,3 +1040,11 @@ closeAnalyticsBtn?.addEventListener("click", () => {
     const isPastVisible = !document.getElementById("section-past-records")?.classList.contains("hidden");
     setActiveTab(isPastVisible ? tabPastBtn : tabNewBtn);
 });
+
+function getCurrentHHMM() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
