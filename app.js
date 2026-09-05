@@ -92,9 +92,9 @@ function renderRecordsList(records) {
      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 4px;">
       <strong>📅 ${data.date} at ${formatTo12Hour(data.time)}</strong>
         <div style="display: flex; gap: 4px; flex-shrink: 0;">
-          <button type="button" class="view-log-btn" style="width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0; background: #2ecc71;">View</button>
-          <button type="button" class="edit-log-btn" style="width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0; background: #4A90E2;">Edit</button>
-          <button type="button" class="delete-log-btn" style="width: auto; padding: 4px 8px; font-size: 0.8rem; margin:0; background: #e74c3c;">Delete</button>
+          <button type="button" class="view-log-btn" style="width: auto; padding: 3px 6px; font-size: 0.75rem; margin:0; background: #2ecc71;">View</button>
+          <button type="button" class="edit-log-btn" style="width: auto; padding: 3px 6px; font-size: 0.75rem; margin:0; background: #4A90E2;">Edit</button>
+          <button type="button" class="delete-log-btn" style="width: auto; padding: 3px 6px; font-size: 0.75rem; margin:0; background: #e74c3c;">Delete</button>
         </div>
       </div>
       <p style="margin: 6px 0; font-size: 0.9rem; color: #444;">
