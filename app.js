@@ -24,6 +24,16 @@ let allPastRecords = [];
 let painChartInstance = null;
 window.activeAnalyticsTab = "pain";
 
+const BM_TYPE_COLORS = {
+    1: "#8e44ad", // Purple
+    2: "#2980b9", // Blue
+    3: "#27ae60", // Green
+    4: "#f1c40f", // Yellow
+    5: "#e67e22", // Orange
+    6: "#e74c3c", // Red
+    7: "#7f8c8d"  // Gray
+};
+
 // DOM Elements
 const userEmailEl = document.getElementById("user-email");
 const logForm = document.getElementById("log-form");
@@ -1270,38 +1280,45 @@ function renderAnalyticsChart() {
       );
       renderPainCalendar(startDate, endDate, records);
   
-    } else if (window.activeAnalyticsTab === "bm") {
+    } 
+    else if (window.activeAnalyticsTab === "bm") {
       if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
-  
+    
       const typeCounts = {};
       
       records.forEach(item => {
         const logData = item.data || item;
         if (!logData.date) return;
-  
-        // Filter by overall range OR active month selected via calendar nav
+    
         if (startDate && logData.date < startDate) return;
         if (endDate && logData.date > endDate) return;
-  
+    
         (logData.bowelMovements || []).forEach(bm => {
           if (!bm.type) return;
-  
+    
           const label = `Type ${bm.type}`;
           typeCounts[label] = (typeCounts[label] || 0) + 1;
         });
       });
-  
-      // Sort labels numerically (e.g., Type 1, Type 2, Type 3)
+    
       const sortedKeys = Object.keys(typeCounts).sort((a, b) => {
         const numA = parseInt(a.replace("Type ", ""), 10);
         const numB = parseInt(b.replace("Type ", ""), 10);
         return numA - numB;
       });
-  
+    
       const labels = sortedKeys.length ? sortedKeys : ["No Logged Types"];
       const data = sortedKeys.length ? sortedKeys.map(k => typeCounts[k]) : [0];
-  
-      drawChart(canvas, labels, data, "#8e44ad");
+    
+      // Map each sorted label to its corresponding palette color
+      const barColors = sortedKeys.length 
+        ? sortedKeys.map(k => {
+            const typeNum = parseInt(k.replace("Type ", ""), 10);
+            return BM_TYPE_COLORS[typeNum] || "#8e44ad";
+          })
+        : ["#bdc3c7"];
+    
+      drawChart(canvas, labels, data, barColors);
       renderBMCalendar(startDate, endDate, records);
     }
 }
@@ -1464,12 +1481,15 @@ function renderBMCalendar(startDate, endDate, records) {
   
       entries.forEach(entry => {
         const badge = document.createElement("span");
-        badge.style.backgroundColor = "#8e44ad";
-        badge.style.color = "#fff";
+        const typeColor = BM_TYPE_COLORS[entry.type] || "#8e44ad";
+        
+        badge.style.backgroundColor = typeColor;
+        // Use dark text for the yellow badge for readability
+        badge.style.color = typeColor === "#f1c40f" ? "#333" : "#fff";
         badge.style.borderRadius = "3px";
         badge.style.padding = "1px 3px";
         badge.style.fontSize = "0.6rem";
-        badge.innerText = entry.time;
+        badge.innerText = `${entry.time} (T${entry.type})`;
         badge.title = `Type: ${entry.type} at ${entry.time}`;
         container.appendChild(badge);
       });
@@ -1478,3 +1498,46 @@ function renderBMCalendar(startDate, endDate, records) {
       grid.appendChild(cell);
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  document.getElementById("clear-all-records-btn")?.addEventListener("click", () => {
+    if (confirm("Are you sure you want to delete ALL logged records?")) {
+      localStorage.removeItem("careRecords"); // Adjust key to match your localStorage key
+      window.allRecords = [];
+      if (typeof allPastRecords !== "undefined") allPastRecords = [];
+      
+      // Refresh views
+      if (typeof applySearchAndFilter === "function") applySearchAndFilter();
+      if (typeof renderAnalyticsChart === "function") renderAnalyticsChart();
+      
+      alert("All records cleared successfully.");
+    }
+  });
