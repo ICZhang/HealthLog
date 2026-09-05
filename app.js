@@ -122,18 +122,10 @@ function renderRecordsList(records) {
 
 // Filter Logic Function
 function applySearchAndFilter() {
-  const searchTerm = document.getElementById("search-input").value.toLowerCase().trim();
-  const filterDate = document.getElementById("filter-date-input").value;
+  const filterDate = document.getElementById("filter-date-input")?.value || "";
 
   const filtered = allPastRecords.filter(({ data }) => {
-    const matchesDate = !filterDate || data.date === filterDate;
-    const notesMatch = data.notes?.toLowerCase().includes(searchTerm);
-    const herbalMatch = data.herbalMeds?.some(h => h.name.toLowerCase().includes(searchTerm));
-    const foodsMatch = data.foods?.some(f => f.name.toLowerCase().includes(searchTerm));
-    
-    const matchesSearch = !searchTerm || notesMatch || herbalMatch || foodsMatch;
-
-    return matchesDate && matchesSearch;
+    return !filterDate || data.date === filterDate;
   });
 
   renderRecordsList(filtered);
@@ -156,12 +148,11 @@ function loadPastRecords(userId) {
 }
 
 // Search and Filter Event Listeners
-document.getElementById("search-input")?.addEventListener("input", applySearchAndFilter);
 document.getElementById("filter-date-input")?.addEventListener("change", applySearchAndFilter);
 document.getElementById("clear-filter-btn")?.addEventListener("click", () => {
-  document.getElementById("search-input").value = "";
-  document.getElementById("filter-date-input").value = "";
-  applySearchAndFilter();
+    const dateInput = document.getElementById("filter-date-input");
+    if (dateInput) dateInput.value = "";
+    applySearchAndFilter();
 });
 
 // Toggle Handler
