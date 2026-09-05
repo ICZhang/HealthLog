@@ -22,6 +22,7 @@ let unsubscribeLogs = null;
 let isSignUp = false;
 let allPastRecords = [];
 let painChartInstance = null;
+window.activeAnalyticsTab = "pain";
 
 // DOM Elements
 const userEmailEl = document.getElementById("user-email");
@@ -917,7 +918,7 @@ closeAnalyticsBtn?.addEventListener("click", () => {
 });
   
 analyticsMonthInput?.addEventListener("change", () => {
-    renderPainChart();
+    renderAnalyticsChart();
 });
   
 // Open Modal & Trigger Chart Rendering with Delay
@@ -926,95 +927,9 @@ openAnalyticsBtn?.addEventListener("click", () => {
     analyticsModal.classList.remove("hidden");
     
     setTimeout(() => {
-      renderPainChart();
+        renderAnalyticsChart();
     }, 100);
 });
-  
-function renderPainChart() {
-    const startDateInput = document.getElementById("analytics-start-date");
-    const endDateInput = document.getElementById("analytics-end-date");
-    const canvas = document.getElementById("painChart");
-    
-    if (!startDateInput || !endDateInput || !canvas) return;
-
-    const startDate = startDateInput.value; // Format: "YYYY-MM-DD"
-    const endDate = endDateInput.value;     // Format: "YYYY-MM-DD"
-
-    const records = window.allRecords || [];
-
-    const painCounts = {
-      "No Pain": 0,
-      "Minor Pain": 0,
-      "Severe Pain": 0
-    };
-
-    records.forEach(item => {
-      const logData = item.data || item;
-      const logDate = logData.date; // Expects "YYYY-MM-DD"
-
-      if (!logDate) return;
-      
-      // Range Check
-      if (startDate && logDate < startDate) return;
-      if (endDate && logDate > endDate) return;
-
-      const painLogs = logData.painLogs || [];
-
-      painLogs.forEach(log => {
-        const levelVal = typeof log === "string" ? log : (log.level || log.painLevel || log.value || "");
-        const levelStr = String(levelVal).trim().toLowerCase();
-
-        if (!levelStr) return;
-
-        if (levelStr === "no pain" || levelStr === "no") {
-          painCounts["No Pain"] += 1;
-        } else if (levelStr === "minor pain" || levelStr === "minor") {
-          painCounts["Minor Pain"] += 1;
-        } else if (levelStr === "severe pain" || levelStr === "severe") {
-          painCounts["Severe Pain"] += 1;
-        }
-      });
-    });
-
-    const chartData = [
-      painCounts["No Pain"],
-      painCounts["Minor Pain"],
-      painCounts["Severe Pain"]
-    ];
-
-    if (window.painChartInstance) {
-      window.painChartInstance.destroy();
-    }
-
-    const ctx = canvas.getContext("2d");
-    window.painChartInstance = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["No Pain", "Minor Pain", "Severe Pain"],
-        datasets: [{
-          label: "Entries",
-          data: chartData,
-          backgroundColor: ["#2ecc71", "#f1c40f", "#e74c3c"],
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1, precision: 0 },
-            title: { display: true, text: "Total Entries" }
-          }
-        }
-      }
-    });
-
-    // Update Calendar with Range
-    renderPainCalendar(startDate, endDate, records);
-}
 
 
 function setActiveTab(activeBtn) {
@@ -1047,7 +962,7 @@ openAnalyticsBtn?.addEventListener("click", () => {
     analyticsModal.classList.remove("hidden");
     
     setTimeout(() => {
-        renderPainChart();
+        renderAnalyticsChart();
     }, 100);
 });
 
@@ -1061,8 +976,15 @@ closeAnalyticsBtn?.addEventListener("click", () => {
 });
 
 // Attach listeners to date inputs
-document.getElementById("analytics-start-date")?.addEventListener("change", renderPainChart);
-document.getElementById("analytics-end-date")?.addEventListener("change", renderPainChart);
+document.getElementById("analytics-start-date")?.addEventListener("change", () => {
+    window.activeCalendarMonth = null; // Reset to auto-select initial month
+    renderAnalyticsChart();
+});
+  
+  document.getElementById("analytics-end-date")?.addEventListener("change", () => {
+    window.activeCalendarMonth = null;
+    renderAnalyticsChart();
+});
 
 // Set defaults when opening analytics tab/modal
 openAnalyticsBtn?.addEventListener("click", () => {
@@ -1086,7 +1008,7 @@ openAnalyticsBtn?.addEventListener("click", () => {
     analyticsModal.classList.remove("hidden");
     
     setTimeout(() => {
-        renderPainChart();
+        renderAnalyticsChart();
     }, 100);
 });
 
@@ -1310,4 +1232,190 @@ function renderPainCalendar(startDate, endDate, records) {
     cell.appendChild(badgeContainer);
     grid.appendChild(cell);
   }
+}
+
+function switchAnalyticsTab(tab) {
+    window.activeAnalyticsTab = tab;
+  
+    const painBtn = document.getElementById("tab-pain-btn");
+    const bmBtn = document.getElementById("tab-bm-btn");
+  
+    if (tab === "pain") {
+      painBtn.style.background = "#2c3e50";
+      painBtn.style.color = "white";
+      painBtn.style.borderColor = "#2c3e50";
+      bmBtn.style.background = "#f0f0f0";
+      bmBtn.style.color = "#333";
+      bmBtn.style.borderColor = "#ccc";
+    } else {
+      bmBtn.style.background = "#8e44ad";
+      bmBtn.style.color = "white";
+      bmBtn.style.borderColor = "#8e44ad";
+      painBtn.style.background = "#f0f0f0";
+      painBtn.style.color = "#333";
+      painBtn.style.borderColor = "#ccc";
+    }
+  
+    // Re-render chart and calendar for selected mode
+    renderAnalyticsChart();
+}
+
+
+function renderAnalyticsChart() {
+    const startDate = document.getElementById("analytics-start-date")?.value;
+    const endDate = document.getElementById("analytics-end-date")?.value;
+    const canvas = document.getElementById("analyticsChart");
+    const chartTitle = document.getElementById("chart-title");
+    if (!canvas) return;
+  
+    const records = window.allRecords || [];
+  
+    if (window.activeAnalyticsTab === "pain") {
+      chartTitle.innerText = "Days Experienced per Pain Level";
+      
+      const painCounts = { "No Pain": 0, "Minor Pain": 0, "Severe Pain": 0 };
+      
+      records.forEach(item => {
+        const logData = item.data || item;
+        if (!logData.date || (startDate && logData.date < startDate) || (endDate && logData.date > endDate)) return;
+  
+        (logData.painLogs || []).forEach(log => {
+          const val = String(typeof log === "string" ? log : log.level || log.painLevel || "").toLowerCase();
+          if (val.includes("severe")) painCounts["Severe Pain"]++;
+          else if (val.includes("minor")) painCounts["Minor Pain"]++;
+          else if (val.includes("no")) painCounts["No Pain"]++;
+        });
+      });
+  
+      drawChart(canvas, ["No Pain", "Minor Pain", "Severe Pain"], [painCounts["No Pain"], painCounts["Minor Pain"], painCounts["Severe Pain"]], ["#2ecc71", "#f1c40f", "#e74c3c"]);
+      renderPainCalendar(startDate, endDate, records);
+  
+    } else if (window.activeAnalyticsTab === "bm") {
+      chartTitle.innerText = "Bowel Movements by Type";
+  
+      const typeCounts = {};
+      
+      records.forEach(item => {
+        const logData = item.data || item;
+        if (!logData.date || (startDate && logData.date < startDate) || (endDate && logData.date > endDate)) return;
+  
+        (logData.bowelMovements || []).forEach(bm => {
+          const type = bm.type || "Unspecified";
+          typeCounts[type] = (typeCounts[type] || 0) + 1;
+        });
+      });
+  
+      const labels = Object.keys(typeCounts).length ? Object.keys(typeCounts) : ["None"];
+      const data = Object.keys(typeCounts).length ? Object.values(typeCounts) : [0];
+  
+      drawChart(canvas, labels, data, "#8e44ad");
+      renderBMCalendar(startDate, endDate, records);
+    }
+}
+  
+function drawChart(canvas, labels, data, colors) {
+    if (window.painChartInstance) {
+      window.painChartInstance.destroy();
+    }
+    const ctx = canvas.getContext("2d");
+    window.painChartInstance = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+}
+
+function renderBMCalendar(startDate, endDate, records) {
+    const grid = document.getElementById("calendar-grid");
+    const titleHeader = document.getElementById("calendar-title");
+    if (!grid || !startDate) return;
+    grid.innerHTML = "";
+  
+    const [activeYear, activeMonth] = (window.activeCalendarMonth || startDate.substring(0, 7)).split("-").map(Number);
+    const activeMonthIndex = activeMonth - 1;
+  
+    if (titleHeader) {
+      const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+      titleHeader.innerText = `${monthName} ${activeYear} BM Calendar`;
+    }
+  
+    const bmMap = {};
+  
+    records.forEach(item => {
+      const logData = item.data || item;
+      const logDate = logData.date;
+      if (!logDate || !logDate.startsWith(`${activeYear}-${String(activeMonth).padStart(2, '0')}`)) return;
+  
+      (logData.bowelMovements || []).forEach(bm => {
+        if (!bmMap[logDate]) bmMap[logDate] = [];
+        bmMap[logDate].push({
+          time: formatTo12Hour(bm.time),
+          type: bm.type || "BM"
+        });
+      });
+    });
+  
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    dayNames.forEach(day => {
+      const header = document.createElement("div");
+      header.style.fontWeight = "bold";
+      header.innerText = day;
+      grid.appendChild(header);
+    });
+  
+    const firstDayIndex = new Date(activeYear, activeMonthIndex, 1).getDay();
+    const totalDays = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
+  
+    for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement("div"));
+  
+    for (let d = 1; d <= totalDays; d++) {
+      const fullDateKey = `${activeYear}-${String(activeMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const entries = bmMap[fullDateKey] || [];
+  
+      const cell = document.createElement("div");
+      cell.style.border = "1px solid #e0e0e0";
+      cell.style.borderRadius = "4px";
+      cell.style.padding = "4px 2px";
+      cell.style.minHeight = "55px";
+      cell.style.backgroundColor = "#ffffff";
+  
+      const numSpan = document.createElement("span");
+      numSpan.style.fontWeight = "bold";
+      numSpan.style.fontSize = "0.8rem";
+      numSpan.innerText = d;
+      cell.appendChild(numSpan);
+  
+      const container = document.createElement("div");
+      container.style.display = "flex";
+      container.style.flexDirection = "column";
+      container.style.gap = "2px";
+      container.style.marginTop = "2px";
+  
+      entries.forEach(entry => {
+        const badge = document.createElement("span");
+        badge.style.backgroundColor = "#8e44ad";
+        badge.style.color = "#fff";
+        badge.style.borderRadius = "3px";
+        badge.style.padding = "1px 3px";
+        badge.style.fontSize = "0.6rem";
+        badge.innerText = `${entry.time}`;
+        badge.title = `Type: ${entry.type} at ${entry.time}`;
+        container.appendChild(badge);
+      });
+  
+      cell.appendChild(container);
+      grid.appendChild(cell);
+    }
 }

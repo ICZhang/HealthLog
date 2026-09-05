@@ -401,27 +401,33 @@
             <input type="date" id="analytics-end-date" style="padding: 4px 8px; font-size: 0.85rem; border: 1px solid #ccc; border-radius: 4px;" />
           </div>
       
-          <!-- 1. GRAPH SECTION -->
-          <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
-            <h4 style="margin: 0 0 10px 0; text-align: center;">Days Experienced per Pain Level</h4>
+          <!-- CATEGORY TABS -->
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+            <button type="button" id="tab-pain-btn" onclick="switchAnalyticsTab('pain')" style="padding: 6px 16px; font-weight: bold; border-radius: 20px; border: 1px solid #2c3e50; background: #2c3e50; color: white; cursor: pointer;">
+            Pain Logs
+            </button>
+            <button type="button" id="tab-bm-btn" onclick="switchAnalyticsTab('bm')" style="padding: 6px 16px; font-weight: bold; border-radius: 20px; border: 1px solid #ccc; background: #f0f0f0; color: #333; cursor: pointer;">
+            Bowel Movements
+            </button>
+        </div>
+        
+        <!-- GRAPH SECTION -->
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+            <h4 id="chart-title" style="margin: 0 0 10px 0; text-align: center;">Days Experienced per Pain Level</h4>
             <div style="position: relative; height: 240px; width: 100%;">
-              <canvas id="painChart"></canvas>
+            <canvas id="analyticsChart"></canvas>
             </div>
-          </div>
-      
-          <!-- 2. CALENDAR SECTION -->
-          <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+        </div>
+        
+        <!-- CALENDAR SECTION -->
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
             <h4 id="calendar-title" style="margin: 0 0 10px 0; text-align: center;">Monthly Pain Calendar</h4>
-            
-            <!-- Navigation Controls for Multi-Month Views -->
-            <div id="calendar-month-nav" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px;">
-              <!-- Rendered dynamically by JavaScript -->
-            </div>
-          
-            <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85rem;">
-              <!-- JavaScript renders calendar cells here -->
-            </div>
-          </div>
+            <div id="calendar-month-nav" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px;"></div>
+            <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.85rem;"></div>
+        </div>
+
+
+
       
         </div>
       
