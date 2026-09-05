@@ -763,90 +763,100 @@ function addCromolynRow(data = {}) {
 
 // Render read-only record details
 function showViewModal(data) {
-    const modal = document.getElementById("view-modal");
-    const modalBody = document.getElementById("view-modal-body");
-  
-    modalBody.innerHTML = `
-      <div style="margin-bottom: 12px; text-align: center;">
-        <h3 style="margin: 0; color: #2c3e50; font-size: 1.25rem;">📅 Care Log for ${data.date || 'N/A'}</h3>
-        <p style="margin: 4px 0 0 0; color: #666; font-size: 0.9rem;">Logged at: ${data.time || 'N/A'}</p>
-      </div>
-      <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 15px 0;" />
-      
-      <p><strong>Bowel Movements:</strong></p>
-      <ul>
-        ${data.bowelMovements?.length 
-          ? data.bowelMovements.map(bm => `<li>Time: ${bm.time || 'N/A'} | Type: ${bm.type || 'N/A'} | Amount: ${bm.amount || 'N/A'} | Color: ${bm.color || 'N/A'}</li>`).join('')
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Warm Water Log:</strong></p>
-      <ul>
-        ${Array.isArray(data.warmWater) && data.warmWater.length 
-          ? data.warmWater.map((w, idx) => `<li>Cup ${idx + 1}: at ${w.time || 'N/A'}</li>`).join('')
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Cromolyn & Other Meds:</strong></p>
-      <ul>
-        ${data.cromolynMeds?.length 
-          ? data.cromolynMeds.map(m => `<li>${m.name || 'Unnamed'}: at ${m.time || 'N/A'}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Herbal Meds:</strong></p>
-      <ul>
-        ${data.herbalMeds?.length 
-          ? data.herbalMeds.map(h => `<li>${h.name || 'Unnamed'}: at ${h.time || 'N/A'}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Enteragram:</strong></p>
-      <ul>
-        ${data.enteragramDoses?.length 
-          ? data.enteragramDoses.map(e => `<li>Dose: ${e.dose || 'N/A'} at ${e.time || 'N/A'}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Formula / Hydration:</strong></p>
-      <ul>
-        ${data.formulaHydration?.length ? data.formulaHydration.map(f => `<li>${f}</li>`).join('') : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Activities:</strong></p>
-      <ul>
-        ${data.activities?.length ? data.activities.map(a => `<li>${a}</li>`).join('') : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Foods:</strong></p>
-      <ul>
-        ${data.foods?.length ? data.foods.map(f => `<li>${f.name}: ${f.amount || 'Checked'}</li>`).join('') : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Pain Logs:</strong></p>
-      <ul>
-        ${data.painLogs?.length 
-          ? data.painLogs.map(p => `<li>${p.level || 'Unspecified'}: at ${p.time || 'N/A'}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Mood Logs:</strong></p>
-      <ul>
-        ${data.moodLogs?.length 
-          ? data.moodLogs.map(m => `<li>${m.zone || 'Unspecified'}: at ${m.time || 'N/A'}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Behavior Logs:</strong></p>
-      <ul>
-        ${data.behaviorLogs?.length 
-          ? data.behaviorLogs.map(b => `<li>${b.type || 'Unspecified'}: at ${b.time || 'N/A'}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
-    `;
-  
-    modal.classList.remove("hidden");
-  }
+  const modal = document.getElementById("view-modal");
+  const modalBody = document.getElementById("view-modal-body");
+
+  modalBody.innerHTML = `
+    div style="padding-top: 15px; margin-bottom: 12px; text-align: center;">
+        <h3 style="margin: 0; color: #2c3e50; font-size: 1.3rem;">📅 Care Log Summary</h3>
+        <p style="margin: 6px 0 0 0; color: #555; font-size: 0.95rem; font-weight: bold;">
+            Date: <span style="font-weight: normal; color: #333;">${data.date || 'N/A'}</span>
+        </p>
+        <p style="margin: 2px 0 0 0; color: #555; font-size: 0.9rem;">
+            Log Entry Time: <span style="font-weight: normal; color: #333;">${data.time || 'N/A'}</span>
+        </p>
+    </div>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 15px 0;" />
+    
+    <p><strong>Bowel Movements:</strong></p>
+    <ul>
+      ${data.bowelMovements?.length 
+        ? data.bowelMovements.map(bm => `<li>Time: ${bm.time || 'N/A'} | Type: ${bm.type || 'N/A'} | Amount: ${bm.amount || 'N/A'} | Color: ${bm.color || 'N/A'}</li>`).join('')
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Warm Water Log:</strong></p>
+    <ul>
+      ${Array.isArray(data.warmWater) && data.warmWater.length 
+        ? data.warmWater.map((w, idx) => `<li>Cup ${idx + 1}: at ${w.time || 'N/A'}</li>`).join('')
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Cromolyn & Other Meds:</strong></p>
+    <ul>
+    ${data.cromolynMeds?.length 
+        ? data.cromolynMeds.map(m => `<li>${m.name || 'Unnamed'}: at ${m.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Herbal Meds:</strong></p>
+    <ul>
+      ${data.herbalMeds?.length 
+        ? data.herbalMeds.map(h => `<li>${h.name || 'Unnamed'}: at ${h.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Enteragram:</strong></p>
+    <ul>
+      ${data.enteragramDoses?.length 
+        ? data.enteragramDoses.map(e => `<li>Dose: ${e.dose || 'N/A'} at ${e.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Formula:</strong></p>
+    <ul>
+      ${data.formulaHydration?.length ? data.formulaHydration.map(f => `<li>${f}</li>`).join('') : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Activities:</strong></p>
+    <ul>
+      ${data.activities?.length ? data.activities.map(a => `<li>${a}</li>`).join('') : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Foods:</strong></p>
+    <ul>
+      ${data.foods?.length ? data.foods.map(f => `<li>${f.name}: ${f.amount || 'Checked'}</li>`).join('') : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Pain Logs:</strong></p>
+    <ul>
+    ${data.painLogs?.length 
+        ? data.painLogs.map(p => `<li>${p.level || 'Unspecified'}: at ${p.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Mood Logs:</strong></p>
+    <ul>
+    ${data.moodLogs?.length 
+        ? data.moodLogs.map(m => `<li>${m.zone || 'Unspecified'}: at ${m.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Behavior Logs:</strong></p>
+    <ul>
+    ${data.behaviorLogs?.length 
+        ? data.behaviorLogs.map(b => `<li>${b.type || 'Unspecified'}: at ${b.time || 'N/A'}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
+  `;
+
+  modal.classList.remove("hidden");
+}
+
+// Close Modal Event Handler
+document.getElementById("close-modal-btn")?.addEventListener("click", () => {
+  document.getElementById("view-modal").classList.add("hidden");
+});
 
