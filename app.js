@@ -1004,9 +1004,6 @@ document.querySelectorAll('input[type="date"]').forEach(input => {
 window.activeCalendarMonth = null;
 
 function renderPainCalendar(startDate, endDate, records) {
-    if (monthsInRange.length > 0 && !monthsInRange.includes(window.activeCalendarMonth)) {
-        window.activeCalendarMonth = monthsInRange[0];
-    }
   const grid = document.getElementById("calendar-grid");
   const titleHeader = document.getElementById("calendar-title");
   const navContainer = document.getElementById("calendar-month-nav");
@@ -1069,8 +1066,8 @@ function renderPainCalendar(startDate, endDate, records) {
         }
 
         btn.addEventListener("click", () => {
-          window.activeCalendarMonth = mKey;
-          renderPainCalendar(startDate, endDate, records);
+            window.activeCalendarMonth = mKey;
+            renderAnalyticsChart();
         });
 
         navContainer.appendChild(btn);
@@ -1201,6 +1198,7 @@ function renderPainCalendar(startDate, endDate, records) {
 
 window.switchAnalyticsTab = function(tab) {
     window.activeAnalyticsTab = tab;
+    window.activeCalendarMonth = null;
   
     const painBtn = document.getElementById("tab-pain-btn");
     const bmBtn = document.getElementById("tab-bm-btn");
@@ -1335,9 +1333,6 @@ function drawChart(canvas, labels, data, colors) {
 }
 
 function renderBMCalendar(startDate, endDate, records) {
-    if (monthsInRange.length > 0 && !monthsInRange.includes(window.activeCalendarMonth)) {
-        window.activeCalendarMonth = monthsInRange[0];
-    }
     const grid = document.getElementById("calendar-grid");
     const titleHeader = document.getElementById("calendar-title");
     const navContainer = document.getElementById("calendar-month-nav");
