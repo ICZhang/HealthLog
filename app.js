@@ -1032,7 +1032,7 @@ function renderPainCalendar(startDate, endDate, records) {
   
     // Update Section Title dynamically
     if (titleHeader) {
-      const monthName = new Date(year, month, 1).toLocaleString("default", { month: "Long" });
+      const monthName = new Date(year, month, 1).toLocaleString("default", { month: "long" });
       titleHeader.innerText = `${monthName} ${year} Pain Calendar`;
     }
   
@@ -1250,3 +1250,15 @@ const endDateInput = document.getElementById("analytics-end-date");
     });
   }
 });
+
+document.querySelectorAll('input[type="date"]').forEach(input => {
+    input.style.cursor = "pointer";
+    input.addEventListener("pointerdown", function(e) {
+      // Check if browser supports showPicker
+      if (typeof this.showPicker === "function") {
+        // Prevent double-triggering default focus behavior
+        e.preventDefault(); 
+        this.showPicker();
+      }
+    });
+  });
