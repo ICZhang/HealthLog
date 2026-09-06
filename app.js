@@ -2065,11 +2065,11 @@ function renderMonthNavigation(startDate, endDate) {
 }
 
 function renderMoodCalendar(startDate, endDate, records) {
-  renderGenericCountCalendar(records, "Mood Calendar", "#f1c40f", log => log.moods || log.mood);
+  renderGenericCountCalendar(records, "Mood Calendar", "#f1c40f", log => log.moodLogs || log.mood);
 }
 
 function renderBehaviorCalendar(startDate, endDate, records) {
-  renderGenericCountCalendar(records, "Behavior Calendar", "#e67e22", log => log.behaviors || log.behavior);
+  renderGenericCountCalendar(records, "Behavior Calendar", "#e67e22", log => log.behaviorLogs || log.behavior);
 }
 
 function renderSummaryCalendar(startDate, endDate, records) {
