@@ -1373,29 +1373,38 @@ function renderAnalyticsChart() {
 
   } else if (activeView === "formula") {
     if (chartTitle) chartTitle.innerText = "Daily Formula Scoops Overview";
-
+  
     const formulaByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
       if (!logData.date) return;
       if (startDate && logData.date < startDate) return;
       if (endDate && logData.date > endDate) return;
-
-      let dailyTotal = 0;
-      (logData.formula || []).forEach(f => {
-        dailyTotal += parseFloat(f.amount || f.scoops || 0) || 0;
+  
+      // Check formulaHydration key
+      const formulaEntries = logData.formulaHydration || logData.formula || [];
+      
+      let entryTotal = 0;
+      formulaEntries.forEach(f => {
+        const scoops = typeof f === "object" ? parseFloat(f.amount || f.scoops || 0) : parseFloat(f || 0);
+        entryTotal += isNaN(scoops) ? 0 : scoops;
       });
-      if (dailyTotal > 0) formulaByDate[logData.date] = dailyTotal;
+  
+      if (entryTotal > 0) {
+        // Accumulate totals per date across multiple form submissions
+        formulaByDate[logData.date] = (formulaByDate[logData.date] || 0) + entryTotal;
+      }
     });
-
+  
     const dates = Object.keys(formulaByDate).sort();
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
-
-    drawChart(canvas, labels, data, ["#3498db"]);
+  
+    // Uses unified drawChart to properly destroy previous active charts
+    drawScatterChart(canvas, labels, data, "#e54363");
     renderFormulaCalendar(startDate, endDate, records);
-
-  } else if (activeView === "water") {
+  } 
+  else if (activeView === "water") {
     if (chartTitle) chartTitle.innerText = "Daily Water Cups Overview";
 
     const waterByDate = {};
@@ -1457,7 +1466,7 @@ function drawScatterChart(canvas, labels, data, pointColor = "#1abc9c") {
     data: {
       labels: labels,
       datasets: [{
-        label: 'Cups of Water',
+        label: 'Cups  of  Water',
         data: data,
         backgroundColor: pointColor,
         borderColor: pointColor,
@@ -1473,7 +1482,7 @@ function drawScatterChart(canvas, labels, data, pointColor = "#1abc9c") {
       scales: {
         y: {
           beginAtZero: true,
-          title: { display: true, text: 'Cups of Water' },
+          title: { display: true, text: 'Cups  of  Water' },
           ticks: { stepSize: 1 }
         },
         x: {
@@ -1798,7 +1807,7 @@ function renderFormulaCalendar(startDate, endDate, records) {
   if (!grid) return;
   grid.innerHTML = "";
 
-  const [activeYearStr, activeMonthStr] = (window.activeCalendarMonth || new Date().toISOString().slice(0,7)).split("-");
+  const [activeYearStr, activeMonthStr] = (window.activeCalendarMonth || new Date().toISOString().slice(0, 7)).split("-");
   const activeYear = parseInt(activeYearStr, 10);
   const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
 
@@ -1807,16 +1816,21 @@ function renderFormulaCalendar(startDate, endDate, records) {
     titleHeader.innerText = `${monthName} ${activeYear} Formula Intake Calendar`;
   }
 
-  // Calculate daily totals
+  // Calculate daily totals across all logs on the same date
   const dailyTotals = {};
   records.forEach(item => {
     const logData = item.data || item;
     const logDate = logData.date;
     if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
 
+    // Support both formulaHydration and legacy formula keys
+    const formulaEntries = logData.formulaHydration || logData.formula || [];
+    
     let totalScoops = 0;
-    (logData.formula || []).forEach(f => {
-      totalScoops += parseFloat(f.amount || f.scoops || 0) || 0;
+    formulaEntries.forEach(f => {
+      // Handle both object format { amount: 12 } and direct numbers
+      const scoops = typeof f === "object" ? parseFloat(f.amount || f.scoops || 0) : parseFloat(f || 0);
+      totalScoops += isNaN(scoops) ? 0 : scoops;
     });
 
     if (totalScoops > 0) {
