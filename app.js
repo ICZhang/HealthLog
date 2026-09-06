@@ -1430,7 +1430,12 @@ function renderAnalyticsChart() {
   else if (activeView === "mood") {
     if (chartTitle) chartTitle.innerText = "Mood Logs Breakdown";
 
-    const moodCounts = {};
+    const moodCounts = {
+      "Blue Zone": 0,
+      "Green Zone": 0,
+      "Yellow Zone": 0,
+      "Red Zone": 0
+    };
 
     records.forEach(item => {
       const logData = item.data || item;
@@ -1443,31 +1448,25 @@ function renderAnalyticsChart() {
 
       moodList.forEach(m => {
         if (!m) return;
-        // Direct string handling + fallback for object properties
-        const rawVal = typeof m === "string" ? m : (m.label || m.type || m.level || m.mood || m.name || "");
-        const val = String(rawVal).trim();
         
-        if (val) {
-          const key = val.charAt(0).toUpperCase() + val.slice(1);
-          moodCounts[key] = (moodCounts[key] || 0) + 1;
+        // Read directly from m.zone (or string fallback)
+        const zoneVal = typeof m === "object" ? (m.zone || m.label || m.type || "") : String(m);
+        const cleanVal = zoneVal.trim();
+
+        if (cleanVal && moodCounts.hasOwnProperty(cleanVal)) {
+          moodCounts[cleanVal]++;
+        } else if (cleanVal) {
+          moodCounts[cleanVal] = (moodCounts[cleanVal] || 0) + 1;
         }
       });
     });
 
-    const palette = ["#f1c40f", "#9b59b6", "#3498db", "#e67e22", "#2ecc71", "#e74c3c"];
-    const labels = Object.keys(moodCounts).sort();
+    const labels = ["Blue Zone", "Green Zone", "Yellow Zone", "Red Zone"];
+    const chartData = labels.map(l => moodCounts[l]);
+    const chartColors = ["#3498db", "#2ecc71", "#f1c40f", "#e74c3c"];
 
-    const colorMap = {};
-    labels.forEach((label, idx) => {
-      colorMap[label] = palette[idx % palette.length];
-    });
-
-    const chartLabels = labels.length ? labels : ["No Mood Data"];
-    const chartData = labels.length ? labels.map(l => moodCounts[l]) : [0];
-    const chartColors = labels.length ? labels.map(l => colorMap[l]) : ["#f1c40f"];
-
-    drawChart(canvas, chartLabels, chartData, chartColors);
-    renderMoodCalendar(startDate, endDate, records, colorMap);
+    drawChart(canvas, labels, chartData, chartColors);
+    renderMoodCalendar(startDate, endDate, records);
   }
   
   else if (activeView === "behavior") {
@@ -2106,7 +2105,7 @@ function renderMonthNavigation(startDate, endDate) {
   });
 }
 
-function renderMoodCalendar(startDate, endDate, records, colorMap = {}) {
+function renderMoodCalendar(startDate, endDate, records) {
   const grid = document.getElementById("calendar-grid");
   const titleHeader = document.getElementById("calendar-title");
   const navContainer = document.getElementById("calendar-month-nav");
@@ -2114,6 +2113,13 @@ function renderMoodCalendar(startDate, endDate, records, colorMap = {}) {
   grid.innerHTML = "";
 
   if (!startDate || !endDate) return;
+
+  const zoneColorMap = {
+    "Blue Zone": "#3498db",
+    "Green Zone": "#2ecc71",
+    "Yellow Zone": "#f1c40f",
+    "Red Zone": "#e74c3c"
+  };
 
   const monthsInRange = [];
   let curr = new Date(startDate + "T00:00:00");
@@ -2190,13 +2196,10 @@ function renderMoodCalendar(startDate, endDate, records, colorMap = {}) {
     list.forEach(entry => {
       if (!entry) return;
 
-      let rawLabel = typeof entry === "string" ? entry : (entry.label || entry.type || entry.level || entry.mood || entry.name || "");
-      rawLabel = String(rawLabel).trim();
-      if (!rawLabel) return;
+      const zoneName = typeof entry === "object" ? (entry.zone || entry.label || "") : String(entry);
+      if (!zoneName) return;
 
-      const formattedLabel = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1);
-
-      let rawTime = typeof entry === "object" ? (entry.time || entry.logTime || "") : "";
+      let rawTime = typeof entry === "object" ? (entry.time || "") : "";
       if (!rawTime) rawTime = logData.time || "";
 
       let displayTime = rawTime;
@@ -2208,11 +2211,11 @@ function renderMoodCalendar(startDate, endDate, records, colorMap = {}) {
         displayTime = `${hours}:${m} ${suffix}`;
       }
 
-      const color = colorMap[formattedLabel] || "#f1c40f";
+      const color = zoneColorMap[zoneName] || "#3498db";
 
       if (!dateItemsMap[logDate]) dateItemsMap[logDate] = [];
       dateItemsMap[logDate].push({
-        label: formattedLabel,
+        label: zoneName,
         time: displayTime,
         color: color
       });
