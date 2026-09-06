@@ -1582,14 +1582,28 @@ function createFoodRowElement(foodName, unit = "", amount = "", isChecked = fals
   const row = document.createElement("div");
   row.className = "food-row";
 
-  // Generate a safe unique ID for label matching
   const safeId = `food-${foodName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
   const placeholderText = unit ? `Amount (${unit})` : "Amount";
 
-  row.innerHTML = `<input type="checkbox" id="${safeId}" name="food-check" value="${foodName}" ${isChecked ? "checked" : ""}><label for="${safeId}">${foodName}</label><input type="text" name="food-amount" placeholder="${placeholderText}" value="${amount}" />`;
+  row.innerHTML = `<input type="checkbox" id="${safeId}" name="food-check" value="${foodName}" ${isChecked ? "checked" : ""}><label for="${safeId}">${foodName}</label><input type="text" name="food-amount" placeholder="${placeholderText}" value="${amount}" /><button type="button" class="remove-food-btn" data-food="${foodName}" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-weight: bold; font-size: 1.1rem; padding: 0 4px; margin-left: 4px;">×</button>`;
 
   return row;
 }
+
+document.getElementById("foods-grid")?.addEventListener("click", (e) => {
+  if (e.target.classList.contains("remove-food-btn")) {
+    const foodToRemove = e.target.getAttribute("data-food");
+
+    // Update localStorage
+    let customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+    customFoods = customFoods.filter(f => f.name.toLowerCase() !== foodToRemove.toLowerCase());
+    localStorage.setItem("customFoods", JSON.stringify(customFoods));
+
+    // Remove row from DOM
+    const row = e.target.closest(".food-row");
+    if (row) row.remove();
+  }
+});
 
 // LocalStorage helpers for custom foods
 function getCustomFoods() {
