@@ -25,13 +25,13 @@ let painChartInstance = null;
 window.activeAnalyticsTab = "pain";
 
 const BM_TYPE_COLORS = {
-    1: "#8e44ad", // Purple
-    2: "#2980b9", // Blue
-    3: "#27ae60", // Green
-    4: "#f1c40f", // Yellow
-    5: "#e67e22", // Orange
-    6: "#e74c3c", // Red
-    7: "#7f8c8d"  // Gray
+    2: "#8e44ad", // Gray 
+    3: "#2980b9", // Purple
+    4: "#27ae60", // Blue
+    5: "#f1c40f", // Green
+    6: "#e67e22", // Yellow
+    7: "#e74c3c", // Orange
+    1: "#7f8c8d"  // Red
 };
 
 // DOM Elements
@@ -813,7 +813,7 @@ function addBehaviorRow(data = {}) {
     row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
     
     // Check if saved data is custom text (not one of the predefined options)
-    const predefined = ["Screaming", "Throwing", ""];
+    const predefined = ["Screaming", "Throwing",""];
     const isCustom = data.type && !predefined.includes(data.type);
   
     row.innerHTML = `
