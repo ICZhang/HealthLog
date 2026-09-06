@@ -1578,77 +1578,74 @@ function renderBMCalendar(startDate, endDate, records) {
     }
 }
 
-function createFoodRowElement(foodName, amount = "", isChecked = false, isNew = false) {
-    const row = document.createElement("div");
-    row.className = `food-row ${isNew ? "new-food-highlight" : ""}`;
-    
-    // Use space-between layout so input aligns perfectly on the right
-    row.style.cssText = "display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; width: 100%;";
-  
-    row.innerHTML = `
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem;">
-        <input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} />
-        <span>${foodName}</span>
-      </label>
-      <input 
-        type="text" 
-        placeholder="Amount" 
-        value="${amount}" 
-        style="width: 140px; padding: 4px 8px; margin: 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" 
-      />
-    `;
-  
-    return row;
+function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isNew = false) {
+  const row = document.createElement("div");
+  row.className = `food-row ${isNew ? "new-food-highlight" : ""}`;
+  row.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; width: 100%; box-sizing: border-box;";
+
+  const placeholderText = unit ? `Amount (${unit})` : "Amount";
+
+  row.innerHTML = `<label style="display: flex; align-items: center; gap: 8px; cursor: pointer;"><input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} /><span>${foodName}</span></label><input type="text" placeholder="${placeholderText}" value="${amount}" style="width: 130px; height: 28px; padding: 4px; margin: 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />`;
+
+  return row;
 }
 
 // LocalStorage helpers for custom foods
 function getCustomFoods() {
     return JSON.parse(localStorage.getItem("customFoods") || "[]");
-  }
+}
   
-  function saveCustomFood(foodName) {
+function saveCustomFood(foodName) {
     const customFoods = getCustomFoods();
     if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
       customFoods.push({ name: foodName, isNew: true });
       localStorage.setItem("customFoods", JSON.stringify(customFoods));
     }
-  }
+}
   
   // Add Custom Food Button Handler
-  document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
-    const inputEl = document.getElementById("new-food-input");
-    const foodName = inputEl.value.trim();
+document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
+    const nameInput = document.getElementById("new-food-input");
+    const unitInput = document.getElementById("new-food-unit");
+  
+    const foodName = nameInput.value.trim();
+    const unit = unitInput ? unitInput.value.trim() : "";
   
     if (!foodName) return;
   
-    // Save to persistent storage
-    saveCustomFood(foodName);
+    // Save food with unit to localStorage
+    const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+    if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
+      customFoods.push({ name: foodName, unit: unit, isNew: true });
+      localStorage.setItem("customFoods", JSON.stringify(customFoods));
+    }
   
-    // Append to current grid
+    // Append new row to UI
     const foodsContainer = document.getElementById("foods-grid");
-    const newRow = createFoodRowElement(foodName, "", false, true);
+    const newRow = createFoodRowElement(foodName, unit, "", false, true);
     foodsContainer.appendChild(newRow);
   
-    inputEl.value = "";
+    // Clear input fields
+    nameInput.value = "";
+    if (unitInput) unitInput.value = "";
 });
   
 
 function loadStoredCustomFoods() {
-    const foodsContainer = document.getElementById("foods-grid");
-    if (!foodsContainer) return;
-  
-    const customFoods = getCustomFoods();
-    customFoods.forEach(food => {
-      // Prevent duplicate rendering if already in HTML
-      const existing = Array.from(foodsContainer.querySelectorAll("span")).some(
-        span => span.textContent.toLowerCase() === food.name.toLowerCase()
-      );
-  
-      if (!existing) {
-        const row = createFoodRowElement(food.name, "", false, food.isNew);
-        foodsContainer.appendChild(row);
-      }
-    });
+  const foodsContainer = document.getElementById("foods-grid");
+  if (!foodsContainer) return;
+
+  const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+  customFoods.forEach(food => {
+    const existing = Array.from(foodsContainer.querySelectorAll("span")).some(
+      span => span.textContent.toLowerCase() === food.name.toLowerCase()
+    );
+
+    if (!existing) {
+      const row = createFoodRowElement(food.name, food.unit || "", "", false, food.isNew);
+      foodsContainer.appendChild(row);
+    }
+  });
 }
   
 loadStoredCustomFoods();
