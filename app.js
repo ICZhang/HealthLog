@@ -1580,15 +1580,22 @@ function renderBMCalendar(startDate, endDate, records) {
 
 function createFoodRowElement(foodName, amount = "", isChecked = false, isNew = false) {
     const row = document.createElement("div");
-    row.className = `food-row dynamic-row ${isNew ? "new-food-highlight" : ""}`;
-    row.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 6px;";
+    row.className = `food-row ${isNew ? "new-food-highlight" : ""}`;
+    
+    // Use space-between layout so input aligns perfectly on the right
+    row.style.cssText = "display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; width: 100%;";
   
     row.innerHTML = `
-      <label style="flex: 1; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem;">
         <input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} />
         <span>${foodName}</span>
       </label>
-      <input type="text" placeholder="Amount" value="${amount}" style="width: 130px; padding: 4px; margin: 0; border: 1px solid #ccc; border-radius: 4px;" />
+      <input 
+        type="text" 
+        placeholder="Amount" 
+        value="${amount}" 
+        style="width: 140px; padding: 4px 8px; margin: 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" 
+      />
     `;
   
     return row;
