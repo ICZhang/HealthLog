@@ -359,9 +359,35 @@ function addTextRow(container, className, placeholder, value = "") {
   container.appendChild(row);
 }
 
+function addFormulaRow(data = {}) {
+    const row = document.createElement("div");
+    row.className = "dynamic-row formula-row";
+    row.style.cssText = "display: flex; align-items: center; gap: 10px; margin-bottom: 6px; width: 100%;";
+  
+    const amountValue = data.amount !== undefined ? data.amount : 12;
+    const timeValue = data.time || "";
+  
+    row.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <label style="font-size: 0.85rem; font-weight: bold; white-space: nowrap;">Amount in scoops:</label>
+        <input type="number" class="formula-amount" value="${amountValue}" style="width: 70px; padding: 4px; border: 1px solid #ccc; border-radius: 4px;" />
+      </div>
+  
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <label style="font-size: 0.85rem; font-weight: bold;">Time:</label>
+        <input type="time" class="formula-time" value="${timeValue}" style="width: 130px; margin: 0; text-align: center;" />
+      </div>
+  
+      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center; color: white; border: none; border-radius: 4px; cursor: pointer;">X</button>
+    `;
+  
+    row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+    formulaContainer.appendChild(row);
+}
+
 // Event Listeners for Adding Rows
 addBmBtn?.addEventListener("click", () => addBmRow());
-addFormulaBtn?.addEventListener("click", () => addTextRow(formulaContainer, "formula-row", "Formula / Hydration Entry"));
+addFormulaBtn?.addEventListener("click", () => addFormulaRow());
 addActivityBtn?.addEventListener("click", () => addTextRow(activitiesContainer, "activity-row", "Activity Details"));
 addWaterBtn?.addEventListener("click", () => addWaterRow());
 addHerbalBtn?.addEventListener("click", () => addHerbalRow());
@@ -440,6 +466,15 @@ function getFormData() {
   document.querySelectorAll(".water-row").forEach(row => {
     const time = row.querySelector(".water-time").value;
     if (time) waterData.push({ time });
+  });
+
+  const formulaEntries = [];
+  document.querySelectorAll(".formula-row").forEach(row => {
+    const amount = row.querySelector(".formula-amount")?.value || 12;
+    const time = row.querySelector(".formula-time")?.value || "";
+    if (amount || time) {
+        formulaEntries.push({ amount: Number(amount), time });
+    }
   });
 
   const herbalMeds = [];
@@ -1505,7 +1540,7 @@ function renderBMCalendar(startDate, endDate, records) {
       cell.appendChild(container);
       grid.appendChild(cell);
     }
-  }
+}
 
 
 
