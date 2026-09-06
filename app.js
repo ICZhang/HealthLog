@@ -1307,22 +1307,21 @@ function renderAnalyticsChart() {
   const chartTitle = document.getElementById("chart-title");
   if (!canvas) return;
 
-  // Read active view directly from select element, or fallback to activeAnalyticsTab
   const viewSelect = document.getElementById("analytics-view-select");
   const activeView = viewSelect ? viewSelect.value : (window.activeAnalyticsTab || "pain");
-
   const records = window.allRecords || allPastRecords || [];
+
+  // Re-render shared month navigation
+  renderMonthNavigation(startDate, endDate);
 
   if (activeView === "pain") {
     if (chartTitle) chartTitle.innerText = "Days Experienced per Pain Level";
-    
+
     const painCounts = { "No Pain": 0, "Minor Pain": 0, "Severe Pain": 0 };
-    
+
     records.forEach(item => {
       const logData = item.data || item;
       if (!logData.date) return;
-
-      // Filter by overall range OR active month selected via calendar nav
       if (startDate && logData.date < startDate) return;
       if (endDate && logData.date > endDate) return;
 
@@ -1342,54 +1341,82 @@ function renderAnalyticsChart() {
     );
     renderPainCalendar(startDate, endDate, records);
 
-  } 
-  else if (activeView === "bm") {
+  } else if (activeView === "bm") {
     if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
-  
+
     const typeCounts = {};
-    
     records.forEach(item => {
       const logData = item.data || item;
       if (!logData.date) return;
-  
       if (startDate && logData.date < startDate) return;
       if (endDate && logData.date > endDate) return;
-  
+
       (logData.bowelMovements || []).forEach(bm => {
         if (!bm.type) return;
-  
         const label = `Type ${bm.type}`;
         typeCounts[label] = (typeCounts[label] || 0) + 1;
       });
     });
-  
+
     const sortedKeys = Object.keys(typeCounts).sort((a, b) => {
-      const numA = parseInt(a.replace("Type ", ""), 10);
-      const numB = parseInt(b.replace("Type ", ""), 10);
-      return numA - numB;
+      return parseInt(a.replace("Type ", ""), 10) - parseInt(b.replace("Type ", ""), 10);
     });
-  
+
     const labels = sortedKeys.length ? sortedKeys : ["No Logged Types"];
     const data = sortedKeys.length ? sortedKeys.map(k => typeCounts[k]) : [0];
-  
-    // Map each sorted label to its corresponding palette color
     const barColors = sortedKeys.length 
-      ? sortedKeys.map(k => {
-          const typeNum = parseInt(k.replace("Type ", ""), 10);
-          return BM_TYPE_COLORS[typeNum] || "#8e44ad";
-        })
+      ? sortedKeys.map(k => BM_TYPE_COLORS[parseInt(k.replace("Type ", ""), 10)] || "#8e44ad")
       : ["#bdc3c7"];
-  
+
     drawChart(canvas, labels, data, barColors);
     renderBMCalendar(startDate, endDate, records);
+
   } else if (activeView === "formula") {
-    if (chartTitle) chartTitle.innerText = "Daily Formula Scoops";
+    if (chartTitle) chartTitle.innerText = "Daily Formula Scoops Overview";
+
+    const formulaByDate = {};
+    records.forEach(item => {
+      const logData = item.data || item;
+      if (!logData.date) return;
+      if (startDate && logData.date < startDate) return;
+      if (endDate && logData.date > endDate) return;
+
+      let dailyTotal = 0;
+      (logData.formula || []).forEach(f => {
+        dailyTotal += parseFloat(f.amount || f.scoops || 0) || 0;
+      });
+      if (dailyTotal > 0) formulaByDate[logData.date] = dailyTotal;
+    });
+
+    const dates = Object.keys(formulaByDate).sort();
+    const labels = dates.length ? dates : ["No Data"];
+    const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
+
+    drawChart(canvas, labels, data, ["#3498db"]);
     renderFormulaCalendar(startDate, endDate, records);
+
   } else if (activeView === "water") {
-    if (chartTitle) chartTitle.innerText = "Daily Water Cups";
+    if (chartTitle) chartTitle.innerText = "Daily Water Cups Overview";
+
+    const waterByDate = {};
+    records.forEach(item => {
+      const logData = item.data || item;
+      if (!logData.date) return;
+      if (startDate && logData.date < startDate) return;
+      if (endDate && logData.date > endDate) return;
+
+      const waterEntries = logData.warmWater || logData.water || [];
+      const totalCups = Array.isArray(waterEntries) ? waterEntries.length : (parseFloat(waterEntries) || 0);
+      if (totalCups > 0) waterByDate[logData.date] = totalCups;
+    });
+
+    const dates = Object.keys(waterByDate).sort();
+    const labels = dates.length ? dates : ["No Data"];
+    const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
+
+    drawChart(canvas, labels, data, ["#1abc9c"]);
     renderWaterCalendar(startDate, endDate, records);
   }
-  
 }
   
 function drawChart(canvas, labels, data, colors) {
@@ -1836,7 +1863,58 @@ function renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTota
   }
 }
 
+function renderMonthNavigation(startDate, endDate) {
+  const navContainer = document.getElementById("calendar-month-nav");
+  if (!navContainer || !startDate || !endDate) return;
+  navContainer.innerHTML = "";
 
+  const monthsInRange = [];
+  let curr = new Date(startDate + "T00:00:00");
+  const last = new Date(endDate + "T00:00:00");
+
+  while (curr <= last) {
+    const yyyy = curr.getFullYear();
+    const mm = String(curr.getMonth() + 1).padStart(2, "0");
+    const key = `${yyyy}-${mm}`;
+    if (!monthsInRange.includes(key)) monthsInRange.push(key);
+    curr.setMonth(curr.getMonth() + 1);
+    curr.setDate(1);
+  }
+
+  // Ensure default active month is set
+  if (!window.activeCalendarMonth || !monthsInRange.includes(window.activeCalendarMonth)) {
+    window.activeCalendarMonth = monthsInRange[0] || new Date().toISOString().slice(0, 7);
+  }
+
+  if (monthsInRange.length <= 1) return;
+
+  monthsInRange.forEach(mKey => {
+    const [yStr, mStr] = mKey.split("-");
+    const mDate = new Date(parseInt(yStr, 10), parseInt(mStr, 10) - 1, 1);
+    const btnLabel = mDate.toLocaleString("default", { month: "short", year: "numeric" });
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.innerText = btnLabel;
+    btn.style.cssText = "padding: 4px 10px; font-size: 0.8rem; border-radius: 4px; border: 1px solid #ccc; cursor: pointer;";
+
+    if (mKey === window.activeCalendarMonth) {
+      btn.style.backgroundColor = "#2c3e50";
+      btn.style.color = "#ffffff";
+      btn.style.fontWeight = "bold";
+    } else {
+      btn.style.backgroundColor = "#ffffff";
+      btn.style.color = "#333333";
+    }
+
+    btn.addEventListener("click", () => {
+      window.activeCalendarMonth = mKey;
+      renderAnalyticsChart();
+    });
+
+    navContainer.appendChild(btn);
+  });
+}
 
 
 
