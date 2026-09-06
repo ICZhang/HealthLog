@@ -456,8 +456,10 @@ function getFormData() {
   const getValues = (selector) => {
     const vals = [];
     document.querySelectorAll(selector).forEach(row => {
-      const val = row.querySelector(".row-input").value.trim();
-      if (val) vals.push(val);
+      const input = row.querySelector(".row-input");
+      if (input && input.value) { // Guard against null
+        vals.push(input.value.trim());
+      }
     });
     return vals;
   };
@@ -470,10 +472,13 @@ function getFormData() {
 
   const formulaEntries = [];
   document.querySelectorAll(".formula-row").forEach(row => {
-    const amount = row.querySelector(".formula-amount")?.value || 12;
-    const time = row.querySelector(".formula-time")?.value || "";
-    if (amount || time) {
-        formulaEntries.push({ amount: Number(amount), time });
+  const amountInput = row.querySelector(".formula-amount");
+  const timeInput = row.querySelector(".formula-time");
+    if (amountInput || timeInput) {
+        formulaEntries.push({
+        amount: amountInput ? Number(amountInput.value) : 12,
+        time: timeInput ? timeInput.value : ""
+        });
     }
   });
 
@@ -553,7 +558,7 @@ function getFormData() {
     cromolynMeds,
     herbalMeds,
     enteragramDoses,
-    formulaHydration: getValues(".formula-row"),
+    formulaHydration: formulaEntries,
     warmWater: waterData,
     activities: getValues(".activity-row"),
     enzymes: {
@@ -652,9 +657,16 @@ function populateFormForEdit(id, data) {
 
   formulaContainer.innerHTML = "";
   if (data.formulaHydration && data.formulaHydration.length > 0) {
-    data.formulaHydration.forEach(f => addTextRow(formulaContainer, "formula-row", "Formula Entry", f));
+  data.formulaHydration.forEach(f => {
+    // Check if saved as object {amount, time} or string
+    if (typeof f === "object" && f !== null) {
+      addFormulaRow(f);
+    } else {
+      addFormulaRow({ amount: f, time: "" });
+    }
+  });
   } else {
-    addTextRow(formulaContainer, "formula-row", "Formula Entry");
+    addFormulaRow();
   }
 
   activitiesContainer.innerHTML = "";
