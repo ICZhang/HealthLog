@@ -503,7 +503,7 @@ function getFormData() {
   });
 
   const foodData = [];
-  document.querySelectorAll("#foods-grid .food-row").forEach(row => {
+document.querySelectorAll("#foods-grid .food-row").forEach(row => {
   const checkbox = row.querySelector("input[type='checkbox']");
   const amountInput = row.querySelector("input[type='text']");
   const isHighlighted = row.classList.contains("new-food-highlight");
@@ -513,10 +513,11 @@ function getFormData() {
       name: checkbox.value,
       checked: checkbox.checked,
       amount: amountInput ? amountInput.value.trim() : "",
-      isNew: isHighlighted
+      isHighlighted: isHighlighted 
     });
   }
   });
+  
 
   const painLogs = [];
   document.querySelectorAll(".pain-row").forEach(row => {
@@ -719,25 +720,40 @@ function populateFormForEdit(id, data) {
     // Populate saved foods
     if (Array.isArray(data.foods)) {
       const foodsContainer = document.getElementById("foods-grid");
-  
+    
       data.foods.forEach(savedFood => {
         let matchingRow = Array.from(document.querySelectorAll("#foods-grid .food-row")).find(row => {
           const checkbox = row.querySelector("input[type='checkbox']");
           return checkbox && checkbox.value.toLowerCase() === savedFood.name.toLowerCase();
         });
-  
-        // If missing from DOM, create dynamic row
+    
+        // Check both property names so legacy logs don't break
+        const highlighted = savedFood.isHighlighted || savedFood.isNew || false;
+    
+        // If missing from DOM, create dynamic row (passing empty unit string to keep argument positions aligned)
         if (!matchingRow && foodsContainer) {
-          matchingRow = createFoodRowElement(savedFood.name, savedFood.amount || "", savedFood.checked, savedFood.isNew || false);
+          matchingRow = createFoodRowElement(
+            savedFood.name, 
+            savedFood.unit || "", 
+            savedFood.amount || "", 
+            !!savedFood.checked, 
+            highlighted
+          );
           foodsContainer.appendChild(matchingRow);
         } else if (matchingRow) {
           // Update existing row inputs directly
           const checkbox = matchingRow.querySelector("input[type='checkbox']");
           const amountInput = matchingRow.querySelector("input[type='text']");
-  
+    
           if (checkbox) checkbox.checked = !!savedFood.checked;
           if (amountInput) amountInput.value = savedFood.amount || "";
-          if (savedFood.isNew) matchingRow.classList.add("new-food-highlight");
+    
+          // Apply or remove the highlight class based on saved state
+          if (highlighted) {
+            matchingRow.classList.add("new-food-highlight");
+          } else {
+            matchingRow.classList.remove("new-food-highlight");
+          }
         }
       });
     }
