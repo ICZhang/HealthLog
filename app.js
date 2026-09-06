@@ -1615,7 +1615,7 @@ function getCustomFoods() {
   }
   
   // Add Custom Food Button Handler
-document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
+  document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
     const inputEl = document.getElementById("new-food-input");
     const foodName = inputEl.value.trim();
   
