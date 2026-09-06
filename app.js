@@ -418,6 +418,8 @@ function resetForm() {
   moodContainer.innerHTML = "";
   behaviorContainer.innerHTML = "";
   cromolynContainer.innerHTML = "";
+  document.getElementById("day-summary-select").value = "";
+  document.getElementById("day-notes").value = "";
 
   addBmRow(); 
   addBmRow();
@@ -567,6 +569,7 @@ function getFormData() {
     painLogs,
     moodLogs,
     behaviorLogs,
+    daySummary: document.getElementById("day-summary-select")?.value || "", 
     notes: document.getElementById("day-notes")?.value || "",
     updatedAt: new Date()
   };
@@ -717,6 +720,7 @@ if (Array.isArray(data.behaviorLogs) && data.behaviorLogs.length > 0) {
     }
   });
 
+  document.getElementById("day-summary-select").value = data.daySummary || "";
   document.getElementById("day-notes").value = data.notes || "";
   tabNewBtn.click();
 }
@@ -944,7 +948,8 @@ function showViewModal(data) {
           ? data.behaviorLogs.map(b => `<li>${b.type || 'Unspecified'}: at ${formatTo12Hour(b.time)}</li>`).join('') 
           : '<li>None recorded</li>'}
       </ul>
-  
+    
+      <p><strong>Day Summary:</strong> ${data.daySummary || 'N/A'}</p>
       <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
     `;
   

@@ -361,9 +361,26 @@
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
-      <!-- Day Summary & Notes -->
-      <h3>Day Summary & Notes</h3>
-      <textarea id="day-notes" rows="5" placeholder="Enter general notes, summaries, or observations for today..."></textarea>
+      <!-- Day Summary Section -->
+    <div class="form-section">
+        <h3 style="margin-bottom: 8px;">Day Summary</h3>
+        <select id="day-summary-select" style="width: 100%; padding: 8px; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        <option value="" disabled selected>Select day summary...</option>
+        <option value="Very Good">Very Good</option>
+        <option value="Good">Good</option>
+        <option value="OK">OK</option>
+        <option value="Difficult">Difficult</option>
+        <option value="Very Difficult">Very Difficult</option>
+        </select>
+    </div>
+    
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
+    
+    <!-- Notes Section -->
+    <div class="form-section">
+        <h3 style="margin-bottom: 8px;">Notes</h3>
+        <textarea id="day-notes" rows="5" placeholder="Enter general notes or observations for today..." style="width: 100%; padding: 8px; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"></textarea>
+    </div>
   
       <button type="submit" id="save-log-btn">Save Care Log</button>
       <button type="button" id="cancel-edit-btn" class="hidden logout-btn" style="background-color: #888; margin-top: 8px;">Cancel Edit</button>
