@@ -1307,13 +1307,24 @@ function renderAnalyticsChart() {
   const chartTitle = document.getElementById("chart-title");
   if (!canvas) return;
 
+  const chartCard = canvas?.closest(".card") || canvas?.parentElement;
+
   const viewSelect = document.getElementById("analytics-view-select");
   const activeView = viewSelect ? viewSelect.value : (window.activeAnalyticsTab || "pain");
   const records = window.allRecords || allPastRecords || [];
 
+  // Toggle chart container visibility based on active view
+  if (activeView === "food" || activeView === "foods") {
+    if (chartCard) chartCard.style.display = "none";
+  } else {
+    if (chartCard) chartCard.style.display = "block";
+    if (canvas) canvas.style.display = "block";
+  }
+
   // Re-render shared month navigation
   renderMonthNavigation(startDate, endDate);
 
+  // --- PAIN VIEW ---
   if (activeView === "pain") {
     if (chartTitle) chartTitle.innerText = "Days Experienced per Pain Level";
 
@@ -1341,6 +1352,7 @@ function renderAnalyticsChart() {
     );
     renderPainCalendar(startDate, endDate, records);
 
+  // --- BOWEL MOVEMENTS VIEW ---
   } else if (activeView === "bm") {
     if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
 
@@ -1371,6 +1383,7 @@ function renderAnalyticsChart() {
     drawChart(canvas, labels, data, barColors);
     renderBMCalendar(startDate, endDate, records);
 
+  // --- FORMULA VIEW ---
   } else if (activeView === "formula") {
     if (chartTitle) chartTitle.innerText = "Daily Formula Scoops Overview";
   
@@ -1381,7 +1394,6 @@ function renderAnalyticsChart() {
       if (startDate && logData.date < startDate) return;
       if (endDate && logData.date > endDate) return;
   
-      // Check formulaHydration key
       const formulaEntries = logData.formulaHydration || logData.formula || [];
       
       let entryTotal = 0;
@@ -1391,7 +1403,6 @@ function renderAnalyticsChart() {
       });
   
       if (entryTotal > 0) {
-        // Accumulate totals per date across multiple form submissions
         formulaByDate[logData.date] = (formulaByDate[logData.date] || 0) + entryTotal;
       }
     });
@@ -1400,11 +1411,11 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
   
-    // Uses unified drawChart to properly destroy previous active charts
     drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date");
     renderFormulaCalendar(startDate, endDate, records);
-  } 
-  else if (activeView === "water") {
+
+  // --- WATER VIEW ---
+  } else if (activeView === "water") {
     if (chartTitle) chartTitle.innerText = "Daily Water Cups Overview";
 
     const waterByDate = {};
@@ -1425,9 +1436,9 @@ function renderAnalyticsChart() {
 
     drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date");
     renderWaterCalendar(startDate, endDate, records);
-  }
+
   // --- MOOD VIEW ---
-  else if (activeView === "mood") {
+  } else if (activeView === "mood") {
     if (chartTitle) chartTitle.innerText = "Mood Logs Breakdown";
 
     const moodCounts = {
@@ -1449,7 +1460,6 @@ function renderAnalyticsChart() {
       moodList.forEach(m => {
         if (!m) return;
         
-        // Read directly from m.zone (or string fallback)
         const zoneVal = typeof m === "object" ? (m.zone || m.label || m.type || "") : String(m);
         const cleanVal = zoneVal.trim();
 
@@ -1467,9 +1477,9 @@ function renderAnalyticsChart() {
 
     drawChart(canvas, labels, chartData, chartColors);
     renderMoodCalendar(startDate, endDate, records);
-  }
-  
-  else if (activeView === "behavior") {
+
+  // --- BEHAVIOR VIEW ---
+  } else if (activeView === "behavior") {
     if (chartTitle) chartTitle.innerText = "Logged Behaviors Frequency";
 
     const behaviorCounts = {};
@@ -1495,7 +1505,6 @@ function renderAnalyticsChart() {
     const palette = ["#e67e22", "#e74c3c", "#1abc9c", "#34495e", "#9b59b6", "#3498db", "#f1c40f"];
     const labels = Object.keys(behaviorCounts).sort();
     
-    // Assign a distinct color to each behavior label dynamically
     const colorMap = {};
     labels.forEach((label, idx) => {
       colorMap[label] = palette[idx % palette.length];
@@ -1507,60 +1516,54 @@ function renderAnalyticsChart() {
 
     drawChart(canvas, chartLabels, chartData, chartColors);
     renderBehaviorCalendar(startDate, endDate, records, colorMap);
-   } 
-  //Day Summary section
-  else if (activeView === "summary") {
-  if (chartTitle) chartTitle.innerText = "Day Summary Rating Frequency";
 
-  const summaryCounts = {
-    "Very Good": 0,
-    "Good": 0,
-    "OK": 0,
-    "Difficult": 0,
-    "Very Difficult": 0
-  };
+  // --- DAY SUMMARY VIEW ---
+  } else if (activeView === "summary") {
+    if (chartTitle) chartTitle.innerText = "Day Summary Rating Frequency";
 
-  records.forEach(item => {
-    const logData = item.data || item;
-    if (!logData.date) return;
-    if (startDate && logData.date < startDate) return;
-    if (endDate && logData.date > endDate) return;
+    const summaryCounts = {
+      "Very Good": 0,
+      "Good": 0,
+      "OK": 0,
+      "Difficult": 0,
+      "Very Difficult": 0
+    };
 
-    // Support object format, string status, or property key checks
-    const val = String(logData.daySummaryStatus || logData.daySummary || logData.summary || "").toLowerCase();
+    records.forEach(item => {
+      const logData = item.data || item;
+      if (!logData.date) return;
+      if (startDate && logData.date < startDate) return;
+      if (endDate && logData.date > endDate) return;
 
-    if (val.includes("very good")) summaryCounts["Very Good"]++;
-    else if (val.includes("very difficult")) summaryCounts["Very Difficult"]++;
-    else if (val.includes("good")) summaryCounts["Good"]++;
-    else if (val.includes("ok")) summaryCounts["OK"]++;
-    else if (val.includes("difficult")) summaryCounts["Difficult"]++;
-  });
+      const val = String(logData.daySummaryStatus || logData.daySummary || logData.summary || "").toLowerCase();
 
-  drawChart(
-    canvas,
-    ["Very Good", "Good", "OK", "Difficult", "Very Difficult"],
-    [
-      summaryCounts["Very Good"],
-      summaryCounts["Good"],
-      summaryCounts["OK"],
-      summaryCounts["Difficult"],
-      summaryCounts["Very Difficult"]
-    ],
-    ["#2ecc71", "#3498db", "#f1c40f", "#e67e22", "#e74c3c"]
-  );
+      if (val.includes("very good")) summaryCounts["Very Good"]++;
+      else if (val.includes("very difficult")) summaryCounts["Very Difficult"]++;
+      else if (val.includes("good")) summaryCounts["Good"]++;
+      else if (val.includes("ok")) summaryCounts["OK"]++;
+      else if (val.includes("difficult")) summaryCounts["Difficult"]++;
+    });
 
-  renderSummaryCalendar(startDate, endDate, records);
-}
-else if (activeView === "food" || activeView === "foods") {
-  if (chartTitle) chartTitle.innerText = "First Days Foods Were Introduced";
+    drawChart(
+      canvas,
+      ["Very Good", "Good", "OK", "Difficult", "Very Difficult"],
+      [
+        summaryCounts["Very Good"],
+        summaryCounts["Good"],
+        summaryCounts["OK"],
+        summaryCounts["Difficult"],
+        summaryCounts["Very Difficult"]
+      ],
+      ["#2ecc71", "#3498db", "#f1c40f", "#e67e22", "#e74c3c"]
+    );
 
-  // Hide the top canvas chart since only the calendar is required
-  if (canvas) {
-    canvas.style.display = "none";
+    renderSummaryCalendar(startDate, endDate, records);
+
+  // --- NEW FOOD INTRODUCTIONS VIEW ---
+  } else if (activeView === "food" || activeView === "foods") {
+    if (chartTitle) chartTitle.innerText = "First Days Foods Were Introduced";
+    renderFirstFoodCalendar(startDate, endDate, records);
   }
-
-  renderFirstFoodCalendar(startDate, endDate, records);
-}
 }
 
   
@@ -2826,10 +2829,9 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
 
   if (!startDate || !endDate) return;
 
-  // 1. Identify the earliest date each unique food was introduced
-  const firstFoodDates = {}; // Format: { "Food Name": "YYYY-MM-DD" }
+  // Track the earliest date ONLY for items marked with isHighlighted: true
+  const firstFoodDates = {};
 
-  // Sort records by date ascending so earliest dates process first
   const sortedRecords = [...records].sort((a, b) => {
     const dateA = (a.data || a).date || "";
     const dateB = (b.data || b).date || "";
@@ -2847,20 +2849,24 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     foodList.forEach(f => {
       if (!f) return;
 
+      // Filter strictly for newly introduced foods
+      const isNew = typeof f === "object" ? f.isHighlighted === true : false;
+      if (!isNew) return;
+
       let foodName = typeof f === "object" ? (f.name || f.food || f.label || "") : String(f);
       foodName = foodName.trim();
       if (!foodName) return;
 
       const formattedName = foodName.charAt(0).toUpperCase() + foodName.slice(1);
 
-      // Track the absolute first time this food appears in history
+      // Record only the first date this highlighted food appeared
       if (!firstFoodDates[formattedName]) {
         firstFoodDates[formattedName] = logDate;
       }
     });
   });
 
-  // 2. Build month range for navigation
+  // Build month range for navigation
   const monthsInRange = [];
   let curr = new Date(startDate + "T00:00:00");
   const last = new Date(endDate + "T00:00:00");
@@ -2882,7 +2888,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
   const activeYear = parseInt(activeYearStr, 10);
   const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
 
-  // 3. Render Month Navigation Controls
+  // Navigation Buttons
   if (navContainer) {
     navContainer.innerHTML = "";
     if (monthsInRange.length > 1) {
@@ -2924,7 +2930,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     titleHeader.innerText = `${monthName} ${activeYear} First Food Introductions`;
   }
 
-  // 4. Map introductions to the active calendar month
+  // Map active month introductions
   const dateIntroductionsMap = {};
   const palette = ["#27ae60", "#2980b9", "#8e44ad", "#d35400", "#16a085", "#c0392b"];
   const allFoods = Object.keys(firstFoodDates).sort();
@@ -2940,7 +2946,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     }
   });
 
-  // 5. Draw Calendar Day Headers
+  // Calendar Header Days
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   dayNames.forEach(day => {
     const header = document.createElement("div");
@@ -2957,7 +2963,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     grid.appendChild(document.createElement("div"));
   }
 
-  // 6. Build Calendar Grid Cells
+  // Calendar Day Cells
   for (let d = 1; d <= totalDays; d++) {
     const dayStr = String(d).padStart(2, '0');
     const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
