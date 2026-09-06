@@ -1488,26 +1488,45 @@ function renderAnalyticsChart() {
 
 // --- DAY SUMMARY VIEW ---
 } else if (activeView === "summary") {
-  if (chartTitle) chartTitle.innerText = "Daily Summary Entries Logged";
+  if (chartTitle) chartTitle.innerText = "Day Summary Rating Frequency";
 
-  const summaryByDate = {};
+  const summaryCounts = {
+    "Very Good": 0,
+    "Good": 0,
+    "OK": 0,
+    "Difficult": 0,
+    "Very Difficult": 0
+  };
+
   records.forEach(item => {
     const logData = item.data || item;
     if (!logData.date) return;
     if (startDate && logData.date < startDate) return;
     if (endDate && logData.date > endDate) return;
 
-    const summaryText = logData.daySummary || logData.summary || logData.notes || "";
-    if (summaryText.trim()) {
-      summaryByDate[logData.date] = (summaryByDate[logData.date] || 0) + 1;
-    }
+    // Support object format, string status, or property key checks
+    const val = String(logData.daySummaryStatus || logData.daySummary || logData.summary || "").toLowerCase();
+
+    if (val.includes("very good")) summaryCounts["Very Good"]++;
+    else if (val.includes("very difficult")) summaryCounts["Very Difficult"]++;
+    else if (val.includes("good")) summaryCounts["Good"]++;
+    else if (val.includes("ok")) summaryCounts["OK"]++;
+    else if (val.includes("difficult")) summaryCounts["Difficult"]++;
   });
 
-  const dates = Object.keys(summaryByDate).sort();
-  const labels = dates.length ? dates : ["No Summaries"];
-  const data = dates.length ? dates.map(d => summaryByDate[d]) : [0];
+  drawChart(
+    canvas,
+    ["Very Good", "Good", "OK", "Difficult", "Very Difficult"],
+    [
+      summaryCounts["Very Good"],
+      summaryCounts["Good"],
+      summaryCounts["OK"],
+      summaryCounts["Difficult"],
+      summaryCounts["Very Difficult"]
+    ],
+    ["#2ecc71", "#3498db", "#f1c40f", "#e67e22", "#e74c3c"]
+  );
 
-  drawChart(canvas, labels, data, ["#9b59b6"]);
   renderSummaryCalendar(startDate, endDate, records);
 }
 }
@@ -2107,7 +2126,170 @@ function renderGenericCountCalendar(records, titleSuffix, color, extractorFn) {
   renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "logs", color);
 }
 
+function renderSummaryCalendar(startDate, endDate, records) {
+  const grid = document.getElementById("calendar-grid");
+  const titleHeader = document.getElementById("calendar-title");
+  const navContainer = document.getElementById("calendar-month-nav");
+  if (!grid) return;
+  grid.innerHTML = "";
 
+  if (!startDate || !endDate) return;
+
+  // Extract all "YYYY-MM" months in the range
+  const monthsInRange = [];
+  let curr = new Date(startDate + "T00:00:00");
+  const last = new Date(endDate + "T00:00:00");
+
+  while (curr <= last) {
+    const yyyy = curr.getFullYear();
+    const mm = String(curr.getMonth() + 1).padStart(2, "0");
+    const key = `${yyyy}-${mm}`;
+    if (!monthsInRange.includes(key)) {
+      monthsInRange.push(key);
+    }
+    curr.setMonth(curr.getMonth() + 1);
+    curr.setDate(1);
+  }
+
+  if (!window.activeCalendarMonth || !monthsInRange.includes(window.activeCalendarMonth)) {
+    window.activeCalendarMonth = monthsInRange[0];
+  }
+
+  const [activeYearStr, activeMonthStr] = window.activeCalendarMonth.split("-");
+  const activeYear = parseInt(activeYearStr, 10);
+  const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  // Render Month Navigation Buttons
+  if (navContainer) {
+    navContainer.innerHTML = "";
+    if (monthsInRange.length > 1) {
+      monthsInRange.forEach(mKey => {
+        const [yStr, mStr] = mKey.split("-");
+        const mDate = new Date(parseInt(yStr, 10), parseInt(mStr, 10) - 1, 1);
+        const btnLabel = mDate.toLocaleString("default", { month: "short", year: "numeric" });
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerText = btnLabel;
+        btn.style.padding = "4px 10px";
+        btn.style.fontSize = "0.8rem";
+        btn.style.borderRadius = "4px";
+        btn.style.border = "1px solid #ccc";
+        btn.style.cursor = "pointer";
+
+        if (mKey === window.activeCalendarMonth) {
+          btn.style.backgroundColor = "#2c3e50";
+          btn.style.color = "#ffffff";
+          btn.style.fontWeight = "bold";
+        } else {
+          btn.style.backgroundColor = "#ffffff";
+          btn.style.color = "#333333";
+        }
+
+        btn.addEventListener("click", () => {
+          window.activeCalendarMonth = mKey;
+          renderAnalyticsChart();
+        });
+
+        navContainer.appendChild(btn);
+      });
+    }
+  }
+
+  if (titleHeader) {
+    const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+    titleHeader.innerText = `${monthName} ${activeYear} Day Summary Calendar`;
+  }
+
+  // Group summary entries by date
+  const dateSummaryMap = {};
+
+  records.forEach(item => {
+    const logData = item.data || item;
+    const logDate = logData.date;
+    if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
+
+    const rawVal = String(logData.daySummaryStatus || logData.daySummary || logData.summary || "").toLowerCase();
+    
+    let label = "";
+    let color = "";
+
+    if (rawVal.includes("very good")) { label = "Very Good"; color = "#2ecc71"; }
+    else if (rawVal.includes("very difficult")) { label = "Very Difficult"; color = "#e74c3c"; }
+    else if (rawVal.includes("good")) { label = "Good"; color = "#3498db"; }
+    else if (rawVal.includes("ok")) { label = "OK"; color = "#f1c40f"; }
+    else if (rawVal.includes("difficult")) { label = "Difficult"; color = "#e67e22"; }
+
+    if (label) {
+      if (!dateSummaryMap[logDate]) dateSummaryMap[logDate] = [];
+      dateSummaryMap[logDate].push({ label, color });
+    }
+  });
+
+  // Days Header
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  dayNames.forEach(day => {
+    const header = document.createElement("div");
+    header.style.fontWeight = "bold";
+    header.style.padding = "4px 0";
+    header.innerText = day;
+    grid.appendChild(header);
+  });
+
+  const firstDayIndex = new Date(activeYear, activeMonthIndex, 1).getDay();
+  const totalDays = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
+
+  for (let i = 0; i < firstDayIndex; i++) {
+    grid.appendChild(document.createElement("div"));
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const dayStr = String(d).padStart(2, '0');
+    const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
+    const fullDateKey = `${activeYear}-${monthStrFormatted}-${dayStr}`;
+    const entries = dateSummaryMap[fullDateKey] || [];
+
+    const cell = document.createElement("div");
+    cell.style.border = "1px solid #e0e0e0";
+    cell.style.borderRadius = "4px";
+    cell.style.padding = "4px 2px";
+    cell.style.minHeight = "55px";
+    cell.style.backgroundColor = "#ffffff";
+    cell.style.display = "flex";
+    cell.style.flexDirection = "column";
+    cell.style.alignItems = "center";
+
+    const numSpan = document.createElement("span");
+    numSpan.style.fontWeight = "bold";
+    numSpan.style.fontSize = "0.8rem";
+    numSpan.style.marginBottom = "3px";
+    numSpan.innerText = d;
+    cell.appendChild(numSpan);
+
+    const badgeContainer = document.createElement("div");
+    badgeContainer.style.display = "flex";
+    badgeContainer.style.flexDirection = "column";
+    badgeContainer.style.gap = "2px";
+    badgeContainer.style.width = "100%";
+    badgeContainer.style.alignItems = "center";
+
+    entries.forEach(entry => {
+      const badge = document.createElement("span");
+      badge.style.backgroundColor = entry.color;
+      badge.style.color = (entry.color === "#f1c40f") ? "#333" : "#fff";
+      badge.style.borderRadius = "3px";
+      badge.style.padding = "1px 4px";
+      badge.style.fontSize = "0.65rem";
+      badge.style.fontWeight = "600";
+      badge.style.whiteSpace = "nowrap";
+      badge.innerText = entry.label;
+      badgeContainer.appendChild(badge);
+    });
+
+    cell.appendChild(badgeContainer);
+    grid.appendChild(cell);
+  }
+}
 
 
 
