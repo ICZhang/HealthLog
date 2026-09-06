@@ -1581,11 +1581,12 @@ function renderBMCalendar(startDate, endDate, records) {
 function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false) {
   const row = document.createElement("div");
   row.className = "food-row";
-  row.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; width: 100%; box-sizing: border-box;";
 
+  // Generate a safe unique ID for label matching
+  const safeId = `food-${foodName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
   const placeholderText = unit ? `Amount (${unit})` : "Amount";
 
-  row.innerHTML = `<label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0;"><input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} style="margin: 0;" /><span style="font-size: 0.85rem; color: #333;">${foodName}</span></label><input type="text" placeholder="${placeholderText}" value="${amount}" style="width: 130px; height: 28px; padding: 4px; margin: 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.85rem;" />`;
+  row.innerHTML = `<input type="checkbox" id="${safeId}" name="food-check" value="${foodName}" ${isChecked ? "checked" : ""}><label for="${safeId}">${foodName}</label><input type="text" name="food-amount" placeholder="${placeholderText}" value="${amount}" />`;
 
   return row;
 }
