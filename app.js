@@ -1329,6 +1329,111 @@ window.switchAnalyticsTab = function(tab) {
 };
 
 
+function renderAnalyticsChart() {
+    const startDate = document.getElementById("analytics-start-date")?.value;
+    const endDate = document.getElementById("analytics-end-date")?.value;
+    const canvas = document.getElementById("analyticsChart");
+    const chartTitle = document.getElementById("chart-title");
+    if (!canvas) return;
+  
+    const records = window.allRecords || allPastRecords || [];
+  
+    if (window.activeAnalyticsTab === "pain") {
+      if (chartTitle) chartTitle.innerText = "Days Experienced per Pain Level";
+      
+      const painCounts = { "No Pain": 0, "Minor Pain": 0, "Severe Pain": 0 };
+      
+      records.forEach(item => {
+        const logData = item.data || item;
+        if (!logData.date) return;
+  
+        // Filter by overall range OR active month selected via calendar nav
+        if (startDate && logData.date < startDate) return;
+        if (endDate && logData.date > endDate) return;
+  
+        (logData.painLogs || []).forEach(log => {
+          const val = String(typeof log === "string" ? log : log.level || log.painLevel || "").toLowerCase();
+          if (val.includes("severe")) painCounts["Severe Pain"]++;
+          else if (val.includes("minor")) painCounts["Minor Pain"]++;
+          else if (val.includes("no")) painCounts["No Pain"]++;
+        });
+      });
+  
+      drawChart(
+        canvas, 
+        ["No Pain", "Minor Pain", "Severe Pain"], 
+        [painCounts["No Pain"], painCounts["Minor Pain"], painCounts["Severe Pain"]], 
+        ["#2ecc71", "#f1c40f", "#e74c3c"]
+      );
+      renderPainCalendar(startDate, endDate, records);
+  
+    } 
+    else if (window.activeAnalyticsTab === "bm") {
+      if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
+    
+      const typeCounts = {};
+      
+      records.forEach(item => {
+        const logData = item.data || item;
+        if (!logData.date) return;
+    
+        if (startDate && logData.date < startDate) return;
+        if (endDate && logData.date > endDate) return;
+    
+        (logData.bowelMovements || []).forEach(bm => {
+          if (!bm.type) return;
+    
+          const label = `Type ${bm.type}`;
+          typeCounts[label] = (typeCounts[label] || 0) + 1;
+        });
+      });
+    
+      const sortedKeys = Object.keys(typeCounts).sort((a, b) => {
+        const numA = parseInt(a.replace("Type ", ""), 10);
+        const numB = parseInt(b.replace("Type ", ""), 10);
+        return numA - numB;
+      });
+    
+      const labels = sortedKeys.length ? sortedKeys : ["No Logged Types"];
+      const data = sortedKeys.length ? sortedKeys.map(k => typeCounts[k]) : [0];
+    
+      // Map each sorted label to its corresponding palette color
+      const barColors = sortedKeys.length 
+        ? sortedKeys.map(k => {
+            const typeNum = parseInt(k.replace("Type ", ""), 10);
+            return BM_TYPE_COLORS[typeNum] || "#8e44ad";
+          })
+        : ["#bdc3c7"];
+    
+      drawChart(canvas, labels, data, barColors);
+      renderBMCalendar(startDate, endDate, records);
+    }
+}
+  
+function drawChart(canvas, labels, data, colors) {
+    if (window.painChartInstance) {
+      window.painChartInstance.destroy();
+    }
+    const ctx = canvas.getContext("2d");
+    window.painChartInstance = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+}
+
 function renderBMCalendar(startDate, endDate, records) {
   const grid = document.getElementById("calendar-grid");
   const titleHeader = document.getElementById("calendar-title");
@@ -1450,6 +1555,7 @@ function renderBMCalendar(startDate, endDate, records) {
     cell.style.padding = "4px 2px";
     cell.style.minHeight = "55px";
     cell.style.backgroundColor = "#ffffff";
+    // Added explicit centering to match Pain Calendar cells
     cell.style.display = "flex";
     cell.style.flexDirection = "column";
     cell.style.alignItems = "center";
@@ -1495,190 +1601,6 @@ function renderBMCalendar(startDate, endDate, records) {
     cell.appendChild(container);
     grid.appendChild(cell);
   }
-}
-  
-function drawChart(canvas, labels, data, colors) {
-    if (window.painChartInstance) {
-      window.painChartInstance.destroy();
-    }
-    const ctx = canvas.getContext("2d");
-    window.painChartInstance = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: labels,
-        datasets: [{
-          data: data,
-          backgroundColor: colors,
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-      }
-    });
-}
-
-function renderBMCalendar(startDate, endDate, records) {
-    const grid = document.getElementById("calendar-grid");
-    const titleHeader = document.getElementById("calendar-title");
-    const navContainer = document.getElementById("calendar-month-nav");
-    if (!grid) return;
-    grid.innerHTML = "";
-  
-    if (!startDate || !endDate) return;
-  
-    // Extract all "YYYY-MM" months in range
-    const monthsInRange = [];
-    let curr = new Date(startDate + "T00:00:00");
-    const last = new Date(endDate + "T00:00:00");
-    while (curr <= last) {
-      const yyyy = curr.getFullYear();
-      const mm = String(curr.getMonth() + 1).padStart(2, "0");
-      const key = `${yyyy}-${mm}`;
-      if (!monthsInRange.includes(key)) monthsInRange.push(key);
-      curr.setMonth(curr.getMonth() + 1);
-      curr.setDate(1);
-    }
-  
-    if (!window.activeCalendarMonth || !monthsInRange.includes(window.activeCalendarMonth)) {
-      window.activeCalendarMonth = monthsInRange[0];
-    }
-  
-    const [activeYearStr, activeMonthStr] = window.activeCalendarMonth.split("-");
-    const activeYear = parseInt(activeYearStr, 10);
-    const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
-  
-    // Render Month Navigation Buttons for BM
-    if (navContainer) {
-      navContainer.innerHTML = "";
-      if (monthsInRange.length > 1) {
-        monthsInRange.forEach(mKey => {
-          const [yStr, mStr] = mKey.split("-");
-          const mDate = new Date(parseInt(yStr, 10), parseInt(mStr, 10) - 1, 1);
-          const btnLabel = mDate.toLocaleString("default", { month: "short", year: "numeric" });
-          
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.innerText = btnLabel;
-          btn.style.padding = "4px 10px";
-          btn.style.fontSize = "0.8rem";
-          btn.style.borderRadius = "4px";
-          btn.style.border = "1px solid #ccc";
-          btn.style.cursor = "pointer";
-  
-          if (mKey === window.activeCalendarMonth) {
-            btn.style.backgroundColor = "#8e44ad"; // BM theme color
-            btn.style.color = "#ffffff";
-            btn.style.fontWeight = "bold";
-          } else {
-            btn.style.backgroundColor = "#ffffff";
-            btn.style.color = "#333333";
-          }
-  
-          btn.addEventListener("click", () => {
-            window.activeCalendarMonth = mKey;
-            renderAnalyticsChart();
-          });
-  
-          navContainer.appendChild(btn);
-        });
-      }
-    }
-  
-    // Update Header Title
-    if (titleHeader) {
-      const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
-      titleHeader.innerText = `${monthName} ${activeYear} BM Calendar`;
-    }
-  
-    // Map BM records for active month
-    const bmMap = {};
-    records.forEach(item => {
-      const logData = item.data || item;
-      const logDate = logData.date;
-      if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
-  
-      (logData.bowelMovements || []).forEach(bm => {
-        if (!bm.type) return;
-  
-        if (!bmMap[logDate]) bmMap[logDate] = [];
-        bmMap[logDate].push({
-            time: formatTo12Hour(bm.time),
-            type: bm.type,
-            amount: bm.amount || bm.size || "", 
-            color: bm.color || ""             
-        });
-      });
-    });
-  
-    // Render Day Headers & Days Grid
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    dayNames.forEach(day => {
-      const header = document.createElement("div");
-      header.style.fontWeight = "bold";
-      header.innerText = day;
-      grid.appendChild(header);
-    });
-  
-    const firstDayIndex = new Date(activeYear, activeMonthIndex, 1).getDay();
-    const totalDays = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
-  
-    for (let i = 0; i < firstDayIndex; i++) {
-      grid.appendChild(document.createElement("div"));
-    }
-  
-    for (let d = 1; d <= totalDays; d++) {
-      const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
-      const dayStrFormatted = String(d).padStart(2, '0');
-      const fullDateKey = `${activeYear}-${monthStrFormatted}-${dayStrFormatted}`;
-      const entries = bmMap[fullDateKey] || [];
-  
-      const cell = document.createElement("div");
-      cell.style.border = "1px solid #e0e0e0";
-      cell.style.borderRadius = "4px";
-      cell.style.padding = "4px 2px";
-      cell.style.minHeight = "55px";
-      cell.style.backgroundColor = "#ffffff";
-  
-      const numSpan = document.createElement("span");
-      numSpan.style.fontWeight = "bold";
-      numSpan.style.fontSize = "0.8rem";
-      numSpan.innerText = d;
-      cell.appendChild(numSpan);
-  
-      const container = document.createElement("div");
-      container.style.display = "flex";
-      container.style.flexDirection = "column";
-      container.style.gap = "2px";
-      container.style.marginTop = "2px";
-  
-      entries.forEach(entry => {
-        const badge = document.createElement("span");
-        const typeColor = BM_TYPE_COLORS[entry.type] || "#8e44ad";
-        
-        badge.style.backgroundColor = typeColor;
-        badge.style.color = typeColor === "#f1c40f" ? "#333" : "#fff";
-        badge.style.borderRadius = "3px";
-        badge.style.padding = "1px 3px";
-        badge.style.fontSize = "0.6rem";
-        badge.style.cursor = "pointer";
-        badge.innerText = entry.time;
-      
-        // Construct dynamic hover tooltip
-        let tooltipText = `Type: ${entry.type} at ${entry.time}`;
-        if (entry.amount) tooltipText += `\nAmount: ${entry.amount.toUpperCase()}`;
-        if (entry.color) tooltipText += `\nColor: ${entry.color}`;
-      
-        badge.title = tooltipText;
-        container.appendChild(badge);
-      });
-  
-      cell.appendChild(container);
-      grid.appendChild(cell);
-    }
 }
 
 function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isHighlighted = true) {
