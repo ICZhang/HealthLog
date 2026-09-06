@@ -1401,7 +1401,7 @@ function renderAnalyticsChart() {
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
   
     // Uses unified drawChart to properly destroy previous active charts
-    drawScatterChart(canvas, labels, data, "#e54363");
+    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date");
     renderFormulaCalendar(startDate, endDate, records);
   } 
   else if (activeView === "water") {
@@ -1423,7 +1423,7 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
 
-    drawScatterChart(canvas, labels, data, "#1abc9c");
+    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date");
     renderWaterCalendar(startDate, endDate, records);
   }
 }
@@ -1454,7 +1454,15 @@ function drawChart(canvas, labels, data, colors) {
   });
 }
 
-function drawScatterChart(canvas, labels, data, pointColor = "#1abc9c") {
+function drawScatterChart(
+  canvas, 
+  labels, 
+  data, 
+  pointColor = "#1abc9c", 
+  datasetLabel = "Amount", 
+  yAxisTitle = "Count", 
+  xAxisTitle = "Date"
+) {
   // Destroy whatever chart is currently active on the canvas
   if (window.activeChartInstance) {
     window.activeChartInstance.destroy();
@@ -1466,7 +1474,7 @@ function drawScatterChart(canvas, labels, data, pointColor = "#1abc9c") {
     data: {
       labels: labels,
       datasets: [{
-        label: 'Cups  of  Water',
+        label: datasetLabel,
         data: data,
         backgroundColor: pointColor,
         borderColor: pointColor,
@@ -1482,11 +1490,11 @@ function drawScatterChart(canvas, labels, data, pointColor = "#1abc9c") {
       scales: {
         y: {
           beginAtZero: true,
-          title: { display: true, text: 'Cups  of  Water' },
+          title: { display: true, text: yAxisTitle },
           ticks: { stepSize: 1 }
         },
         x: {
-          title: { display: true, text: 'Date' }
+          title: { display: true, text: xAxisTitle }
         }
       }
     }
