@@ -1382,7 +1382,14 @@ function renderAnalyticsChart() {
   
     drawChart(canvas, labels, data, barColors);
     renderBMCalendar(startDate, endDate, records);
+  } else if (activeView === "formula") {
+    if (chartTitle) chartTitle.innerText = "Daily Formula Scoops";
+    renderFormulaCalendar(startDate, endDate, records);
+  } else if (activeView === "water") {
+    if (chartTitle) chartTitle.innerText = "Daily Water Cups";
+    renderWaterCalendar(startDate, endDate, records);
   }
+  
 }
   
 function drawChart(canvas, labels, data, colors) {
@@ -1716,7 +1723,118 @@ document.getElementById("toggle-highlight-btn")?.addEventListener("click", () =>
   localStorage.setItem("customFoods", JSON.stringify(customFoods));
 });
 
+// Render Total Daily Formula Scoops
+function renderFormulaCalendar(startDate, endDate, records) {
+  const grid = document.getElementById("calendar-grid");
+  const titleHeader = document.getElementById("calendar-title");
+  if (!grid) return;
+  grid.innerHTML = "";
 
+  const [activeYearStr, activeMonthStr] = (window.activeCalendarMonth || new Date().toISOString().slice(0,7)).split("-");
+  const activeYear = parseInt(activeYearStr, 10);
+  const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  if (titleHeader) {
+    const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+    titleHeader.innerText = `${monthName} ${activeYear} Formula Intake Calendar`;
+  }
+
+  // Calculate daily totals
+  const dailyTotals = {};
+  records.forEach(item => {
+    const logData = item.data || item;
+    const logDate = logData.date;
+    if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
+
+    let totalScoops = 0;
+    (logData.formula || []).forEach(f => {
+      totalScoops += parseFloat(f.amount || f.scoops || 0) || 0;
+    });
+
+    if (totalScoops > 0) {
+      dailyTotals[logDate] = (dailyTotals[logDate] || 0) + totalScoops;
+    }
+  });
+
+  renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "scoops", "#3498db");
+}
+
+// Render Total Daily Water Cups
+function renderWaterCalendar(startDate, endDate, records) {
+  const grid = document.getElementById("calendar-grid");
+  const titleHeader = document.getElementById("calendar-title");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  const [activeYearStr, activeMonthStr] = (window.activeCalendarMonth || new Date().toISOString().slice(0,7)).split("-");
+  const activeYear = parseInt(activeYearStr, 10);
+  const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  if (titleHeader) {
+    const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+    titleHeader.innerText = `${monthName} ${activeYear} Water Intake Calendar`;
+  }
+
+  // Calculate daily totals
+  const dailyTotals = {};
+  records.forEach(item => {
+    const logData = item.data || item;
+    const logDate = logData.date;
+    if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
+
+    // Count recorded cups/water entries
+    const waterEntries = logData.warmWater || logData.water || [];
+    const totalCups = Array.isArray(waterEntries) ? waterEntries.length : (parseFloat(waterEntries) || 0);
+
+    if (totalCups > 0) {
+      dailyTotals[logDate] = (dailyTotals[logDate] || 0) + totalCups;
+    }
+  });
+
+  renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "cups", "#1abc9c");
+}
+
+// Helper to render unified totals grid
+function renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, unitLabel, badgeColor) {
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  dayNames.forEach(day => {
+    const header = document.createElement("div");
+    header.style.fontWeight = "bold";
+    header.innerText = day;
+    grid.appendChild(header);
+  });
+
+  const firstDayIndex = new Date(activeYear, activeMonthIndex, 1).getDay();
+  const totalDays = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
+
+  for (let i = 0; i < firstDayIndex; i++) {
+    grid.appendChild(document.createElement("div"));
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
+    const dayStrFormatted = String(d).padStart(2, '0');
+    const fullDateKey = `${activeYear}-${monthStrFormatted}-${dayStrFormatted}`;
+    const total = dailyTotals[fullDateKey];
+
+    const cell = document.createElement("div");
+    cell.style.cssText = "border: 1px solid #e0e0e0; border-radius: 4px; padding: 4px 2px; min-height: 55px; background: #fff; display: flex; flex-direction: column; align-items: center;";
+
+    const numSpan = document.createElement("span");
+    numSpan.style.cssText = "font-weight: bold; font-size: 0.8rem; margin-bottom: 3px;";
+    numSpan.innerText = d;
+    cell.appendChild(numSpan);
+
+    if (total > 0) {
+      const badge = document.createElement("span");
+      badge.style.cssText = `background-color: ${badgeColor}; color: #fff; border-radius: 3px; padding: 1px 4px; font-size: 0.65rem; font-weight: 600; white-space: nowrap;`;
+      badge.innerText = `${total} ${unitLabel}`;
+      cell.appendChild(badge);
+    }
+
+    grid.appendChild(cell);
+  }
+}
 
 
 
@@ -1752,3 +1870,5 @@ document.getElementById("toggle-highlight-btn")?.addEventListener("click", () =>
       alert("All records cleared successfully.");
     }
   });
+
+
