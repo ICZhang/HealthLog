@@ -1594,7 +1594,7 @@ function renderBMCalendar(startDate, endDate, records) {
     }
 }
 
-function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isHighlighted = false) {
+function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isHighlighted = true) {
   const row = document.createElement("div");
   row.className = `food-row ${isHighlighted ? "new-food-highlight" : ""}`;
 
@@ -1644,16 +1644,16 @@ document.getElementById("add-custom-food-btn")?.addEventListener("click", () => 
   
     if (!foodName) return;
   
-    // Save food to localStorage
+    // Save food with isHighlighted default set to true
     const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
     if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
-      customFoods.push({ name: foodName, unit: unit });
+      customFoods.push({ name: foodName, unit: unit, isHighlighted: true });
       localStorage.setItem("customFoods", JSON.stringify(customFoods));
     }
   
-    // Append clean row to UI
+    // Create row with highlight enabled
     const foodsContainer = document.getElementById("foods-grid");
-    const newRow = createFoodRowElement(foodName, unit, "", false);
+    const newRow = createFoodRowElement(foodName, unit, "", false, true);
     foodsContainer.appendChild(newRow);
   
     // Clear inputs
