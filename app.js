@@ -1307,7 +1307,8 @@ function renderAnalyticsChart() {
   const chartTitle = document.getElementById("chart-title");
   if (!canvas) return;
 
-  const chartCard = canvas?.closest(".card") || canvas?.parentElement;
+  const titleCard = chartTitle?.closest(".card") || chartTitle?.parentElement;
+  const canvasCard = canvas?.closest(".card") || canvas?.parentElement;
 
   const viewSelect = document.getElementById("analytics-view-select");
   const activeView = viewSelect ? viewSelect.value : (window.activeAnalyticsTab || "pain");
@@ -1315,9 +1316,14 @@ function renderAnalyticsChart() {
 
   // Toggle chart container visibility based on active view
   if (activeView === "food" || activeView === "foods") {
-    if (chartCard) chartCard.style.display = "none";
+    if (titleCard) titleCard.style.display = "none";
+    if (canvasCard) canvasCard.style.display = "none";
+    
+    renderFirstFoodCalendar(startDate, endDate, records);
+    return; // Stop execution so no chart logic runs
   } else {
-    if (chartCard) chartCard.style.display = "block";
+    if (titleCard) titleCard.style.display = "block";
+    if (canvasCard) canvasCard.style.display = "block";
     if (canvas) canvas.style.display = "block";
   }
 
