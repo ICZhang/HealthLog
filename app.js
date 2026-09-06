@@ -1427,67 +1427,69 @@ function renderAnalyticsChart() {
     renderWaterCalendar(startDate, endDate, records);
   }
   // --- MOOD VIEW ---
- else if (activeView === "mood") {
-  if (chartTitle) chartTitle.innerText = "Mood Logs Breakdown";
+  else if (activeView === "mood") {
+    if (chartTitle) chartTitle.innerText = "Mood Logs Breakdown";
 
-  const moodCounts = {};
-  records.forEach(item => {
-    const logData = item.data || item;
-    if (!logData.date) return;
-    if (startDate && logData.date < startDate) return;
-    if (endDate && logData.date > endDate) return;
+    const moodCounts = {};
 
-    const moods = logData.moodLogs || logData.moodLogs || [];
-    const moodList = Array.isArray(moods) ? moods : [moods];
+    records.forEach(item => {
+      const logData = item.data || item;
+      if (!logData.date) return;
+      if (startDate && logData.date < startDate) return;
+      if (endDate && logData.date > endDate) return;
 
-    moodList.forEach(m => {
-      const val = typeof m === "object" ? (m.label || m.type || "") : String(m);
-      if (val.trim()) {
-        const key = val.charAt(0).toUpperCase() + val.slice(1);
-        moodCounts[key] = (moodCounts[key] || 0) + 1;
-      }
+      const moods = logData.moodLogs || logData.moods || logData.mood || [];
+      const moodList = Array.isArray(moods) ? moods : [moods];
+
+      moodList.forEach(m => {
+        const val = typeof m === "object" ? (m.label || m.type || m.level || m.mood || "") : String(m);
+        if (val.trim()) {
+          const key = val.charAt(0).toUpperCase() + val.slice(1);
+          moodCounts[key] = (moodCounts[key] || 0) + 1;
+        }
+      });
     });
-  });
 
-  const labels = Object.keys(moodCounts).length ? Object.keys(moodCounts) : ["No Mood Data"];
-  const data = Object.keys(moodCounts).length ? Object.values(moodCounts) : [0];
-  const colors = ["#f1c40f", "#9b59b6", "#3498db", "#e67e22", "#2ecc71"];
+    const labels = Object.keys(moodCounts).length ? Object.keys(moodCounts) : ["No Mood Data"];
+    const data = Object.keys(moodCounts).length ? Object.values(moodCounts) : [0];
+    const colors = ["#f1c40f", "#9b59b6", "#3498db", "#e67e22", "#2ecc71", "#e74c3c"];
 
-  drawChart(canvas, labels, data, colors);
-  renderMoodCalendar(startDate, endDate, records);
+    drawChart(canvas, labels, data, colors);
+    renderMoodCalendar(startDate, endDate, records);
 
-// --- BEHAVIOR VIEW ---
-} else if (activeView === "behavior") {
-  if (chartTitle) chartTitle.innerText = "Logged Behaviors Frequency";
+  // --- BEHAVIOR VIEW ---
+  } else if (activeView === "behavior") {
+    if (chartTitle) chartTitle.innerText = "Logged Behaviors Frequency";
 
-  const behaviorCounts = {};
-  records.forEach(item => {
-    const logData = item.data || item;
-    if (!logData.date) return;
-    if (startDate && logData.date < startDate) return;
-    if (endDate && logData.date > endDate) return;
+    const behaviorCounts = {};
 
-    const behaviors = logData.behaviorLogs || logData.behaviorLogs || [];
-    const bList = Array.isArray(behaviors) ? behaviors : [behaviors];
+    records.forEach(item => {
+      const logData = item.data || item;
+      if (!logData.date) return;
+      if (startDate && logData.date < startDate) return;
+      if (endDate && logData.date > endDate) return;
 
-    bList.forEach(b => {
-      const val = typeof b === "object" ? (b.name || b.type || "") : String(b);
-      if (val.trim()) {
-        const key = val.charAt(0).toUpperCase() + val.slice(1);
-        behaviorCounts[key] = (behaviorCounts[key] || 0) + 1;
-      }
+      const behaviors = logData.behaviorLogs || logData.behaviors || logData.behavior || [];
+      const bList = Array.isArray(behaviors) ? behaviors : [behaviors];
+
+      bList.forEach(b => {
+        const val = typeof b === "object" ? (b.name || b.type || b.label || b.behavior || "") : String(b);
+        if (val.trim()) {
+          const key = val.charAt(0).toUpperCase() + val.slice(1);
+          behaviorCounts[key] = (behaviorCounts[key] || 0) + 1;
+        }
+      });
     });
-  });
 
-  const labels = Object.keys(behaviorCounts).length ? Object.keys(behaviorCounts) : ["No Behavior Data"];
-  const data = Object.keys(behaviorCounts).length ? Object.values(behaviorCounts) : [0];
-  const colors = ["#e74c3c", "#e67e22", "#1abc9c", "#34495e"];
+    const labels = Object.keys(behaviorCounts).length ? Object.keys(behaviorCounts) : ["No Behavior Data"];
+    const data = Object.keys(behaviorCounts).length ? Object.values(behaviorCounts) : [0];
+    const colors = ["#e67e22", "#e74c3c", "#1abc9c", "#34495e", "#3498db", "#9b59b6"];
 
-  drawChart(canvas, labels, data, colors);
-  renderBehaviorCalendar(startDate, endDate, records);
-
-// --- DAY SUMMARY VIEW ---
-} else if (activeView === "summary") {
+    drawChart(canvas, labels, data, colors);
+    renderBehaviorCalendar(startDate, endDate, records);
+  } 
+  //Day Summary section
+  else if (activeView === "summary") {
   if (chartTitle) chartTitle.innerText = "Day Summary Rating Frequency";
 
   const summaryCounts = {
@@ -2084,42 +2086,201 @@ function renderMonthNavigation(startDate, endDate) {
 }
 
 function renderMoodCalendar(startDate, endDate, records) {
-  renderGenericCountCalendar(records, "Mood Calendar", "#f1c40f", log => log.moodLogs || log.mood);
+  renderDetailedItemCalendar(
+    startDate,
+    endDate,
+    records,
+    "Mood Calendar",
+    logData => logData.moodLogs || logData.moods || logData.mood,
+    "#f1c40f"
+  );
 }
 
 function renderBehaviorCalendar(startDate, endDate, records) {
-  renderGenericCountCalendar(records, "Behavior Calendar", "#e67e22", log => log.behaviorLogs || log.behavior);
+  renderDetailedItemCalendar(
+    startDate,
+    endDate,
+    records,
+    "Behavior Calendar",
+    logData => logData.behaviorLogs || logData.behaviors || logData.behavior,
+    "#e67e22"
+  );
 }
 
-function renderGenericCountCalendar(records, titleSuffix, color, extractorFn) {
+function renderDetailedItemCalendar(startDate, endDate, records, titleSuffix, extractorFn, defaultColor) {
   const grid = document.getElementById("calendar-grid");
   const titleHeader = document.getElementById("calendar-title");
+  const navContainer = document.getElementById("calendar-month-nav");
   if (!grid) return;
   grid.innerHTML = "";
 
-  const [activeYearStr, activeMonthStr] = (window.activeCalendarMonth || new Date().toISOString().slice(0, 7)).split("-");
+  if (!startDate || !endDate) return;
+
+  const monthsInRange = [];
+  let curr = new Date(startDate + "T00:00:00");
+  const last = new Date(endDate + "T00:00:00");
+
+  while (curr <= last) {
+    const yyyy = curr.getFullYear();
+    const mm = String(curr.getMonth() + 1).padStart(2, "0");
+    const key = `${yyyy}-${mm}`;
+    if (!monthsInRange.includes(key)) {
+      monthsInRange.push(key);
+    }
+    curr.setMonth(curr.getMonth() + 1);
+    curr.setDate(1);
+  }
+
+  if (!window.activeCalendarMonth || !monthsInRange.includes(window.activeCalendarMonth)) {
+    window.activeCalendarMonth = monthsInRange[0];
+  }
+
+  const [activeYearStr, activeMonthStr] = window.activeCalendarMonth.split("-");
   const activeYear = parseInt(activeYearStr, 10);
   const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  if (navContainer) {
+    navContainer.innerHTML = "";
+    if (monthsInRange.length > 1) {
+      monthsInRange.forEach(mKey => {
+        const [yStr, mStr] = mKey.split("-");
+        const mDate = new Date(parseInt(yStr, 10), parseInt(mStr, 10) - 1, 1);
+        const btnLabel = mDate.toLocaleString("default", { month: "short", year: "numeric" });
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerText = btnLabel;
+        btn.style.padding = "4px 10px";
+        btn.style.fontSize = "0.8rem";
+        btn.style.borderRadius = "4px";
+        btn.style.border = "1px solid #ccc";
+        btn.style.cursor = "pointer";
+
+        if (mKey === window.activeCalendarMonth) {
+          btn.style.backgroundColor = "#2c3e50";
+          btn.style.color = "#ffffff";
+          btn.style.fontWeight = "bold";
+        } else {
+          btn.style.backgroundColor = "#ffffff";
+          btn.style.color = "#333333";
+        }
+
+        btn.addEventListener("click", () => {
+          window.activeCalendarMonth = mKey;
+          renderAnalyticsChart();
+        });
+
+        navContainer.appendChild(btn);
+      });
+    }
+  }
 
   if (titleHeader) {
     const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
     titleHeader.innerText = `${monthName} ${activeYear} ${titleSuffix}`;
   }
 
-  const dailyTotals = {};
+  const dateItemsMap = {};
+
   records.forEach(item => {
     const logData = item.data || item;
     const logDate = logData.date;
     if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
 
-    const extracted = extractorFn(logData);
-    if (extracted && (Array.isArray(extracted) ? extracted.length > 0 : String(extracted).trim() !== "")) {
-      const count = Array.isArray(extracted) ? extracted.length : 1;
-      dailyTotals[logDate] = (dailyTotals[logDate] || 0) + count;
-    }
+    const rawList = extractorFn(logData) || [];
+    const list = Array.isArray(rawList) ? rawList : [rawList];
+
+    list.forEach(entry => {
+      if (!entry) return;
+
+      let label = typeof entry === "object" ? (entry.name || entry.label || entry.type || entry.level || entry.mood || "") : String(entry);
+      label = label.trim();
+      if (!label) return;
+
+      let rawTime = typeof entry === "object" ? (entry.time || entry.logTime || "") : "";
+      if (!rawTime) rawTime = logData.time || "";
+
+      let displayTime = rawTime;
+      if (rawTime && rawTime.includes(":")) {
+        const [h, m] = rawTime.split(":");
+        let hours = parseInt(h, 10);
+        const suffix = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12 || 12;
+        displayTime = `${hours}:${m} ${suffix}`;
+      }
+
+      if (!dateItemsMap[logDate]) dateItemsMap[logDate] = [];
+      dateItemsMap[logDate].push({
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+        time: displayTime,
+        color: defaultColor
+      });
+    });
   });
 
-  renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "logs", color);
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  dayNames.forEach(day => {
+    const header = document.createElement("div");
+    header.style.fontWeight = "bold";
+    header.style.padding = "4px 0";
+    header.innerText = day;
+    grid.appendChild(header);
+  });
+
+  const firstDayIndex = new Date(activeYear, activeMonthIndex, 1).getDay();
+  const totalDays = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
+
+  for (let i = 0; i < firstDayIndex; i++) {
+    grid.appendChild(document.createElement("div"));
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const dayStr = String(d).padStart(2, '0');
+    const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
+    const fullDateKey = `${activeYear}-${monthStrFormatted}-${dayStr}`;
+    const entries = dateItemsMap[fullDateKey] || [];
+
+    const cell = document.createElement("div");
+    cell.style.border = "1px solid #e0e0e0";
+    cell.style.borderRadius = "4px";
+    cell.style.padding = "4px 2px";
+    cell.style.minHeight = "55px";
+    cell.style.backgroundColor = "#ffffff";
+    cell.style.display = "flex";
+    cell.style.flexDirection = "column";
+    cell.style.alignItems = "center";
+
+    const numSpan = document.createElement("span");
+    numSpan.style.fontWeight = "bold";
+    numSpan.style.fontSize = "0.8rem";
+    numSpan.style.marginBottom = "3px";
+    numSpan.innerText = d;
+    cell.appendChild(numSpan);
+
+    const badgeContainer = document.createElement("div");
+    badgeContainer.style.display = "flex";
+    badgeContainer.style.flexDirection = "column";
+    badgeContainer.style.gap = "2px";
+    badgeContainer.style.width = "100%";
+    badgeContainer.style.alignItems = "center";
+
+    entries.forEach(entry => {
+      const badge = document.createElement("span");
+      badge.style.backgroundColor = entry.color;
+      badge.style.color = (entry.color === "#f1c40f") ? "#333" : "#fff";
+      badge.style.borderRadius = "3px";
+      badge.style.padding = "1px 3px";
+      badge.style.fontSize = "0.65rem";
+      badge.style.fontWeight = "600";
+      badge.style.whiteSpace = "nowrap";
+      badge.innerText = entry.time ? entry.time : entry.label;
+      badge.title = `${entry.label}${entry.time ? ' at ' + entry.time : ''}`;
+      badgeContainer.appendChild(badge);
+    });
+
+    cell.appendChild(badgeContainer);
+    grid.appendChild(cell);
+  }
 }
 
 function renderSummaryCalendar(startDate, endDate, records) {
