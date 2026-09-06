@@ -508,12 +508,12 @@ function getFormData() {
   const amountInput = row.querySelector("input[type='text']");
   const isHighlighted = row.classList.contains("new-food-highlight");
 
-  if (checkbox.checked || amountInput.value.trim() !== "" || isHighlighted) {
+  if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== "") || isHighlighted)) {
     foodData.push({
       name: checkbox.value,
       checked: checkbox.checked,
-      amount: amountInput.value.trim(),
-      isNew: isHighlighted 
+      amount: amountInput ? amountInput.value.trim() : "",
+      isNew: isHighlighted
     });
   }
   });
@@ -616,116 +616,135 @@ logForm.addEventListener("submit", async (e) => {
 
 // Populate Form for Editing
 function populateFormForEdit(id, data) {
-  editingDocIdInput.value = id;
-  saveLogBtn.textContent = "Update Care Log";
-  cancelEditBtn.classList.remove("hidden");
-
-  document.getElementById("log-date").value = data.date || "";
-  document.getElementById("log-time").value = data.time || "";
-
-  bmContainer.innerHTML = "";
-  if (data.bowelMovements && data.bowelMovements.length > 0) {
-    data.bowelMovements.forEach(bm => addBmRow(bm));
-  } else {
-    addBmRow();
-  }
-
-  waterContainer.innerHTML = "";
-  if (Array.isArray(data.warmWater) && data.warmWater.length > 0) {
-    data.warmWater.forEach(w => addWaterRow(w));
-  } else {
-    addWaterRow();
-  }
-
-  herbalContainer.innerHTML = "";
-  if (Array.isArray(data.herbalMeds) && data.herbalMeds.length > 0) {
-    data.herbalMeds.forEach(h => addHerbalRow(h));
-  } else {
-    addHerbalRow();
-  }
-
-  enteragramContainer.innerHTML = "";
-  if (Array.isArray(data.enteragramDoses) && data.enteragramDoses.length > 0) {
-    data.enteragramDoses.forEach(e => addEnteragramRow(e));
-  } else {
-    addEnteragramRow();
-  }
-
-  cromolynContainer.innerHTML = "";
-  if (Array.isArray(data.cromolynMeds) && data.cromolynMeds.length > 0) {
-    data.cromolynMeds.forEach(m => addCromolynRow(m));
-  } else {
-    addCromolynRow();
-  }
-
-  formulaContainer.innerHTML = "";
-  if (data.formulaHydration && data.formulaHydration.length > 0) {
-  data.formulaHydration.forEach(f => {
-    // Check if saved as object {amount, time} or string
-    if (typeof f === "object" && f !== null) {
-      addFormulaRow(f);
+    editingDocIdInput.value = id;
+    saveLogBtn.textContent = "Update Care Log";
+    cancelEditBtn.classList.remove("hidden");
+  
+    document.getElementById("log-date").value = data.date || "";
+    document.getElementById("log-time").value = data.time || "";
+  
+    bmContainer.innerHTML = "";
+    if (data.bowelMovements && data.bowelMovements.length > 0) {
+      data.bowelMovements.forEach(bm => addBmRow(bm));
     } else {
-      addFormulaRow({ amount: f, time: "" });
+      addBmRow();
     }
-  });
-  } else {
-    addFormulaRow();
-  }
-
-  activitiesContainer.innerHTML = "";
-  if (data.activities && data.activities.length > 0) {
-    data.activities.forEach(a => addTextRow(activitiesContainer, "activity-row", "Activity Details", a));
-  } else {
-    addTextRow(activitiesContainer, "activity-row", "Activity Details");
-  }
-
-  painContainer.innerHTML = "";
-if (Array.isArray(data.painLogs) && data.painLogs.length > 0) {
-  data.painLogs.forEach(p => addPainRow(p));
-} else {
-  addPainRow();
-}
-
-moodContainer.innerHTML = "";
-if (Array.isArray(data.moodLogs) && data.moodLogs.length > 0) {
-  data.moodLogs.forEach(m => addMoodRow(m));
-} else {
-  addMoodRow();
-}
-
-behaviorContainer.innerHTML = "";
-if (Array.isArray(data.behaviorLogs) && data.behaviorLogs.length > 0) {
-  data.behaviorLogs.forEach(b => addBehaviorRow(b));
-} else {
-  addBehaviorRow();
-}
-
-  if (data.enzymes) {
-    document.getElementById("enzyme-no-fenol").checked = !!data.enzymes.noFenol?.checked;
-    document.getElementById("enzyme-no-fenol-notes").value = data.enzymes.noFenol?.notes || "";
-    document.getElementById("enzyme-carb-dgts").checked = !!data.enzymes.carbDgts?.checked;
-    document.getElementById("enzyme-carb-dgts-notes").value = data.enzymes.carbDgts?.notes || "";
-    document.getElementById("enzyme-chew").checked = !!data.enzymes.chew?.checked;
-    document.getElementById("enzyme-chew-notes").value = data.enzymes.chew?.notes || "";
-  }
-
-  document.querySelectorAll("#foods-grid .food-row").forEach(row => {
-    const checkbox = row.querySelector("input[type='checkbox']");
-    const amountInput = row.querySelector("input[type='text']");
-    const savedFood = data.foods?.find(f => f.name === checkbox.value);
-
-    if (savedFood) {
-      checkbox.checked = savedFood.checked;
-      amountInput.value = savedFood.amount || "";
+  
+    waterContainer.innerHTML = "";
+    if (Array.isArray(data.warmWater) && data.warmWater.length > 0) {
+      data.warmWater.forEach(w => addWaterRow(w));
     } else {
-      checkbox.checked = false;
-      amountInput.value = "";
+      addWaterRow();
     }
-  });
-
-  document.getElementById("day-summary-select").value = data.daySummary || "";
-  document.getElementById("day-notes").value = data.notes || "";
-  tabNewBtn.click();
+  
+    herbalContainer.innerHTML = "";
+    if (Array.isArray(data.herbalMeds) && data.herbalMeds.length > 0) {
+      data.herbalMeds.forEach(h => addHerbalRow(h));
+    } else {
+      addHerbalRow();
+    }
+  
+    enteragramContainer.innerHTML = "";
+    if (Array.isArray(data.enteragramDoses) && data.enteragramDoses.length > 0) {
+      data.enteragramDoses.forEach(e => addEnteragramRow(e));
+    } else {
+      addEnteragramRow();
+    }
+  
+    cromolynContainer.innerHTML = "";
+    if (Array.isArray(data.cromolynMeds) && data.cromolynMeds.length > 0) {
+      data.cromolynMeds.forEach(m => addCromolynRow(m));
+    } else {
+      addCromolynRow();
+    }
+  
+    formulaContainer.innerHTML = "";
+    if (data.formulaHydration && data.formulaHydration.length > 0) {
+      data.formulaHydration.forEach(f => {
+        if (typeof f === "object" && f !== null) {
+          addFormulaRow(f);
+        } else {
+          addFormulaRow({ amount: f, time: "" });
+        }
+      });
+    } else {
+      addFormulaRow();
+    }
+  
+    activitiesContainer.innerHTML = "";
+    if (data.activities && data.activities.length > 0) {
+      data.activities.forEach(a => addTextRow(activitiesContainer, "activity-row", "Activity Details", a));
+    } else {
+      addTextRow(activitiesContainer, "activity-row", "Activity Details");
+    }
+  
+    painContainer.innerHTML = "";
+    if (Array.isArray(data.painLogs) && data.painLogs.length > 0) {
+      data.painLogs.forEach(p => addPainRow(p));
+    } else {
+      addPainRow();
+    }
+  
+    moodContainer.innerHTML = "";
+    if (Array.isArray(data.moodLogs) && data.moodLogs.length > 0) {
+      data.moodLogs.forEach(m => addMoodRow(m));
+    } else {
+      addMoodRow();
+    }
+  
+    behaviorContainer.innerHTML = "";
+    if (Array.isArray(data.behaviorLogs) && data.behaviorLogs.length > 0) {
+      data.behaviorLogs.forEach(b => addBehaviorRow(b));
+    } else {
+      addBehaviorRow();
+    }
+  
+    if (data.enzymes) {
+      document.getElementById("enzyme-no-fenol").checked = !!data.enzymes.noFenol?.checked;
+      document.getElementById("enzyme-no-fenol-notes").value = data.enzymes.noFenol?.notes || "";
+      document.getElementById("enzyme-carb-dgts").checked = !!data.enzymes.carbDgts?.checked;
+      document.getElementById("enzyme-carb-dgts-notes").value = data.enzymes.carbDgts?.notes || "";
+      document.getElementById("enzyme-chew").checked = !!data.enzymes.chew?.checked;
+      document.getElementById("enzyme-chew-notes").value = data.enzymes.chew?.notes || "";
+    }
+  
+    // Reset all checkboxes and inputs in foods grid first
+    document.querySelectorAll("#foods-grid .food-row").forEach(row => {
+      const checkbox = row.querySelector("input[type='checkbox']");
+      const amountInput = row.querySelector("input[type='text']");
+      if (checkbox) checkbox.checked = false;
+      if (amountInput) amountInput.value = "";
+    });
+  
+    // Populate saved foods
+    if (Array.isArray(data.foods)) {
+      const foodsContainer = document.getElementById("foods-grid");
+  
+      data.foods.forEach(savedFood => {
+        let matchingRow = Array.from(document.querySelectorAll("#foods-grid .food-row")).find(row => {
+          const checkbox = row.querySelector("input[type='checkbox']");
+          return checkbox && checkbox.value.toLowerCase() === savedFood.name.toLowerCase();
+        });
+  
+        // If missing from DOM, create dynamic row
+        if (!matchingRow && foodsContainer) {
+          matchingRow = createFoodRowElement(savedFood.name, savedFood.amount || "", savedFood.checked, savedFood.isNew || false);
+          foodsContainer.appendChild(matchingRow);
+        } else if (matchingRow) {
+          // Update existing row inputs directly
+          const checkbox = matchingRow.querySelector("input[type='checkbox']");
+          const amountInput = matchingRow.querySelector("input[type='text']");
+  
+          if (checkbox) checkbox.checked = !!savedFood.checked;
+          if (amountInput) amountInput.value = savedFood.amount || "";
+          if (savedFood.isNew) matchingRow.classList.add("new-food-highlight");
+        }
+      });
+    }
+  
+    document.getElementById("day-summary-select").value = data.daySummary || "";
+    document.getElementById("day-notes").value = data.notes || "";
+    tabNewBtn.click();
 }
 
 // Pain Row Generator
@@ -1561,7 +1580,7 @@ function renderBMCalendar(startDate, endDate, records) {
 
 function createFoodRowElement(foodName, amount = "", isChecked = false, isNew = false) {
     const row = document.createElement("div");
-    row.className = `food-row ${isNew ? "new-food-highlight" : ""}`;
+    row.className = `food-row dynamic-row ${isNew ? "new-food-highlight" : ""}`;
     row.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 6px;";
   
     row.innerHTML = `
@@ -1575,27 +1594,69 @@ function createFoodRowElement(foodName, amount = "", isChecked = false, isNew = 
     return row;
 }
 
-document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
+// LocalStorage helpers for custom foods
+function getCustomFoods() {
+    return JSON.parse(localStorage.getItem("customFoods") || "[]");
+  }
+  
+  function saveCustomFood(foodName) {
+    const customFoods = getCustomFoods();
+    if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
+      customFoods.push({ name: foodName, isNew: true });
+      localStorage.setItem("customFoods", JSON.stringify(customFoods));
+    }
+  }
+  
+  // Add Custom Food Button Handler
+  document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
     const inputEl = document.getElementById("new-food-input");
     const foodName = inputEl.value.trim();
   
     if (!foodName) return;
   
+    // Save to persistent storage
+    saveCustomFood(foodName);
+  
+    // Append to current grid
     const foodsContainer = document.getElementById("foods-grid");
-    const newRow = createFoodRowElement(foodName, "", false, true); // Pass true for isNew highlight
+    const newRow = createFoodRowElement(foodName, "", false, true);
     foodsContainer.appendChild(newRow);
   
-    inputEl.value = ""; // Reset text box
+    inputEl.value = "";
 });
-
+  
+  // Clear Highlights Handler
 document.getElementById("clear-food-highlights-btn")?.addEventListener("click", () => {
+    // Update storage so they aren't highlighted on refresh
+    const customFoods = getCustomFoods().map(f => ({ ...f, isNew: false }));
+    localStorage.setItem("customFoods", JSON.stringify(customFoods));
+  
+    // Remove CSS class from UI
     const highlightedRows = document.querySelectorAll(".food-row.new-food-highlight");
-    
     highlightedRows.forEach(row => {
       row.classList.remove("new-food-highlight");
     });
 });
 
+function loadStoredCustomFoods() {
+    const foodsContainer = document.getElementById("foods-grid");
+    if (!foodsContainer) return;
+  
+    const customFoods = getCustomFoods();
+    customFoods.forEach(food => {
+      // Prevent duplicate rendering if already in HTML
+      const existing = Array.from(foodsContainer.querySelectorAll("span")).some(
+        span => span.textContent.toLowerCase() === food.name.toLowerCase()
+      );
+  
+      if (!existing) {
+        const row = createFoodRowElement(food.name, "", false, food.isNew);
+        foodsContainer.appendChild(row);
+      }
+    });
+}
+  
+loadStoredCustomFoods();
 
 
 
