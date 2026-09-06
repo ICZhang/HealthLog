@@ -1561,8 +1561,6 @@ function renderAnalyticsChart() {
 
   // --- NEW FOOD INTRODUCTIONS VIEW ---
   } else if (activeView === "food" || activeView === "foods") {
-    if (chartTitle) chartTitle.innerText = "First Days Foods Were Introduced";
-  
     // Target the entire outer card container, not just the canvas element
     if (chartCard) {
       chartCard.style.display = "none";
