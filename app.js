@@ -503,7 +503,7 @@ function getFormData() {
   });
 
   const foodData = [];
-document.querySelectorAll("#foods-grid .food-row").forEach(row => {
+  document.querySelectorAll("#foods-grid .food-row").forEach(row => {
   const checkbox = row.querySelector("input[type='checkbox']");
   const amountInput = row.querySelector("input[type='text']");
   const isHighlighted = row.classList.contains("new-food-highlight");
@@ -1550,6 +1550,16 @@ function renderAnalyticsChart() {
   );
 
   renderSummaryCalendar(startDate, endDate, records);
+}
+else if (activeView === "food" || activeView === "foods") {
+  if (chartTitle) chartTitle.innerText = "First Days Foods Were Introduced";
+
+  // Hide the top canvas chart since only the calendar is required
+  if (canvas) {
+    canvas.style.display = "none";
+  }
+
+  renderFirstFoodCalendar(startDate, endDate, records);
 }
 }
 
@@ -2807,6 +2817,198 @@ function renderSummaryCalendar(startDate, endDate, records) {
   }
 }
 
+function renderFirstFoodCalendar(startDate, endDate, records) {
+  const grid = document.getElementById("calendar-grid");
+  const titleHeader = document.getElementById("calendar-title");
+  const navContainer = document.getElementById("calendar-month-nav");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  if (!startDate || !endDate) return;
+
+  // 1. Identify the earliest date each unique food was introduced
+  const firstFoodDates = {}; // Format: { "Food Name": "YYYY-MM-DD" }
+
+  // Sort records by date ascending so earliest dates process first
+  const sortedRecords = [...records].sort((a, b) => {
+    const dateA = (a.data || a).date || "";
+    const dateB = (b.data || b).date || "";
+    return dateA.localeCompare(dateB);
+  });
+
+  sortedRecords.forEach(item => {
+    const logData = item.data || item;
+    const logDate = logData.date;
+    if (!logDate) return;
+
+    const foods = logData.foods || logData.foodData || [];
+    const foodList = Array.isArray(foods) ? foods : [foods];
+
+    foodList.forEach(f => {
+      if (!f) return;
+
+      let foodName = typeof f === "object" ? (f.name || f.food || f.label || "") : String(f);
+      foodName = foodName.trim();
+      if (!foodName) return;
+
+      const formattedName = foodName.charAt(0).toUpperCase() + foodName.slice(1);
+
+      // Track the absolute first time this food appears in history
+      if (!firstFoodDates[formattedName]) {
+        firstFoodDates[formattedName] = logDate;
+      }
+    });
+  });
+
+  // 2. Build month range for navigation
+  const monthsInRange = [];
+  let curr = new Date(startDate + "T00:00:00");
+  const last = new Date(endDate + "T00:00:00");
+
+  while (curr <= last) {
+    const yyyy = curr.getFullYear();
+    const mm = String(curr.getMonth() + 1).padStart(2, "0");
+    const key = `${yyyy}-${mm}`;
+    if (!monthsInRange.includes(key)) monthsInRange.push(key);
+    curr.setMonth(curr.getMonth() + 1);
+    curr.setDate(1);
+  }
+
+  if (!window.activeCalendarMonth || !monthsInRange.includes(window.activeCalendarMonth)) {
+    window.activeCalendarMonth = monthsInRange[0];
+  }
+
+  const [activeYearStr, activeMonthStr] = window.activeCalendarMonth.split("-");
+  const activeYear = parseInt(activeYearStr, 10);
+  const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  // 3. Render Month Navigation Controls
+  if (navContainer) {
+    navContainer.innerHTML = "";
+    if (monthsInRange.length > 1) {
+      monthsInRange.forEach(mKey => {
+        const [yStr, mStr] = mKey.split("-");
+        const mDate = new Date(parseInt(yStr, 10), parseInt(mStr, 10) - 1, 1);
+        const btnLabel = mDate.toLocaleString("default", { month: "short", year: "numeric" });
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerText = btnLabel;
+        btn.style.padding = "4px 10px";
+        btn.style.fontSize = "0.8rem";
+        btn.style.borderRadius = "4px";
+        btn.style.border = "1px solid #ccc";
+        btn.style.cursor = "pointer";
+
+        if (mKey === window.activeCalendarMonth) {
+          btn.style.backgroundColor = "#2c3e50";
+          btn.style.color = "#ffffff";
+          btn.style.fontWeight = "bold";
+        } else {
+          btn.style.backgroundColor = "#ffffff";
+          btn.style.color = "#333333";
+        }
+
+        btn.addEventListener("click", () => {
+          window.activeCalendarMonth = mKey;
+          renderAnalyticsChart();
+        });
+
+        navContainer.appendChild(btn);
+      });
+    }
+  }
+
+  if (titleHeader) {
+    const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+    titleHeader.innerText = `${monthName} ${activeYear} First Food Introductions`;
+  }
+
+  // 4. Map introductions to the active calendar month
+  const dateIntroductionsMap = {};
+  const palette = ["#27ae60", "#2980b9", "#8e44ad", "#d35400", "#16a085", "#c0392b"];
+  const allFoods = Object.keys(firstFoodDates).sort();
+
+  allFoods.forEach((food, idx) => {
+    const introDate = firstFoodDates[food];
+    if (introDate && introDate.startsWith(window.activeCalendarMonth)) {
+      if (!dateIntroductionsMap[introDate]) dateIntroductionsMap[introDate] = [];
+      dateIntroductionsMap[introDate].push({
+        name: food,
+        color: palette[idx % palette.length]
+      });
+    }
+  });
+
+  // 5. Draw Calendar Day Headers
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  dayNames.forEach(day => {
+    const header = document.createElement("div");
+    header.style.fontWeight = "bold";
+    header.style.padding = "4px 0";
+    header.innerText = day;
+    grid.appendChild(header);
+  });
+
+  const firstDayIndex = new Date(activeYear, activeMonthIndex, 1).getDay();
+  const totalDays = new Date(activeYear, activeMonthIndex + 1, 0).getDate();
+
+  for (let i = 0; i < firstDayIndex; i++) {
+    grid.appendChild(document.createElement("div"));
+  }
+
+  // 6. Build Calendar Grid Cells
+  for (let d = 1; d <= totalDays; d++) {
+    const dayStr = String(d).padStart(2, '0');
+    const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
+    const fullDateKey = `${activeYear}-${monthStrFormatted}-${dayStr}`;
+    const introducedFoods = dateIntroductionsMap[fullDateKey] || [];
+
+    const cell = document.createElement("div");
+    cell.style.border = "1px solid #e0e0e0";
+    cell.style.borderRadius = "4px";
+    cell.style.padding = "4px 2px";
+    cell.style.minHeight = "55px";
+    cell.style.backgroundColor = "#ffffff";
+    cell.style.display = "flex";
+    cell.style.flexDirection = "column";
+    cell.style.alignItems = "center";
+
+    const numSpan = document.createElement("span");
+    numSpan.style.fontWeight = "bold";
+    numSpan.style.fontSize = "0.8rem";
+    numSpan.style.marginBottom = "3px";
+    numSpan.innerText = d;
+    cell.appendChild(numSpan);
+
+    const badgeContainer = document.createElement("div");
+    badgeContainer.style.display = "flex";
+    badgeContainer.style.flexDirection = "column";
+    badgeContainer.style.gap = "2px";
+    badgeContainer.style.width = "100%";
+    badgeContainer.style.alignItems = "center";
+
+    introducedFoods.forEach(item => {
+      const badge = document.createElement("span");
+      badge.style.backgroundColor = item.color;
+      badge.style.color = "#ffffff";
+      badge.style.borderRadius = "3px";
+      badge.style.padding = "1px 4px";
+      badge.style.fontSize = "0.65rem";
+      badge.style.fontWeight = "600";
+      badge.style.whiteSpace = "nowrap";
+      badge.style.overflow = "hidden";
+      badge.style.textOverflow = "ellipsis";
+      badge.style.maxWidth = "90%";
+      badge.innerText = item.name;
+      badge.title = `Introduced on ${fullDateKey}: ${item.name}`;
+      badgeContainer.appendChild(badge);
+    });
+
+    cell.appendChild(badgeContainer);
+    grid.appendChild(cell);
+  }
+}
 
 
 
