@@ -1414,33 +1414,56 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
 
-    drawChart(canvas, labels, data, ["#1abc9c"]);
+    // Pass "scatter" or point configuration to drawChart
+    drawChart(canvas, labels, data, ["#1abc9c"], "scatter");
     renderWaterCalendar(startDate, endDate, records);
   }
 }
   
-function drawChart(canvas, labels, data, colors) {
-    if (window.painChartInstance) {
-      window.painChartInstance.destroy();
-    }
-    const ctx = canvas.getContext("2d");
-    window.painChartInstance = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: labels,
-        datasets: [{
-          data: data,
-          backgroundColor: colors,
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+function drawChart(canvas, labels, data, colors, chartType = 'bar') {
+  if (window.myAnalyticsChart) {
+    window.myAnalyticsChart.destroy();
+  }
+
+  const isScatter = chartType === 'scatter';
+
+  window.myAnalyticsChart = new Chart(canvas, {
+    type: isScatter ? 'line' : 'bar', // 'line' with dots acts as a scatter plot across dates
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Cups of Water',
+        data: data,
+        backgroundColor: colors[0] || '#1abc9c',
+        borderColor: colors[0] || '#1abc9c',
+        pointRadius: isScatter ? 6 : 0,
+        pointHoverRadius: isScatter ? 8 : 0,
+        showLine: isScatter ? true : undefined, // Optional: set to false if you want points ONLY without connecting lines
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Cups of Water'
+          },
+          ticks: {
+            stepSize: 1
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        }
       }
-    });
+    }
+  });
 }
 
 function renderBMCalendar(startDate, endDate, records) {
