@@ -369,7 +369,7 @@ function addFormulaRow(data = {}) {
   
     row.innerHTML = `
       <!-- Scoops Input (Stretched) -->
-      <input type="number" class="formula-amount" value="${amountValue}" style="flex: 1; min-width: 0; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; box-sizing: border-box;" />
+      <input type="number" class="formula-amount" value="${amountValue}" style="flex: 1; min-width: 0; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; box-sizing: border-box;" />
   
       <!-- Time Input (Fixed Width to Match Enteragram) -->
       <input type="time" class="formula-time" value="${timeValue}" style="width: 130px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; text-align: center; box-sizing: border-box; flex-shrink: 0;" />
