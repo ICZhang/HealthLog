@@ -1652,12 +1652,12 @@ function loadStoredCustomFoods() {
 
   const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
   customFoods.forEach(food => {
-    const existing = Array.from(foodsContainer.querySelectorAll("span")).some(
-      span => span.textContent.toLowerCase() === food.name.toLowerCase()
+    const existing = Array.from(foodsContainer.querySelectorAll("label")).some(
+      lbl => lbl.textContent.toLowerCase() === food.name.toLowerCase()
     );
 
     if (!existing) {
-      const row = createFoodRowElement(food.name, food.unit || "", "", false, food.isNew);
+      const row = createFoodRowElement(food.name, food.unit || "", "", false, food.isHighlighted);
       foodsContainer.appendChild(row);
     }
   });
@@ -1703,20 +1703,14 @@ document.getElementById("toggle-highlight-btn")?.addEventListener("click", () =>
     const foodName = input.value;
     const isCurrentlyHighlighted = row.classList.contains("new-food-highlight");
 
-    // Toggle CSS class
-    if (isCurrentlyHighlighted) {
-      row.classList.remove("new-food-highlight");
-    } else {
-      row.classList.add("new-food-highlight");
-    }
+    // 1. Toggle visual class on DOM element immediately
+    row.classList.toggle("new-food-highlight");
 
-    // Update state in customFoods array if applicable
-    customFoods = customFoods.map(f => {
-      if (f.name.toLowerCase() === foodName.toLowerCase()) {
-        return { ...f, isHighlighted: !isCurrentlyHighlighted };
-      }
-      return f;
-    });
+    // 2. If it's a custom food, update its saved state in localStorage
+    const customIndex = customFoods.findIndex(f => f.name.toLowerCase() === foodName.toLowerCase());
+    if (customIndex !== -1) {
+      customFoods[customIndex].isHighlighted = !isCurrentlyHighlighted;
+    }
   });
 
   localStorage.setItem("customFoods", JSON.stringify(customFoods));

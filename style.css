@@ -128,3 +128,7 @@ box-sizing: border-box;
 #view-modal:not(.hidden) {
     display: flex !important;
 }
+
+.food-row.new-food-highlight {
+    background-color: #fff9c4 !important;
+}
