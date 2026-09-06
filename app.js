@@ -1426,7 +1426,92 @@ function renderAnalyticsChart() {
     drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date");
     renderWaterCalendar(startDate, endDate, records);
   }
+  // --- MOOD VIEW ---
+ else if (activeView === "mood") {
+  if (chartTitle) chartTitle.innerText = "Mood Logs Breakdown";
+
+  const moodCounts = {};
+  records.forEach(item => {
+    const logData = item.data || item;
+    if (!logData.date) return;
+    if (startDate && logData.date < startDate) return;
+    if (endDate && logData.date > endDate) return;
+
+    const moods = logData.moods || logData.mood || [];
+    const moodList = Array.isArray(moods) ? moods : [moods];
+
+    moodList.forEach(m => {
+      const val = typeof m === "object" ? (m.label || m.type || "") : String(m);
+      if (val.trim()) {
+        const key = val.charAt(0).toUpperCase() + val.slice(1);
+        moodCounts[key] = (moodCounts[key] || 0) + 1;
+      }
+    });
+  });
+
+  const labels = Object.keys(moodCounts).length ? Object.keys(moodCounts) : ["No Mood Data"];
+  const data = Object.keys(moodCounts).length ? Object.values(moodCounts) : [0];
+  const colors = ["#f1c40f", "#9b59b6", "#3498db", "#e67e22", "#2ecc71"];
+
+  drawChart(canvas, labels, data, colors);
+  renderMoodCalendar(startDate, endDate, records);
+
+// --- BEHAVIOR VIEW ---
+} else if (activeView === "behavior") {
+  if (chartTitle) chartTitle.innerText = "Logged Behaviors Frequency";
+
+  const behaviorCounts = {};
+  records.forEach(item => {
+    const logData = item.data || item;
+    if (!logData.date) return;
+    if (startDate && logData.date < startDate) return;
+    if (endDate && logData.date > endDate) return;
+
+    const behaviors = logData.behaviors || logData.behavior || [];
+    const bList = Array.isArray(behaviors) ? behaviors : [behaviors];
+
+    bList.forEach(b => {
+      const val = typeof b === "object" ? (b.name || b.type || "") : String(b);
+      if (val.trim()) {
+        const key = val.charAt(0).toUpperCase() + val.slice(1);
+        behaviorCounts[key] = (behaviorCounts[key] || 0) + 1;
+      }
+    });
+  });
+
+  const labels = Object.keys(behaviorCounts).length ? Object.keys(behaviorCounts) : ["No Behavior Data"];
+  const data = Object.keys(behaviorCounts).length ? Object.values(behaviorCounts) : [0];
+  const colors = ["#e74c3c", "#e67e22", "#1abc9c", "#34495e"];
+
+  drawChart(canvas, labels, data, colors);
+  renderBehaviorCalendar(startDate, endDate, records);
+
+// --- DAY SUMMARY VIEW ---
+} else if (activeView === "summary") {
+  if (chartTitle) chartTitle.innerText = "Daily Summary Entries Logged";
+
+  const summaryByDate = {};
+  records.forEach(item => {
+    const logData = item.data || item;
+    if (!logData.date) return;
+    if (startDate && logData.date < startDate) return;
+    if (endDate && logData.date > endDate) return;
+
+    const summaryText = logData.daySummary || logData.summary || logData.notes || "";
+    if (summaryText.trim()) {
+      summaryByDate[logData.date] = (summaryByDate[logData.date] || 0) + 1;
+    }
+  });
+
+  const dates = Object.keys(summaryByDate).sort();
+  const labels = dates.length ? dates : ["No Summaries"];
+  const data = dates.length ? dates.map(d => summaryByDate[d]) : [0];
+
+  drawChart(canvas, labels, data, ["#9b59b6"]);
+  renderSummaryCalendar(startDate, endDate, records);
 }
+}
+
   
 function drawChart(canvas, labels, data, colors) {
   // Destroy whatever chart is currently active on the canvas
@@ -1977,6 +2062,49 @@ function renderMonthNavigation(startDate, endDate) {
 
     navContainer.appendChild(btn);
   });
+}
+
+function renderMoodCalendar(startDate, endDate, records) {
+  renderGenericCountCalendar(records, "Mood Calendar", "#f1c40f", log => log.moods || log.mood);
+}
+
+function renderBehaviorCalendar(startDate, endDate, records) {
+  renderGenericCountCalendar(records, "Behavior Calendar", "#e67e22", log => log.behaviors || log.behavior);
+}
+
+function renderSummaryCalendar(startDate, endDate, records) {
+  renderGenericCountCalendar(records, "Day Summary Calendar", "#9b59b6", log => log.daySummary || log.summary || log.notes);
+}
+
+function renderGenericCountCalendar(records, titleSuffix, color, extractorFn) {
+  const grid = document.getElementById("calendar-grid");
+  const titleHeader = document.getElementById("calendar-title");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  const [activeYearStr, activeMonthStr] = (window.activeCalendarMonth || new Date().toISOString().slice(0, 7)).split("-");
+  const activeYear = parseInt(activeYearStr, 10);
+  const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  if (titleHeader) {
+    const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+    titleHeader.innerText = `${monthName} ${activeYear} ${titleSuffix}`;
+  }
+
+  const dailyTotals = {};
+  records.forEach(item => {
+    const logData = item.data || item;
+    const logDate = logData.date;
+    if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
+
+    const extracted = extractorFn(logData);
+    if (extracted && (Array.isArray(extracted) ? extracted.length > 0 : String(extracted).trim() !== "")) {
+      const count = Array.isArray(extracted) ? extracted.length : 1;
+      dailyTotals[logDate] = (dailyTotals[logDate] || 0) + count;
+    }
+  });
+
+  renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "logs", color);
 }
 
 
