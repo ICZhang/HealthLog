@@ -1420,35 +1420,39 @@ function renderAnalyticsChart() {
 }
   
 function drawChart(canvas, labels, data, colors) {
-    if (window.painChartInstance) {
-      window.painChartInstance.destroy();
+  // Destroy whatever chart is currently active on the canvas
+  if (window.activeChartInstance) {
+    window.activeChartInstance.destroy();
+  }
+
+  const ctx = canvas.getContext("2d");
+  window.activeChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
     }
-    const ctx = canvas.getContext("2d");
-    window.painChartInstance = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: labels,
-        datasets: [{
-          data: data,
-          backgroundColor: colors,
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-      }
-    });
+  });
 }
 
 function drawScatterChart(canvas, labels, data, pointColor = "#1abc9c") {
-  if (window.myAnalyticsChart) {
-    window.myAnalyticsChart.destroy();
+  // Destroy whatever chart is currently active on the canvas
+  if (window.activeChartInstance) {
+    window.activeChartInstance.destroy();
   }
 
-  window.myAnalyticsChart = new Chart(canvas, {
+  const ctx = canvas.getContext("2d");
+  window.activeChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
       labels: labels,
@@ -1459,28 +1463,21 @@ function drawScatterChart(canvas, labels, data, pointColor = "#1abc9c") {
         borderColor: pointColor,
         pointRadius: 6,
         pointHoverRadius: 8,
-        showLine: false, // Disables the connecting line
+        showLine: false,
         fill: false
       }]
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         y: {
           beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Cups of Water'
-          },
-          ticks: {
-            stepSize: 1
-          }
+          title: { display: true, text: 'Cups of Water' },
+          ticks: { stepSize: 1 }
         },
         x: {
-          title: {
-            display: true,
-            text: 'Date'
-          }
+          title: { display: true, text: 'Date' }
         }
       }
     }
