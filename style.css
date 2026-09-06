@@ -128,28 +128,3 @@ box-sizing: border-box;
 #view-modal:not(.hidden) {
     display: flex !important;
 }
-
-.remove-row-btn {
-    background-color: #e74c3c !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 4px !important;
-    width: 32px !important;
-    height: 32px !important;
-    min-width: 32px !important;
-    min-height: 32px !important;
-    padding: 0 !important;
-    font-size: 0.85rem !important;
-    font-weight: bold !important;
-    line-height: 1 !important;
-    cursor: pointer;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex-shrink: 0 !important;
-    box-sizing: border-box !important;
-}
-  
-.remove-row-btn:hover {
-    background-color: #c0392b !important;
-}
