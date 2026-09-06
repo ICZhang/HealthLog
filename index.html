@@ -131,13 +131,22 @@
   
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
 
-        <!-- Formula & Hydration (Dynamic Rows) -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h3 style="margin:0;">Formula</h3>
-        <button type="button" id="add-formula-btn" style="width: auto; padding: 6px 12px; font-size: 0.8rem; margin:0;">+ Add Row</button>
-        </div>
-        <div id="formula-container">
-        <!-- JavaScript will auto-render dynamic rows here -->
+        <!-- Formula -->
+        <div class="form-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h3 style="margin: 0;">Formula</h3>
+              <button type="button" id="add-formula-btn" class="add-btn">+ Add Row</button>
+            </div>
+          
+            <!-- Header Labels -->
+            <div style="display: flex; gap: 8px; margin-bottom: 6px; padding: 0 6px;">
+              <span style="font-size: 0.85rem; font-weight: bold; color: #333; width: 100px;">Amount in scoops</span>
+              <span style="font-size: 0.85rem; font-weight: bold; color: #333; flex: 1; text-align: center;">Time</span>
+              <span style="width: 28px;"></span> <!-- Spacer for X button alignment -->
+            </div>
+          
+            <!-- Dynamic Container -->
+            <div id="formula-container"></div>
         </div>
 
         <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
