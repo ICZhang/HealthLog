@@ -351,7 +351,7 @@ function addTextRow(container, className, placeholder, value = "") {
   row.className = `dynamic-row ${className}`;
   row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px;";
   row.innerHTML = `
-    <input type="text" class="row-input" placeholder="${placeholder}" value="${value}" style="flex: 1; margin: 0;" />
+    <input type="text" class="row-input" placeholder="${placeholder}" value="${value}" style="flex: 1; margin: 0; font-size: 0.85rem;" />
     <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 10px; font-size: 0.8rem; margin:0;">X</button>
   `;
 
@@ -380,7 +380,7 @@ function addFormulaRow(data = {}) {
   
     row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
     formulaContainer.appendChild(row);
-  }
+}
 
 // Event Listeners for Adding Rows
 addBmBtn?.addEventListener("click", () => addBmRow());
