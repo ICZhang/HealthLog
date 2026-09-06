@@ -1414,8 +1414,7 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
 
-    // Pass "scatter" or point configuration to drawChart
-    drawChart(canvas, labels, data, ["#1abc9c"], "scatter");
+    drawScatterChart(canvas, labels, data, "#1abc9c");
     renderWaterCalendar(startDate, endDate, records);
   }
 }
@@ -1442,6 +1441,50 @@ function drawChart(canvas, labels, data, colors) {
         scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
       }
     });
+}
+
+function drawScatterChart(canvas, labels, data, pointColor = "#1abc9c") {
+  if (window.myAnalyticsChart) {
+    window.myAnalyticsChart.destroy();
+  }
+
+  window.myAnalyticsChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Cups of Water',
+        data: data,
+        backgroundColor: pointColor,
+        borderColor: pointColor,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        showLine: false, // Disables the connecting line
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Cups of Water'
+          },
+          ticks: {
+            stepSize: 1
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        }
+      }
+    }
+  });
 }
 
 function renderBMCalendar(startDate, endDate, records) {
