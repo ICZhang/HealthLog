@@ -1578,23 +1578,14 @@ function renderBMCalendar(startDate, endDate, records) {
     }
 }
 
-function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isNew = false) {
+function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false) {
   const row = document.createElement("div");
-  
-  // Keep class name minimal so CSS stylesheet rules don't fight with inline flexbox
-  row.className = `food-row ${isNew ? "new-food-highlight" : ""}`;
-  
-  // Set explicit inline flex layout to force checkbox left and amount input right
-  row.style.display = "flex";
-  row.style.alignItems = "center";
-  row.style.justifyContent = "space-between";
-  row.style.width = "100%";
-  row.style.marginBottom = "6px";
-  row.style.boxSizing = "border-box";
+  row.className = "food-row";
+  row.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; width: 100%; box-sizing: border-box;";
 
   const placeholderText = unit ? `Amount (${unit})` : "Amount";
 
-  row.innerHTML = `<label style="display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; font-size: 0.95rem;"><input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} style="margin: 0;" /><span>${foodName}</span></label><input type="text" placeholder="${placeholderText}" value="${amount}" style="width: 130px; height: 28px; padding: 4px; margin: 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />`;
+  row.innerHTML = `<label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0;"><input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} style="margin: 0;" /><span style="font-size: 0.85rem; color: #333;">${foodName}</span></label><input type="text" placeholder="${placeholderText}" value="${amount}" style="width: 130px; height: 28px; padding: 4px; margin: 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.85rem;" />`;
 
   return row;
 }
@@ -1622,19 +1613,19 @@ document.getElementById("add-custom-food-btn")?.addEventListener("click", () => 
   
     if (!foodName) return;
   
-    // Save food with unit to localStorage
+    // Save food to localStorage
     const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
     if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
-      customFoods.push({ name: foodName, unit: unit, isNew: true });
+      customFoods.push({ name: foodName, unit: unit });
       localStorage.setItem("customFoods", JSON.stringify(customFoods));
     }
   
-    // Append new row to UI
+    // Append clean row to UI
     const foodsContainer = document.getElementById("foods-grid");
-    const newRow = createFoodRowElement(foodName, unit, "", false, true);
+    const newRow = createFoodRowElement(foodName, unit, "", false);
     foodsContainer.appendChild(newRow);
   
-    // Clear input fields
+    // Clear inputs
     nameInput.value = "";
     if (unitInput) unitInput.value = "";
 });
