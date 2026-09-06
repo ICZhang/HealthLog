@@ -362,23 +362,25 @@ function addTextRow(container, className, placeholder, value = "") {
 function addFormulaRow(data = {}) {
     const row = document.createElement("div");
     row.className = "dynamic-row formula-row";
-    row.style.cssText = "display: flex; align-items: center; gap: 10px; margin-bottom: 6px; width: 100%;";
+    row.style.cssText = "border: 1px solid #eee; padding: 10px; border-radius: 6px; margin-bottom: 8px; background: #fafafa;";
   
     const amountValue = data.amount !== undefined ? data.amount : 12;
     const timeValue = data.time || "";
   
     row.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 5px;">
-        <label style="font-size: 0.85rem; font-weight: bold; white-space: nowrap;">Amount in scoops:</label>
-        <input type="number" class="formula-amount" value="${amountValue}" style="width: 70px; padding: 4px; border: 1px solid #ccc; border-radius: 4px;" />
+      <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
+        <label style="font-size: 0.85rem; font-weight: bold; color: #333;">Amount in scoops:</label>
+        <input type="number" class="formula-amount" value="${amountValue}" style="width: 100px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;" />
       </div>
   
-      <div style="display: flex; align-items: center; gap: 5px;">
-        <label style="font-size: 0.85rem; font-weight: bold;">Time:</label>
-        <input type="time" class="formula-time" value="${timeValue}" style="width: 130px; margin: 0; text-align: center;" />
-      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 0.85rem; font-weight: bold; color: #333;">Time:</label>
+          <input type="time" class="formula-time" value="${timeValue}" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; text-align: center;" />
+        </div>
   
-      <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center; color: white; border: none; border-radius: 4px; cursor: pointer;">X</button>
+        <button type="button" class="remove-row-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 32px; height: 32px; font-size: 0.85rem; font-weight: bold; cursor: pointer; align-self: flex-end; margin-bottom: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">X</button>
+      </div>
     `;
   
     row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
@@ -424,8 +426,8 @@ function resetForm() {
 
   addBmRow(); 
   addBmRow();
-  addTextRow(formulaContainer, "formula-row", "1st Formula/Hydration Entry");
-  addTextRow(formulaContainer, "formula-row", "2nd Formula/Hydration Entry");
+  addFormulaRow();
+  addFormulaRow();
   addTextRow(activitiesContainer, "activity-row", "#1 Activity");
   addTextRow(activitiesContainer, "activity-row", "#2 Activity");
   addWaterRow();
