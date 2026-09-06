@@ -362,17 +362,17 @@ function addTextRow(container, className, placeholder, value = "") {
 function addFormulaRow(data = {}) {
     const row = document.createElement("div");
     row.className = "dynamic-row formula-row";
-    row.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 8px; width: 100%; padding: 4px 6px; box-sizing: border-box;";
+    row.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 6px; width: 100%;";
   
     const amountValue = data.amount !== undefined ? data.amount : 12;
     const timeValue = data.time || "";
   
     row.innerHTML = `
       <!-- Scoops Input -->
-      <input type="number" class="formula-amount" value="${amountValue}" style="width: 100px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem;" />
+      <input type="number" class="formula-amount" value="${amountValue}" style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; box-sizing: border-box;" />
   
       <!-- Time Input -->
-      <input type="time" class="formula-time" value="${timeValue}" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; text-align: center;" />
+      <input type="time" class="formula-time" value="${timeValue}" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; text-align: center; box-sizing: border-box;" />
   
       <!-- Delete Button -->
       <button type="button" class="remove-row-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 28px; height: 28px; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">X</button>
