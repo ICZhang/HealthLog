@@ -1578,14 +1578,14 @@ function renderBMCalendar(startDate, endDate, records) {
     }
 }
 
-function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false) {
+function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isHighlighted = false) {
   const row = document.createElement("div");
-  row.className = "food-row";
+  row.className = `food-row ${isHighlighted ? "new-food-highlight" : ""}`;
 
   const safeId = `food-${foodName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
   const placeholderText = unit ? `Amount (${unit})` : "Amount";
 
-  row.innerHTML = `<input type="checkbox" id="${safeId}" name="food-check" value="${foodName}" ${isChecked ? "checked" : ""}><label for="${safeId}">${foodName}</label><input type="text" name="food-amount" placeholder="${placeholderText}" value="${amount}" /><button type="button" class="remove-food-btn" data-food="${foodName}" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-weight: bold; font-size: 1.1rem; padding: 0 4px; margin-left: 4px;">×</button>`;
+  row.innerHTML = `<input type="checkbox" id="${safeId}" name="food-check" value="${foodName}" ${isChecked ? "checked" : ""}><label for="${safeId}">${foodName}</label><input type="text" name="food-amount" placeholder="${placeholderText}" value="${amount}" />`;
 
   return row;
 }
@@ -1665,7 +1665,62 @@ function loadStoredCustomFoods() {
   
 loadStoredCustomFoods();
 
+// Remove checked custom foods
+document.getElementById("remove-selected-food-btn")?.addEventListener("click", () => {
+  const container = document.getElementById("foods-grid");
+  if (!container) return;
 
+  const checkedInputs = container.querySelectorAll('input[name="food-check"]:checked');
+  let customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+
+  checkedInputs.forEach(input => {
+    const foodName = input.value;
+    const row = input.closest(".food-row");
+
+    // Only allow removing custom items, keeping standard default items safe
+    const isCustom = customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase());
+    if (isCustom) {
+      customFoods = customFoods.filter(f => f.name.toLowerCase() !== foodName.toLowerCase());
+      if (row) row.remove();
+    }
+  });
+
+  localStorage.setItem("customFoods", JSON.stringify(customFoods));
+});
+
+// Toggle highlight state on checked foods
+document.getElementById("toggle-highlight-btn")?.addEventListener("click", () => {
+  const container = document.getElementById("foods-grid");
+  if (!container) return;
+
+  const checkedInputs = container.querySelectorAll('input[name="food-check"]:checked');
+  let customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+
+  checkedInputs.forEach(input => {
+    const row = input.closest(".food-row");
+    if (!row) return;
+
+    const foodName = input.value;
+    const isCurrentlyHighlighted = row.classList.contains("new-food-highlight");
+
+    // Toggle CSS class
+    if (isCurrentlyHighlighted) {
+      row.classList.remove("new-food-highlight");
+    } else {
+      row.classList.add("new-food-highlight");
+    }
+
+    // Update state in customFoods array if applicable
+    customFoods = customFoods.map(f => {
+      if (f.name.toLowerCase() === foodName.toLowerCase()) {
+        return { ...f, isHighlighted: !isCurrentlyHighlighted };
+      }
+      return f;
+    });
+  });
+
+  localStorage.setItem("customFoods", JSON.stringify(customFoods));
+});
 
 
 
