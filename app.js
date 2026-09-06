@@ -1615,7 +1615,7 @@ function getCustomFoods() {
   }
   
   // Add Custom Food Button Handler
-  document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
+document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
     const inputEl = document.getElementById("new-food-input");
     const foodName = inputEl.value.trim();
   
@@ -1632,18 +1632,6 @@ function getCustomFoods() {
     inputEl.value = "";
 });
   
-  // Clear Highlights Handler
-document.getElementById("clear-food-highlights-btn")?.addEventListener("click", () => {
-    // Update storage so they aren't highlighted on refresh
-    const customFoods = getCustomFoods().map(f => ({ ...f, isNew: false }));
-    localStorage.setItem("customFoods", JSON.stringify(customFoods));
-  
-    // Remove CSS class from UI
-    const highlightedRows = document.querySelectorAll(".food-row.new-food-highlight");
-    highlightedRows.forEach(row => {
-      row.classList.remove("new-food-highlight");
-    });
-});
 
 function loadStoredCustomFoods() {
     const foodsContainer = document.getElementById("foods-grid");
