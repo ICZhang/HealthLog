@@ -1562,6 +1562,12 @@ function renderAnalyticsChart() {
   // --- NEW FOOD INTRODUCTIONS VIEW ---
   } else if (activeView === "food" || activeView === "foods") {
     if (chartTitle) chartTitle.innerText = "First Days Foods Were Introduced";
+  
+    // Target the entire outer card container, not just the canvas element
+    if (chartCard) {
+      chartCard.style.display = "none";
+    }
+  
     renderFirstFoodCalendar(startDate, endDate, records);
   }
 }
@@ -1835,19 +1841,6 @@ document.getElementById("foods-grid")?.addEventListener("click", (e) => {
     if (row) row.remove();
   }
 });
-
-// LocalStorage helpers for custom foods
-function getCustomFoods() {
-    return JSON.parse(localStorage.getItem("customFoods") || "[]");
-}
-  
-function saveCustomFood(foodName) {
-    const customFoods = getCustomFoods();
-    if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
-      customFoods.push({ name: foodName, isNew: true });
-      localStorage.setItem("customFoods", JSON.stringify(customFoods));
-    }
-}
   
   // Add Custom Food Button Handler
 document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
@@ -2829,7 +2822,14 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
 
   if (!startDate || !endDate) return;
 
-  // Track the earliest date ONLY for items marked with isHighlighted: true
+  // Retrieve saved custom foods to check highlight status
+  const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+  const highlightedNames = new Set(
+    customFoods
+      .filter(f => f.isHighlighted === true)
+      .map(f => f.name.toLowerCase().trim())
+  );
+
   const firstFoodDates = {};
 
   const sortedRecords = [...records].sort((a, b) => {
@@ -2849,17 +2849,26 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     foodList.forEach(f => {
       if (!f) return;
 
-      // Filter strictly for newly introduced foods
-      const isNew = typeof f === "object" ? f.isHighlighted === true : false;
-      if (!isNew) return;
+      let rawName = "";
+      let isHighlighted = false;
 
-      let foodName = typeof f === "object" ? (f.name || f.food || f.label || "") : String(f);
-      foodName = foodName.trim();
-      if (!foodName) return;
+      if (typeof f === "object") {
+        rawName = f.name || f.food || f.label || "";
+        isHighlighted = f.isHighlighted === true;
+      } else {
+        rawName = String(f);
+      }
 
-      const formattedName = foodName.charAt(0).toUpperCase() + foodName.slice(1);
+      const foodNameLower = rawName.toLowerCase().trim();
+      if (!foodNameLower) return;
 
-      // Record only the first date this highlighted food appeared
+      // Filter: must either have isHighlighted: true on the record OR match a highlighted entry in localStorage
+      const isNewFood = isHighlighted || highlightedNames.has(foodNameLower);
+      if (!isNewFood) return;
+
+      const formattedName = foodNameLower.charAt(0).toUpperCase() + foodNameLower.slice(1);
+
+      // Save only the very first date this highlighted food appeared
       if (!firstFoodDates[formattedName]) {
         firstFoodDates[formattedName] = logDate;
       }
@@ -2888,7 +2897,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
   const activeYear = parseInt(activeYearStr, 10);
   const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
 
-  // Navigation Buttons
+  // Month Navigation Buttons
   if (navContainer) {
     navContainer.innerHTML = "";
     if (monthsInRange.length > 1) {
@@ -2963,10 +2972,10 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     grid.appendChild(document.createElement("div"));
   }
 
-  // Calendar Day Cells
+  // Render Days
   for (let d = 1; d <= totalDays; d++) {
-    const dayStr = String(d).padStart(2, '0');
-    const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, '0');
+    const dayStr = String(d).padStart(2, "0");
+    const monthStrFormatted = String(activeMonthIndex + 1).padStart(2, "0");
     const fullDateKey = `${activeYear}-${monthStrFormatted}-${dayStr}`;
     const introducedFoods = dateIntroductionsMap[fullDateKey] || [];
 
