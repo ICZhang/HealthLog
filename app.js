@@ -368,11 +368,11 @@ function addFormulaRow(data = {}) {
     const timeValue = data.time || "";
   
     row.innerHTML = `
-      <!-- Scoops Input -->
-      <input type="number" class="formula-amount" value="${amountValue}" style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; box-sizing: border-box;" />
+      <!-- Scoops Input (Stretched) -->
+      <input type="number" class="formula-amount" value="${amountValue}" style="flex: 1; min-width: 0; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; box-sizing: border-box;" />
   
-      <!-- Time Input -->
-      <input type="time" class="formula-time" value="${timeValue}" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; text-align: center; box-sizing: border-box;" />
+      <!-- Time Input (Fixed Width to Match Enteragram) -->
+      <input type="time" class="formula-time" value="${timeValue}" style="width: 130px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; text-align: center; box-sizing: border-box; flex-shrink: 0;" />
   
       <!-- Delete Button -->
       <button type="button" class="remove-row-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 28px; height: 28px; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">X</button>
@@ -380,7 +380,7 @@ function addFormulaRow(data = {}) {
   
     row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
     formulaContainer.appendChild(row);
-}
+  }
 
 // Event Listeners for Adding Rows
 addBmBtn?.addEventListener("click", () => addBmRow());
