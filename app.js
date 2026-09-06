@@ -1437,7 +1437,7 @@ function renderAnalyticsChart() {
     if (startDate && logData.date < startDate) return;
     if (endDate && logData.date > endDate) return;
 
-    const moods = logData.moods || logData.mood || [];
+    const moods = logData.moodLogs || logData.moodLogs || [];
     const moodList = Array.isArray(moods) ? moods : [moods];
 
     moodList.forEach(m => {
@@ -1467,7 +1467,7 @@ function renderAnalyticsChart() {
     if (startDate && logData.date < startDate) return;
     if (endDate && logData.date > endDate) return;
 
-    const behaviors = logData.behaviors || logData.behavior || [];
+    const behaviors = logData.behaviorLogs || logData.behaviorLogs || [];
     const bList = Array.isArray(behaviors) ? behaviors : [behaviors];
 
     bList.forEach(b => {
