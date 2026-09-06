@@ -1580,12 +1580,21 @@ function renderBMCalendar(startDate, endDate, records) {
 
 function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isNew = false) {
   const row = document.createElement("div");
+  
+  // Keep class name minimal so CSS stylesheet rules don't fight with inline flexbox
   row.className = `food-row ${isNew ? "new-food-highlight" : ""}`;
-  row.style.cssText = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; width: 100%; box-sizing: border-box;";
+  
+  // Set explicit inline flex layout to force checkbox left and amount input right
+  row.style.display = "flex";
+  row.style.alignItems = "center";
+  row.style.justifyContent = "space-between";
+  row.style.width = "100%";
+  row.style.marginBottom = "6px";
+  row.style.boxSizing = "border-box";
 
   const placeholderText = unit ? `Amount (${unit})` : "Amount";
 
-  row.innerHTML = `<label style="display: flex; align-items: center; gap: 8px; cursor: pointer;"><input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} /><span>${foodName}</span></label><input type="text" placeholder="${placeholderText}" value="${amount}" style="width: 130px; height: 28px; padding: 4px; margin: 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />`;
+  row.innerHTML = `<label style="display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; font-size: 0.95rem;"><input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} style="margin: 0;" /><span>${foodName}</span></label><input type="text" placeholder="${placeholderText}" value="${amount}" style="width: 130px; height: 28px; padding: 4px; margin: 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />`;
 
   return row;
 }
