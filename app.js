@@ -504,15 +504,18 @@ function getFormData() {
 
   const foodData = [];
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
-    const checkbox = row.querySelector("input[type='checkbox']");
-    const amountInput = row.querySelector("input[type='text']");
-    if (checkbox.checked || amountInput.value.trim() !== "") {
-      foodData.push({
-        name: checkbox.value,
-        checked: checkbox.checked,
-        amount: amountInput.value.trim()
-      });
-    }
+  const checkbox = row.querySelector("input[type='checkbox']");
+  const amountInput = row.querySelector("input[type='text']");
+  const isHighlighted = row.classList.contains("new-food-highlight");
+
+  if (checkbox.checked || amountInput.value.trim() !== "" || isHighlighted) {
+    foodData.push({
+      name: checkbox.value,
+      checked: checkbox.checked,
+      amount: amountInput.value.trim(),
+      isNew: isHighlighted 
+    });
+  }
   });
 
   const painLogs = [];
@@ -1556,8 +1559,42 @@ function renderBMCalendar(startDate, endDate, records) {
     }
 }
 
+function createFoodRowElement(foodName, amount = "", isChecked = false, isNew = false) {
+    const row = document.createElement("div");
+    row.className = `food-row ${isNew ? "new-food-highlight" : ""}`;
+    row.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 6px;";
+  
+    row.innerHTML = `
+      <label style="flex: 1; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <input type="checkbox" value="${foodName}" ${isChecked ? "checked" : ""} />
+        <span>${foodName}</span>
+      </label>
+      <input type="text" placeholder="Amount" value="${amount}" style="width: 130px; padding: 4px; margin: 0; border: 1px solid #ccc; border-radius: 4px;" />
+    `;
+  
+    return row;
+}
 
+document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
+    const inputEl = document.getElementById("new-food-input");
+    const foodName = inputEl.value.trim();
+  
+    if (!foodName) return;
+  
+    const foodsContainer = document.getElementById("foods-grid");
+    const newRow = createFoodRowElement(foodName, "", false, true); // Pass true for isNew highlight
+    foodsContainer.appendChild(newRow);
+  
+    inputEl.value = ""; // Reset text box
+});
 
+document.getElementById("clear-food-highlights-btn")?.addEventListener("click", () => {
+    const highlightedRows = document.querySelectorAll(".food-row.new-food-highlight");
+    
+    highlightedRows.forEach(row => {
+      row.classList.remove("new-food-highlight");
+    });
+});
 
 
 

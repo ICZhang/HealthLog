@@ -128,3 +128,23 @@ box-sizing: border-box;
 #view-modal:not(.hidden) {
     display: flex !important;
 }
+
+
+.food-row.new-food-highlight {
+    background-color: #fff9c4 !important;
+    border: 1px solid #fbc02d;
+    border-radius: 4px;
+    padding: 4px;
+    transition: background-color 0.3s ease;
+}
+  
+  .food-row.new-food-highlight::after {
+    content: "NEW";
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: #d32f2f;
+    background: #ffcdd2;
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-left: 6px;
+}
