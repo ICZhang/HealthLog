@@ -503,12 +503,12 @@ function getFormData() {
   });
 
   const foodData = [];
-  document.querySelectorAll("#foods-grid .food-row").forEach(row => {
+document.querySelectorAll("#foods-grid .food-row").forEach(row => {
   const checkbox = row.querySelector("input[type='checkbox']");
   const amountInput = row.querySelector("input[type='text']");
   const isHighlighted = row.classList.contains("new-food-highlight");
 
-  if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== "") || isHighlighted)) {
+  if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== ""))) {
     foodData.push({
       name: checkbox.value,
       checked: checkbox.checked,
@@ -516,7 +516,7 @@ function getFormData() {
       isHighlighted: isHighlighted 
     });
   }
-  });
+});
   
 
   const painLogs = [];
@@ -2842,35 +2842,39 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     const logData = item.data || item;
     const logDate = logData.date;
     if (!logDate) return;
-
+  
     const foods = logData.foods || logData.foodData || [];
     const foodList = Array.isArray(foods) ? foods : [foods];
-
+  
     foodList.forEach(f => {
       if (!f) return;
-
-      let rawName = "";
+  
+      let foodName = "";
       let isHighlighted = false;
-
+  
       if (typeof f === "object") {
-        rawName = f.name || f.food || f.label || "";
+        foodName = f.name || f.food || f.label || "";
         isHighlighted = f.isHighlighted === true;
       } else {
-        rawName = String(f);
+        foodName = String(f);
       }
-
-      const foodNameLower = rawName.toLowerCase().trim();
-      if (!foodNameLower) return;
-
-      // Filter: must either have isHighlighted: true on the record OR match a highlighted entry in localStorage
-      const isNewFood = isHighlighted || highlightedNames.has(foodNameLower);
-      if (!isNewFood) return;
-
-      const formattedName = foodNameLower.charAt(0).toUpperCase() + foodNameLower.slice(1);
-
-      // Save only the very first date this highlighted food appeared
-      if (!firstFoodDates[formattedName]) {
-        firstFoodDates[formattedName] = logDate;
+  
+      foodName = foodName.trim();
+      if (!foodName) return;
+  
+      // Cross-reference with localStorage customFoods as a fallback
+      const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+      const matchingCustom = customFoods.find(cf => cf.name.toLowerCase() === foodName.toLowerCase());
+      const isNew = isHighlighted || (matchingCustom && matchingCustom.isHighlighted === true);
+  
+      // Only place on the calendar if the food is flagged as a new introduction
+      if (isNew) {
+        const formattedName = foodName.charAt(0).toUpperCase() + foodName.slice(1);
+        
+        // Store ONLY the earliest date this highlighted food was logged
+        if (!firstFoodDates[formattedName]) {
+          firstFoodDates[formattedName] = logDate;
+        }
       }
     });
   });
