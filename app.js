@@ -2091,10 +2091,6 @@ function renderBehaviorCalendar(startDate, endDate, records) {
   renderGenericCountCalendar(records, "Behavior Calendar", "#e67e22", log => log.behaviorLogs || log.behavior);
 }
 
-function renderSummaryCalendar(startDate, endDate, records) {
-  renderGenericCountCalendar(records, "Day Summary Calendar", "#9b59b6", log => log.daySummary || log.summary || log.notes);
-}
-
 function renderGenericCountCalendar(records, titleSuffix, color, extractorFn) {
   const grid = document.getElementById("calendar-grid");
   const titleHeader = document.getElementById("calendar-title");
