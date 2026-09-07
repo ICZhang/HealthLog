@@ -1424,28 +1424,34 @@ function renderAnalyticsChart() {
   // --- WATER VIEW ---
   } else if (activeView === "water") {
     if (chartTitle) chartTitle.innerText = "Daily Water Cups Overview";
-
+  
     const waterByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
       if (!logData.date) return;
-      if (startDate && logData.date < startDate) return;
-      if (endDate && logData.date > endDate) return;
-
+      
+      // FIX 1: Match calendar month filtering so graph and calendar display identical date ranges
+      const activeMonth = window.activeCalendarMonth || new Date().toISOString().slice(0, 7);
+      if (!logData.date.startsWith(activeMonth)) return;
+  
       const waterEntries = logData.warmWater || logData.water || [];
-      const totalCups = Array.isArray(waterEntries) ? waterEntries.length : (parseFloat(waterEntries) || 0);
-      if (totalCups > 0) waterByDate[logData.date] = totalCups;
+      const totalCups = calculateWaterCups(logData.warmWater || logData.water);
+  
+      // FIX 2: Accumulate cups (+=) instead of overwriting (=)
+      if (totalCups > 0) {
+        waterByDate[logData.date] = (waterByDate[logData.date] || 0) + totalCups;
+      }
     });
-
+  
     const dates = Object.keys(waterByDate).sort();
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
-
+  
     drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", 8);
     renderWaterCalendar(startDate, endDate, records);
-
-  // --- MOOD VIEW ---
-  } else if (activeView === "mood") {
+  }
+  //Mood view
+  else if (activeView === "mood") {
     if (chartTitle) chartTitle.innerText = "Mood Logs Breakdown";
 
     const moodCounts = {
@@ -1857,6 +1863,18 @@ function renderBMCalendar(startDate, endDate, records) {
   }
 }
 
+function calculateWaterCups(waterEntries) {
+  if (Array.isArray(waterEntries)) {
+    return waterEntries.reduce((sum, entry) => {
+      if (typeof entry === "object" && entry !== null) {
+        return sum + (parseFloat(entry.amount || entry.cups || entry.value || 1) || 0);
+      }
+      return sum + (parseFloat(entry) || 1);
+    }, 0);
+  }
+  return parseFloat(waterEntries) || 0;
+}
+
 function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isHighlighted = true) {
   const row = document.createElement("div");
   row.className = `food-row ${isHighlighted ? "new-food-highlight" : ""}`;
@@ -2048,7 +2066,7 @@ function renderWaterCalendar(startDate, endDate, records) {
 
     // Count recorded cups/water entries
     const waterEntries = logData.warmWater || logData.water || [];
-    const totalCups = Array.isArray(waterEntries) ? waterEntries.length : (parseFloat(waterEntries) || 0);
+    const totalCups = calculateWaterCups(logData.warmWater || logData.water);
 
     if (totalCups > 0) {
       dailyTotals[logDate] = (dailyTotals[logDate] || 0) + totalCups;
