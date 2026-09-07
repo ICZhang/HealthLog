@@ -1310,8 +1310,10 @@ async function renderAnalyticsChart() {
   const endDate = document.getElementById("analytics-end-date")?.value;
   const canvas = document.getElementById("analyticsChart");
   const chartTitle = document.getElementById("chart-title");
+  const foodListContainer = document.getElementById("calendar-food-list");
   if (!canvas) return;
 
+  // Reset food log summary container on every view change
   if (foodListContainer) {
     foodListContainer.style.display = "none";
     foodListContainer.innerHTML = "";
@@ -1328,9 +1330,10 @@ async function renderAnalyticsChart() {
   if (activeView === "food" || activeView === "foods") {
     if (titleCard) titleCard.style.display = "none";
     if (canvasCard) canvasCard.style.display = "none";
+    if (foodListContainer) foodListContainer.style.display = "block";
     
     renderFirstFoodCalendar(startDate, endDate, records);
-    return; // Stop execution so no chart logic runs
+    return; // Safely exits so no chart logic runs
   } else {
     if (titleCard) titleCard.style.display = "block";
     if (canvasCard) canvasCard.style.display = "block";
@@ -1445,13 +1448,11 @@ async function renderAnalyticsChart() {
       const logDate = logData.date;
       if (!logDate) return;
   
-      // Filter by overall start/end date range instead of locking to a single active month
       if (startDate && logDate < startDate) return;
       if (endDate && logDate > endDate) return;
   
       const waterEntries = logData.warmWater || logData.water || [];
       
-      // Calculate total cups for this entry
       let totalCups = 0;
       if (Array.isArray(waterEntries)) {
         totalCups = waterEntries.reduce((sum, entry) => {
@@ -1463,7 +1464,6 @@ async function renderAnalyticsChart() {
         totalCups = isNaN(parsed) ? 0 : parsed;
       }
   
-      // Accumulate daily totals across all matching months
       if (totalCups > 0) {
         waterByDate[logDate] = (waterByDate[logDate] || 0) + totalCups;
       }
@@ -1474,11 +1474,10 @@ async function renderAnalyticsChart() {
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
   
     drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", waterGoal, "Cups", 1);
-  
     renderWaterCalendar(startDate, endDate, records);
-  }
-  //Mood view
-  else if (activeView === "mood") {
+
+  // --- MOOD VIEW ---
+  } else if (activeView === "mood") {
     if (chartTitle) chartTitle.innerText = "Mood Logs Breakdown";
 
     const moodCounts = {
@@ -1555,7 +1554,7 @@ async function renderAnalyticsChart() {
     const chartColors = labels.length ? labels.map(l => colorMap[l]) : ["#e67e22"];
 
     drawChart(canvas, chartLabels, chartData, chartColors, "Days");
-    renderBehaviorCalendar(startDate, endDate, records, colorMap);
+    renderBehaviorCalendar(startDate, endDate, records);
 
   // --- DAY SUMMARY VIEW ---
   } else if (activeView === "summary") {
@@ -1599,15 +1598,6 @@ async function renderAnalyticsChart() {
     );
 
     renderSummaryCalendar(startDate, endDate, records);
-
-  // --- NEW FOOD INTRODUCTIONS VIEW ---
-  } else if (activeView === "food" || activeView === "foods") {
-    // Target the entire outer card container, not just the canvas element
-    if (chartCard) {
-      chartCard.style.display = "none";
-    }
-  
-    renderFirstFoodCalendar(startDate, endDate, records);
   }
 }
 
