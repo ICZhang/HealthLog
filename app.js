@@ -1418,7 +1418,7 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
   
-    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date");
+    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", 80);
     renderFormulaCalendar(startDate, endDate, records);
 
   // --- WATER VIEW ---
@@ -1441,7 +1441,7 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
 
-    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date");
+    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", 8);
     renderWaterCalendar(startDate, endDate, records);
 
   // --- MOOD VIEW ---
@@ -1618,50 +1618,70 @@ function drawChart(canvas, labels, data, barColors, yLabel = "Days") {
   });
 }
 
-function drawScatterChart(
-  canvas, 
-  labels, 
-  data, 
-  pointColor = "#1abc9c", 
-  datasetLabel = "Amount", 
-  yAxisTitle = "Count", 
-  xAxisTitle = "Date"
-) {
+function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "Value", xLabel = "Date", targetGoal = null) {
   if (!canvas) return;
 
-  // Destroy existing chart instance on canvas
   const existingChart = Chart.getChart(canvas);
   if (existingChart) {
     existingChart.destroy();
   }
 
+  // Construct chart datasets
+  const datasets = [{
+    label: datasetLabel,
+    data: data,
+    borderColor: color,
+    backgroundColor: color,
+    showLine: true,
+    fill: false,
+    pointRadius: 5
+  }];
+
+  // Add the goal line dataset if a target is provided
+  if (targetGoal !== null) {
+    datasets.push({
+      label: `Goal (${targetGoal} Cups)`,
+      data: new Array(labels.length).fill(targetGoal),
+      borderColor: "#e74c3c", // Red goal line
+      backgroundColor: "transparent",
+      borderDash: [6, 6],    // Makes the line dashed
+      pointRadius: 0,        // Hides individual data points
+      fill: false
+    });
+  }
+
   const ctx = canvas.getContext("2d");
-  window.activeChartInstance = new Chart(ctx, {
-    type: 'line',
+  new Chart(ctx, {
+    type: "line",
     data: {
       labels: labels,
-      datasets: [{
-        label: datasetLabel,
-        data: data,
-        backgroundColor: pointColor,
-        borderColor: pointColor,
-        pointRadius: 6,
-        pointHoverRadius: 8,
-        showLine: false,
-        fill: false
-      }]
+      datasets: datasets
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: "top"
+        }
+      },
       scales: {
         y: {
           beginAtZero: true,
-          title: { display: true, text: yAxisTitle },
-          ticks: { stepSize: 1 }
+          // Ensure the Y-axis scales high enough to display the goal line clearly
+          suggestedMax: targetGoal ? targetGoal + 2 : undefined,
+          title: {
+            display: true,
+            text: yLabel,
+            font: { weight: "bold" }
+          }
         },
         x: {
-          title: { display: true, text: xAxisTitle }
+          title: {
+            display: true,
+            text: xLabel,
+            font: { weight: "bold" }
+          }
         }
       }
     }
