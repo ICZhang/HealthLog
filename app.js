@@ -3127,42 +3127,14 @@ function saveGoal(type) {
   // 1. Save to LocalStorage
   localStorage.setItem(`${type}_daily_goal`, val);
 
-  // 2. Refresh chart immediately
+  // 2. Redraw active chart immediately
   if (typeof renderAnalyticsChart === "function") {
     renderAnalyticsChart();
   }
 
-  // 3. Display temporary confirmation message
-  showGoalFeedback(type, `Goal updated to ${val}!`);
-}
-
-function showGoalFeedback(type, message) {
-  let msgEl = document.getElementById(`${type}-goal-feedback`);
-
-  // Create feedback element if it doesn't exist yet
-  if (!msgEl) {
-    msgEl = document.createElement("span");
-    msgEl.id = `${type}-goal-feedback`;
-    msgEl.style.marginLeft = "10px";
-    msgEl.style.color = "#2ecc71";
-    msgEl.style.fontWeight = "bold";
-    msgEl.style.fontSize = "0.9em";
-
-    const container = document.getElementById(`${type}-goal-input`)?.parentElement;
-    if (container) container.appendChild(msgEl);
-  }
-
-  // Set message and clear existing timers
-  msgEl.innerText = message;
-  msgEl.style.opacity = "1";
-
-  if (msgEl.fadeTimeout) clearTimeout(msgEl.fadeTimeout);
-
-  // Fade out after 2.5 seconds
-  msgEl.fadeTimeout = setTimeout(() => {
-    msgEl.style.opacity = "0";
-    msgEl.style.transition = "opacity 0.5s ease";
-  }, 2500);
+  // 3. Show native browser alert notification
+  const label = type === "formula" ? "Formula" : "Water";
+  alert(`${label} Goal saved successfully!`);
 }
 
 // Populate input values on initial page load
