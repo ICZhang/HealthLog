@@ -1583,8 +1583,9 @@ function drawChart(canvas, labels, data, barColors, yLabel = "Days") {
   if (!canvas) return;
 
   // Destroy old instance if stored
-  if (canvas.chartInstance) {
-    canvas.chartInstance.destroy();
+  const existingChart = Chart.getChart(canvas);
+  if (existingChart) {
+    existingChart.destroy();
   }
 
   const ctx = canvas.getContext("2d");
@@ -1626,9 +1627,12 @@ function drawScatterChart(
   yAxisTitle = "Count", 
   xAxisTitle = "Date"
 ) {
-  // Destroy whatever chart is currently active on the canvas
-  if (window.activeChartInstance) {
-    window.activeChartInstance.destroy();
+  if (!canvas) return;
+
+  // Destroy existing chart instance on canvas
+  const existingChart = Chart.getChart(canvas);
+  if (existingChart) {
+    existingChart.destroy();
   }
 
   const ctx = canvas.getContext("2d");
