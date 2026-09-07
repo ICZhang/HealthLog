@@ -210,7 +210,7 @@ document.getElementById("auth-card")?.addEventListener("click", async (e) => {
 
     try {
       await sendPasswordResetEmail(auth, emailVal);
-      alert(`Password reset email sent to ${emailVal}. Check your inbox!`);
+      alert(`Password reset email sent to ${emailVal}. \n\nNote: Please check your spam or junk folder if you don't see it in your inbox!`);
     } catch (err) {
       console.error("Reset Error:", err);
       if (errorMsg) errorMsg.textContent = err.message.replace("Firebase: ", "");
