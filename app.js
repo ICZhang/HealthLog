@@ -1711,7 +1711,9 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
           max: calculatedMax,
           ticks: {
             precision: 0,
-            stepSize: stepSize || undefined
+            stepSize: stepSize || undefined,
+            autoSkip: false,          // Disables auto-skipping tick intervals
+            maxTicksLimit: 100
           },
           title: {
             display: true,
