@@ -1554,7 +1554,7 @@ async function renderAnalyticsChart() {
     const chartColors = labels.length ? labels.map(l => colorMap[l]) : ["#e67e22"];
 
     drawChart(canvas, chartLabels, chartData, chartColors, "Days");
-    renderBehaviorCalendar(startDate, endDate, records);
+    renderBehaviorCalendar(startDate, endDate, records, colorMap);
 
   // --- DAY SUMMARY VIEW ---
   } else if (activeView === "summary") {
