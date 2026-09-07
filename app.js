@@ -1433,7 +1433,7 @@ async function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
   
-    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", formulaGoal, "Scoops", 10);
+    drawScatterChart(canvas, labels, data, "#f1c40f", "Formula Scoops", "Total Scoops", "Date", formulaGoal, "Scoops", 10);
     renderFormulaCalendar(startDate, endDate, records);
 
   // --- WATER VIEW ---
