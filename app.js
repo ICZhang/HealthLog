@@ -1354,7 +1354,8 @@ function renderAnalyticsChart() {
       canvas, 
       ["No Pain", "Minor Pain", "Severe Pain"], 
       [painCounts["No Pain"], painCounts["Minor Pain"], painCounts["Severe Pain"]], 
-      ["#2ecc71", "#f1c40f", "#e74c3c"]
+      ["#2ecc71", "#f1c40f", "#e74c3c"],
+      "Days"
     );
     renderPainCalendar(startDate, endDate, records);
 
@@ -1386,7 +1387,7 @@ function renderAnalyticsChart() {
       ? sortedKeys.map(k => BM_TYPE_COLORS[parseInt(k.replace("Type ", ""), 10)] || "#8e44ad")
       : ["#bdc3c7"];
 
-    drawChart(canvas, labels, data, barColors);
+    drawChart(canvas, labels, data, barColors, "Days");
     renderBMCalendar(startDate, endDate, records);
 
   // --- FORMULA VIEW ---
@@ -1481,7 +1482,7 @@ function renderAnalyticsChart() {
     const chartData = labels.map(l => moodCounts[l]);
     const chartColors = ["#3498db", "#2ecc71", "#f1c40f", "#e74c3c"];
 
-    drawChart(canvas, labels, chartData, chartColors);
+    drawChart(canvas, labels, chartData, chartColors, "Days");
     renderMoodCalendar(startDate, endDate, records);
 
   // --- BEHAVIOR VIEW ---
@@ -1520,7 +1521,7 @@ function renderAnalyticsChart() {
     const chartData = labels.length ? labels.map(l => behaviorCounts[l]) : [0];
     const chartColors = labels.length ? labels.map(l => colorMap[l]) : ["#e67e22"];
 
-    drawChart(canvas, chartLabels, chartData, chartColors);
+    drawChart(canvas, chartLabels, chartData, chartColors, "Days");
     renderBehaviorCalendar(startDate, endDate, records, colorMap);
 
   // --- DAY SUMMARY VIEW ---
@@ -1560,7 +1561,8 @@ function renderAnalyticsChart() {
         summaryCounts["Difficult"],
         summaryCounts["Very Difficult"]
       ],
-      ["#2ecc71", "#3498db", "#f1c40f", "#e67e22", "#e74c3c"]
+      ["#2ecc71", "#3498db", "#f1c40f", "#e67e22", "#e74c3c"],
+      "Days"
     );
 
     renderSummaryCalendar(startDate, endDate, records);
@@ -1577,28 +1579,40 @@ function renderAnalyticsChart() {
 }
 
   
-function drawChart(canvas, labels, data, colors) {
-  // Destroy whatever chart is currently active on the canvas
-  if (window.activeChartInstance) {
-    window.activeChartInstance.destroy();
+function drawChart(canvas, labels, data, barColors, yLabel = "Days") {
+  if (!canvas) return;
+
+  // Destroy old instance if stored
+  if (canvas.chartInstance) {
+    canvas.chartInstance.destroy();
   }
 
   const ctx = canvas.getContext("2d");
-  window.activeChartInstance = new Chart(ctx, {
+  canvas.chartInstance = new Chart(ctx, {
     type: "bar",
     data: {
       labels: labels,
       datasets: [{
         data: data,
-        backgroundColor: colors,
-        borderRadius: 4
+        backgroundColor: barColors
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 },
+          title: {
+            display: true,
+            text: yLabel,
+            font: { weight: "bold" }
+          }
+        }
+      }
     }
   });
 }
