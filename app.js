@@ -3124,15 +3124,18 @@ function saveGoal(type) {
     return;
   }
 
-  // 1. Save to LocalStorage
+  // 1. Save goal to LocalStorage
   localStorage.setItem(`${type}_daily_goal`, val);
 
-  // 2. Redraw active chart immediately
+  // 2. Refresh active chart view
   if (typeof renderAnalyticsChart === "function") {
     renderAnalyticsChart();
   }
 
-  // 3. Show native browser alert notification
+  // 3. Clear the textbox
+  input.value = "";
+
+  // 4. Trigger alert notification
   const label = type === "formula" ? "Formula" : "Water";
   alert(`${label} Goal saved successfully!`);
 }
