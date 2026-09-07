@@ -1304,7 +1304,7 @@ document.getElementById("analytics-view-select")?.addEventListener("change", (e)
   renderAnalyticsChart();
 });
 
-function renderAnalyticsChart() {
+async function renderAnalyticsChart() {
   const startDate = document.getElementById("analytics-start-date")?.value;
   const endDate = document.getElementById("analytics-end-date")?.value;
   const canvas = document.getElementById("analyticsChart");
@@ -1398,7 +1398,7 @@ function renderAnalyticsChart() {
   } else if (activeView === "formula") {
     if (chartTitle) chartTitle.innerText = "Formula Intake Overview";
 
-    const formulaGoal = getGoalFromRecords("formula", records);
+    const formulaGoal = await getGoal("formula");
   
     const formulaByDate = {};
     records.forEach(item => {
@@ -1431,7 +1431,7 @@ function renderAnalyticsChart() {
   } else if (activeView === "water") {
     if (chartTitle) chartTitle.innerText = "Water Cups Intake Overview";
 
-    const waterGoal = getGoalFromRecords("water", records);
+    const waterGoal = await getGoal("water");
   
     const waterByDate = {};
     records.forEach(item => {
@@ -3108,32 +3108,76 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
   }
 }
 
-// Retrieve saved goal or fall back to default values
-function getGoalFromRecords(type, records) {
+// Fetch saved goal from the user's settings in Firebase
+async function getGoal(type) {
   const defaults = { formula: 80, water: 8 };
+  const user = firebase.auth().currentUser;
 
-  if (!records || !records.length) return defaults[type];
+  if (!user) return defaults[type];
 
-  // Find the most recent record that contains a saved goal
-  for (let i = records.length - 1; i >= 0; i--) {
-    const logData = records[i].data || records[i];
-    const key = type === "formula" ? "formulaGoal" : "waterGoal";
-    
-    if (logData[key] !== undefined && logData[key] !== null) {
-      return parseFloat(logData[key]);
+  try {
+    const doc = await db.collection("users").doc(user.uid).get();
+    if (doc.exists && doc.data().goals && doc.data().goals[type] !== undefined) {
+      return parseFloat(doc.data().goals[type]);
     }
+  } catch (err) {
+    console.error("Error fetching goal:", err);
   }
 
   return defaults[type];
 }
 
+async function saveGoalToFirebase(type) {
+  const input = document.getElementById(`${type}-goal-input`);
+  if (!input) return;
+
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val <= 0) {
+    alert("Please enter a valid positive goal number.");
+    return;
+  }
+
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    alert("Please log in to update your goals.");
+    return;
+  }
+
+  try {
+    // 1. Update the goal setting directly in Firebase
+    await db.collection("users").doc(user.uid).set({
+      goals: {
+        [type]: val
+      }
+    }, { merge: true });
+
+    // 2. Clear input
+    input.value = "";
+
+    // 3. Refresh chart view immediately
+    if (typeof renderAnalyticsChart === "function") {
+      renderAnalyticsChart();
+    }
+
+    // 4. Show success alert modal
+    const label = type === "formula" ? "Formula" : "Water";
+    alert(`${label} Goal saved successfully!`);
+
+  } catch (error) {
+    console.error("Error saving goal:", error);
+    alert("Failed to save goal. Please check your connection.");
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
+  const formulaGoal = await getGoal("formula");
+  const waterGoal = await getGoal("water");
+
   const formulaInput = document.getElementById("formula-goal-input");
   const waterInput = document.getElementById("water-goal-input");
 
-  // Fetch initial goal values from your cloud records or defaults
-  if (formulaInput) formulaInput.value = await getGoalFromRecords("formula", window.allRecords || []);
-  if (waterInput) waterInput.value = await getGoalFromRecords("water", window.allRecords || []);
+  if (formulaInput) formulaInput.value = formulaGoal;
+  if (waterInput) waterInput.value = waterGoal;
 });
 
 
