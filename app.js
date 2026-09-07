@@ -1312,6 +1312,11 @@ async function renderAnalyticsChart() {
   const chartTitle = document.getElementById("chart-title");
   if (!canvas) return;
 
+  if (foodListContainer) {
+    foodListContainer.style.display = "none";
+    foodListContainer.innerHTML = "";
+  }
+
   const titleCard = chartTitle?.closest(".card") || chartTitle?.parentElement;
   const canvasCard = canvas?.closest(".card") || canvas?.parentElement;
 
