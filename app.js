@@ -813,7 +813,7 @@ function addBehaviorRow(data = {}) {
     row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
     
     // Check if saved data is custom text (not one of the predefined options)
-    const predefined = ["Screaming", "Throwing",""];
+    const predefined = ["Screaming", "Throwing", "Hyperactivity",""];
     const isCustom = data.type && !predefined.includes(data.type);
   
     row.innerHTML = `
@@ -1393,6 +1393,8 @@ function renderAnalyticsChart() {
   // --- FORMULA VIEW ---
   } else if (activeView === "formula") {
     if (chartTitle) chartTitle.innerText = "Formula Intake Overview";
+
+    const formulaGoal = getGoal("formula");
   
     const formulaByDate = {};
     records.forEach(item => {
@@ -1418,12 +1420,14 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
   
-    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", 80, "Scoops");
+    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", formulaGoal, "Scoops");
     renderFormulaCalendar(startDate, endDate, records);
 
   // --- WATER VIEW ---
   } else if (activeView === "water") {
     if (chartTitle) chartTitle.innerText = "Water Cups Intake Overview";
+
+    const waterGoal = getGoal("water");
   
     const waterByDate = {};
     records.forEach(item => {
@@ -1459,7 +1463,7 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
   
-    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", 8, "Cups");
+    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", waterGoal, "Cups");
   
     renderWaterCalendar(startDate, endDate, records);
   }
@@ -3100,7 +3104,40 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
   }
 }
 
+// Retrieve saved goal or fall back to default values
+function getGoal(type) {
+  const defaults = { formula: 80, water: 8 };
+  const saved = localStorage.getItem(`${type}_daily_goal`);
+  return saved !== null ? parseFloat(saved) : defaults[type];
+}
 
+// Save goal to LocalStorage and refresh active chart
+function saveGoal(type) {
+  const input = document.getElementById(`${type}-goal-input`);
+  if (!input) return;
+
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val < 0) {
+    alert("Please enter a valid positive number for the goal.");
+    return;
+  }
+
+  localStorage.setItem(`${type}_daily_goal`, val);
+  
+  // Re-render chart if user is currently viewing analytics
+  if (typeof renderAnalyticsChart === "function") {
+    renderAnalyticsChart();
+  }
+}
+
+// Populate input values on initial page load
+document.addEventListener("DOMContentLoaded", () => {
+  const formulaInput = document.getElementById("formula-goal-input");
+  const waterInput = document.getElementById("water-goal-input");
+
+  if (formulaInput) formulaInput.value = getGoal("formula");
+  if (waterInput) waterInput.value = getGoal("water");
+});
 
 
 
