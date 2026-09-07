@@ -144,18 +144,26 @@ function applySearchAndFilter() {
 
 // Load Firestore Records into Cache & Add Listeners
 function loadPastRecords(userId) {
-    const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
-    
-    unsubscribeLogs = onSnapshot(q, (snapshot) => {
-      allPastRecords = [];
-      snapshot.forEach((docSnap) => {
-        allPastRecords.push({ docId: docSnap.id, data: docSnap.data() });
-      });
-      
-      window.allRecords = allPastRecords;
+  const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
   
-      applySearchAndFilter();
+  unsubscribeLogs = onSnapshot(q, async (snapshot) => {
+    allPastRecords = [];
+    snapshot.forEach((docSnap) => {
+      allPastRecords.push({ docId: docSnap.id, data: docSnap.data() });
     });
+    
+    window.allRecords = allPastRecords;
+
+    applySearchAndFilter();
+
+    // Ensure goals are loaded and chart is rendered once data arrives
+    if (typeof loadUserGoals === "function") {
+      await loadUserGoals();
+    }
+    if (typeof renderAnalyticsChart === "function") {
+      renderAnalyticsChart();
+    }
+  });
 }
 
 // Search and Filter Event Listeners
@@ -184,7 +192,7 @@ document.getElementById("toggle-wrapper")?.addEventListener("click", (e) => {
 });
 
 // Authentication State Tracker
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
     userEmailEl.textContent = user.email;
@@ -192,12 +200,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("auth-card")?.classList.add("hidden");
     
     resetForm();
-    await loadUserGoals();
-
-    // Renders the chart using the freshly loaded goal values
-    if (typeof renderAnalyticsChart === "function") {
-      await renderAnalyticsChart();
-    }
+    loadPastRecords(user.uid); // Trigger listener; snapshot callback will handle goal loading & rendering
   } else {
     currentUser = null;
     if (unsubscribeLogs) unsubscribeLogs();
