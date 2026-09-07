@@ -3110,7 +3110,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
 function getGoal(type) {
   const defaults = { formula: 80, water: 8 };
   const saved = localStorage.getItem(`${type}_daily_goal`);
-  return saved !== null ? parseFloat(saved) : defaults[type];
+  return saved !== null && !isNaN(parseFloat(saved)) ? parseFloat(saved) : defaults[type];
 }
 
 // Save goal to LocalStorage and refresh active chart
@@ -3119,14 +3119,15 @@ function saveGoal(type) {
   if (!input) return;
 
   const val = parseFloat(input.value);
-  if (isNaN(val) || val < 0) {
-    alert("Please enter a valid positive number for the goal.");
+  if (isNaN(val) || val <= 0) {
+    alert("Please enter a valid positive goal number.");
     return;
   }
 
+  // 1. Save directly to LocalStorage
   localStorage.setItem(`${type}_daily_goal`, val);
-  
-  // Re-render chart if user is currently viewing analytics
+
+  // 2. Immediately trigger chart update if active
   if (typeof renderAnalyticsChart === "function") {
     renderAnalyticsChart();
   }
@@ -3140,7 +3141,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (formulaInput) formulaInput.value = getGoal("formula");
   if (waterInput) waterInput.value = getGoal("water");
 });
-
 
 
 
