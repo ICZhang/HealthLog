@@ -9,7 +9,8 @@ import {
   collection, 
   addDoc, 
   doc, 
-  setDoc, 
+  setDoc,
+  getDoc, 
   onSnapshot, 
   query, 
   orderBy,
@@ -3108,17 +3109,19 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
   }
 }
 
-// Fetch saved goal from the user's settings in Firebase
-async function getGoal(type) {
+/// Retrieve saved goal from Firebase
+export async function getGoal(type) {
   const defaults = { formula: 80, water: 8 };
-  const user = firebase.auth().currentUser;
+  const user = auth.currentUser;
 
   if (!user) return defaults[type];
 
   try {
-    const doc = await db.collection("users").doc(user.uid).get();
-    if (doc.exists && doc.data().goals && doc.data().goals[type] !== undefined) {
-      return parseFloat(doc.data().goals[type]);
+    const userDocRef = doc(db, "users", user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists() && docSnap.data()?.goals?.[type] !== undefined) {
+      return parseFloat(docSnap.data().goals[type]);
     }
   } catch (err) {
     console.error("Error fetching goal:", err);
@@ -3127,7 +3130,8 @@ async function getGoal(type) {
   return defaults[type];
 }
 
-async function saveGoalToFirebase(type) {
+// Save goal to Firebase, clear input, trigger alert, and update chart
+export async function saveGoalToFirebase(type) {
   const input = document.getElementById(`${type}-goal-input`);
   if (!input) return;
 
@@ -3137,49 +3141,52 @@ async function saveGoalToFirebase(type) {
     return;
   }
 
-  const user = firebase.auth().currentUser;
+  const user = auth.currentUser;
   if (!user) {
-    alert("Please log in to update your goals.");
+    alert("Please sign in to update goals.");
     return;
   }
 
   try {
-    // 1. Update the goal setting directly in Firebase
-    await db.collection("users").doc(user.uid).set({
+    const userDocRef = doc(db, "users", user.uid);
+    
+    // Merge updated goal into user profile
+    await setDoc(userDocRef, {
       goals: {
         [type]: val
       }
     }, { merge: true });
 
-    // 2. Clear input
+    // Clear textbox
     input.value = "";
 
-    // 3. Refresh chart view immediately
+    // Refresh active chart view immediately
     if (typeof renderAnalyticsChart === "function") {
-      renderAnalyticsChart();
+      await renderAnalyticsChart();
     }
 
-    // 4. Show success alert modal
+    // Show alert notification
     const label = type === "formula" ? "Formula" : "Water";
     alert(`${label} Goal saved successfully!`);
 
   } catch (error) {
     console.error("Error saving goal:", error);
-    alert("Failed to save goal. Please check your connection.");
+    alert("Failed to save goal.");
   }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const formulaGoal = await getGoal("formula");
-  const waterGoal = await getGoal("water");
+document.addEventListener("DOMContentLoaded", () => {
+  const formulaBtn = document.getElementById("set-formula-goal-btn");
+  const waterBtn = document.getElementById("set-water-goal-btn");
 
-  const formulaInput = document.getElementById("formula-goal-input");
-  const waterInput = document.getElementById("water-goal-input");
+  if (formulaBtn) {
+    formulaBtn.addEventListener("click", () => saveGoalToFirebase("formula"));
+  }
 
-  if (formulaInput) formulaInput.value = formulaGoal;
-  if (waterInput) waterInput.value = waterGoal;
+  if (waterBtn) {
+    waterBtn.addEventListener("click", () => saveGoalToFirebase("water"));
+  }
 });
-
 
 
 
