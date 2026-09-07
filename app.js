@@ -1632,7 +1632,7 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
     data: data,
     borderColor: color,
     backgroundColor: color,
-    showLine: true,
+    showLine: false,
     fill: false,
     pointRadius: 5
   }];
