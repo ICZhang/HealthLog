@@ -1,9 +1,11 @@
 import { auth, db } from "./firebase-config.js";
 import { 
-  onAuthStateChanged, 
-  signOut,
+  getAuth, 
+  createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  signOut 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
   collection, 
