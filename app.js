@@ -826,6 +826,7 @@ function addBehaviorRow(data = {}) {
             <option value="">-- Select Behavior --</option>
             <option value="Screaming" ${data.type === 'Screaming' ? 'selected' : ''}>Screaming</option>
             <option value="Throwing" ${data.type === 'Throwing' ? 'selected' : ''}>Throwing</option>
+            <option value="Hyperactivity" ${data.type === 'Hyperactivity' ? 'selected' : ''}>Hyperactivity</option>
             <option value="Other">Other...</option>
           </select>
         `}
@@ -855,6 +856,7 @@ function addBehaviorRow(data = {}) {
             <option value="">-- Select Behavior --</option>
             <option value="Screaming">Screaming</option>
             <option value="Throwing">Throwing</option>
+            <option value="Hyperactivity">Hyperactivity</option>
             <option value="Other">Other...</option>
           </select>
         `;
