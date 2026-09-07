@@ -3124,22 +3124,67 @@ function saveGoal(type) {
     return;
   }
 
-  // 1. Save directly to LocalStorage
+  // 1. Save to LocalStorage
   localStorage.setItem(`${type}_daily_goal`, val);
 
-  // 2. Immediately trigger chart update if active
+  // 2. Refresh chart immediately
   if (typeof renderAnalyticsChart === "function") {
     renderAnalyticsChart();
   }
+
+  // 3. Display temporary confirmation message
+  showGoalFeedback(type, `Goal updated to ${val}!`);
+}
+
+function showGoalFeedback(type, message) {
+  let msgEl = document.getElementById(`${type}-goal-feedback`);
+
+  // Create feedback element if it doesn't exist yet
+  if (!msgEl) {
+    msgEl = document.createElement("span");
+    msgEl.id = `${type}-goal-feedback`;
+    msgEl.style.marginLeft = "10px";
+    msgEl.style.color = "#2ecc71";
+    msgEl.style.fontWeight = "bold";
+    msgEl.style.fontSize = "0.9em";
+
+    const container = document.getElementById(`${type}-goal-input`)?.parentElement;
+    if (container) container.appendChild(msgEl);
+  }
+
+  // Set message and clear existing timers
+  msgEl.innerText = message;
+  msgEl.style.opacity = "1";
+
+  if (msgEl.fadeTimeout) clearTimeout(msgEl.fadeTimeout);
+
+  // Fade out after 2.5 seconds
+  msgEl.fadeTimeout = setTimeout(() => {
+    msgEl.style.opacity = "0";
+    msgEl.style.transition = "opacity 0.5s ease";
+  }, 2500);
 }
 
 // Populate input values on initial page load
 document.addEventListener("DOMContentLoaded", () => {
+  // 1. Populate initial goal values into inputs
   const formulaInput = document.getElementById("formula-goal-input");
   const waterInput = document.getElementById("water-goal-input");
 
   if (formulaInput) formulaInput.value = getGoal("formula");
   if (waterInput) waterInput.value = getGoal("water");
+
+  // 2. Attach click listeners to goal buttons
+  const formulaBtn = document.getElementById("set-formula-goal-btn");
+  const waterBtn = document.getElementById("set-water-goal-btn");
+
+  if (formulaBtn) {
+    formulaBtn.addEventListener("click", () => saveGoal("formula"));
+  }
+
+  if (waterBtn) {
+    waterBtn.addEventListener("click", () => saveGoal("water"));
+  }
 });
 
 
