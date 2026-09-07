@@ -876,7 +876,7 @@ function addCromolynRow(data = {}) {
     row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
   
     row.innerHTML = `
-      <input type="text" class="cromolyn-name" placeholder="Medicine Name" value="${data.name || ''}" style="flex: 1; margin: 0;" />
+      <input type="text" class="cromolyn-name" placeholder="Medicine Name" value="${data.name || 'Cromolyn'}" style="flex: 1; margin: 0;" />
       <input type="time" class="cromolyn-time" value="${data.time || ''}" style="width: 130px; margin: 0; text-align: center;" />
       <button type="button" class="remove-row-btn" style="background: #e74c3c; width: 28px; height: 28px; padding: 0; font-size: 0.8rem; margin: 0; display: flex; align-items: center; justify-content: center;">X</button>
     `;
