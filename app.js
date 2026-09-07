@@ -1407,13 +1407,15 @@ async function renderAnalyticsChart() {
   } else if (activeView === "formula") {
     if (chartTitle) chartTitle.innerText = "Formula Intake Overview";
 
+    const formulaGoal = await getGoal("formula");
+  
     const formulaByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
       if (!logData.date) return;
       if (startDate && logData.date < startDate) return;
       if (endDate && logData.date > endDate) return;
-
+  
       const formulaEntries = logData.formulaHydration || logData.formula || [];
       
       let entryTotal = 0;
@@ -1421,35 +1423,34 @@ async function renderAnalyticsChart() {
         const scoops = typeof f === "object" ? parseFloat(f.amount || f.scoops || 0) : parseFloat(f || 0);
         entryTotal += isNaN(scoops) ? 0 : scoops;
       });
-
+  
       if (entryTotal > 0) {
         formulaByDate[logData.date] = (formulaByDate[logData.date] || 0) + entryTotal;
       }
     });
-
+  
     const dates = Object.keys(formulaByDate).sort();
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
-
-    // Yellow bars for formula
-    const barColors = dates.length ? dates.map(() => "#f1c40f") : ["#bdc3c7"];
-
-    drawChart(canvas, labels, data, barColors, "Scoops");
+  
+    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", formulaGoal, "Scoops", 10);
     renderFormulaCalendar(startDate, endDate, records);
-    
+
   // --- WATER VIEW ---
   } else if (activeView === "water") {
     if (chartTitle) chartTitle.innerText = "Water Cups Intake Overview";
 
+    const waterGoal = await getGoal("water");
+  
     const waterByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
       const logDate = logData.date;
       if (!logDate) return;
-
+  
       if (startDate && logDate < startDate) return;
       if (endDate && logDate > endDate) return;
-
+  
       const waterEntries = logData.warmWater || logData.water || [];
       
       let totalCups = 0;
@@ -1462,20 +1463,17 @@ async function renderAnalyticsChart() {
         const parsed = parseFloat(waterEntries);
         totalCups = isNaN(parsed) ? 0 : parsed;
       }
-
+  
       if (totalCups > 0) {
         waterByDate[logDate] = (waterByDate[logDate] || 0) + totalCups;
       }
     });
-
+  
     const dates = Object.keys(waterByDate).sort();
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
-
-    // Blue bars for water
-    const barColors = dates.length ? dates.map(() => "#3498db") : ["#bdc3c7"];
-
-    drawChart(canvas, labels, data, barColors, "Cups");
+  
+    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", waterGoal, "Cups", 1);
     renderWaterCalendar(startDate, endDate, records);
 
   // --- MOOD VIEW ---
@@ -1660,22 +1658,27 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
   // 3. Compute dynamic upper limit aligned to the chosen stepSize
   let calculatedMax = undefined;
   if (stepSize && stepSize > 0) {
-    const padSteps = unit === "Scoops" ? 2 : 1; // Gives 1 or 2 steps of breathing room above goal/data
+    const padSteps = unit === "Scoops" ? 2 : 1; 
     const rawMax = highestVal + (stepSize * padSteps);
-    calculatedMax = Math.ceil(rawMax / stepSize) * stepSize; // Snaps cleanly to next multiple
+    calculatedMax = Math.ceil(rawMax / stepSize) * stepSize; 
   }
 
+  // Bar dataset replacing scatter points
   const datasets = [{
+    type: "bar",
     label: datasetLabel,
     data: data,
     borderColor: color,
     backgroundColor: color,
-    showLine: false,
-    pointRadius: 6
+    borderRadius: 4,
+    barThickness: 28,
+    maxBarThickness: 32
   }];
 
+  // Goal Line (kept as a dashed line overlay)
   if (targetGoal !== null) {
     datasets.push({
+      type: "line",
       label: `Goal (${targetGoal} ${unit})`,
       data: new Array(labels.length).fill(targetGoal),
       borderColor: "#e74c3c",
@@ -1689,13 +1692,14 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
 
   const ctx = canvas.getContext("2d");
   new Chart(ctx, {
-    type: "line",
+    type: "bar",
     data: {
       labels: labels,
       datasets: datasets
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           display: true,
@@ -1709,7 +1713,7 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
           ticks: {
             precision: 0,
             stepSize: stepSize || undefined,
-            autoSkip: false,          // Disables auto-skipping tick intervals
+            autoSkip: false,
             maxTicksLimit: 100
           },
           title: {
