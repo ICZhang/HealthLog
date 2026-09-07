@@ -1407,15 +1407,13 @@ async function renderAnalyticsChart() {
   } else if (activeView === "formula") {
     if (chartTitle) chartTitle.innerText = "Formula Intake Overview";
 
-    const formulaGoal = await getGoal("formula");
-  
     const formulaByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
       if (!logData.date) return;
       if (startDate && logData.date < startDate) return;
       if (endDate && logData.date > endDate) return;
-  
+
       const formulaEntries = logData.formulaHydration || logData.formula || [];
       
       let entryTotal = 0;
@@ -1423,34 +1421,35 @@ async function renderAnalyticsChart() {
         const scoops = typeof f === "object" ? parseFloat(f.amount || f.scoops || 0) : parseFloat(f || 0);
         entryTotal += isNaN(scoops) ? 0 : scoops;
       });
-  
+
       if (entryTotal > 0) {
         formulaByDate[logData.date] = (formulaByDate[logData.date] || 0) + entryTotal;
       }
     });
-  
+
     const dates = Object.keys(formulaByDate).sort();
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
-  
-    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", formulaGoal, "Scoops", 10);
-    renderFormulaCalendar(startDate, endDate, records);
 
+    // Yellow bars for formula
+    const barColors = dates.length ? dates.map(() => "#f1c40f") : ["#bdc3c7"];
+
+    drawChart(canvas, labels, data, barColors, "Scoops");
+    renderFormulaCalendar(startDate, endDate, records);
+    
   // --- WATER VIEW ---
   } else if (activeView === "water") {
     if (chartTitle) chartTitle.innerText = "Water Cups Intake Overview";
 
-    const waterGoal = await getGoal("water");
-  
     const waterByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
       const logDate = logData.date;
       if (!logDate) return;
-  
+
       if (startDate && logDate < startDate) return;
       if (endDate && logDate > endDate) return;
-  
+
       const waterEntries = logData.warmWater || logData.water || [];
       
       let totalCups = 0;
@@ -1463,17 +1462,20 @@ async function renderAnalyticsChart() {
         const parsed = parseFloat(waterEntries);
         totalCups = isNaN(parsed) ? 0 : parsed;
       }
-  
+
       if (totalCups > 0) {
         waterByDate[logDate] = (waterByDate[logDate] || 0) + totalCups;
       }
     });
-  
+
     const dates = Object.keys(waterByDate).sort();
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
-  
-    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", waterGoal, "Cups", 1);
+
+    // Blue bars for water
+    const barColors = dates.length ? dates.map(() => "#3498db") : ["#bdc3c7"];
+
+    drawChart(canvas, labels, data, barColors, "Cups");
     renderWaterCalendar(startDate, endDate, records);
 
   // --- MOOD VIEW ---
