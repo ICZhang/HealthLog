@@ -3117,11 +3117,11 @@ export async function getGoal(type) {
   if (!user) return defaults[type];
 
   try {
-    const userDocRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(userDocRef);
+    const goalRef = doc(db, "users", user.uid, "user_settings", "daily_goals");
+    const docSnap = await getDoc(goalRef);
 
-    if (docSnap.exists() && docSnap.data()?.goals?.[type] !== undefined) {
-      return parseFloat(docSnap.data().goals[type]);
+    if (docSnap.exists() && docSnap.data()?.[type] !== undefined) {
+      return parseFloat(docSnap.data()[type]);
     }
   } catch (err) {
     console.error("Error fetching goal:", err);
@@ -3148,30 +3148,28 @@ export async function saveGoalToFirebase(type) {
   }
 
   try {
-    const userDocRef = doc(db, "users", user.uid);
+    // Write to the user's specific subcollection that matches your log permissions
+    const goalRef = doc(db, "users", user.uid, "user_settings", "daily_goals");
     
-    // Merge updated goal into user profile
-    await setDoc(userDocRef, {
-      goals: {
-        [type]: val
-      }
+    await setDoc(goalRef, {
+      [type]: val
     }, { merge: true });
 
-    // Clear textbox
+    // 1. Clear the textbox
     input.value = "";
 
-    // Refresh active chart view immediately
+    // 2. Re-render charts immediately
     if (typeof renderAnalyticsChart === "function") {
       await renderAnalyticsChart();
     }
 
-    // Show alert notification
+    // 3. Show native browser alert notification
     const label = type === "formula" ? "Formula" : "Water";
     alert(`${label} Goal saved successfully!`);
 
   } catch (error) {
     console.error("Error saving goal:", error);
-    alert("Failed to save goal.");
+    alert("Failed to save goal. Please check your permissions or connection.");
   }
 }
 
