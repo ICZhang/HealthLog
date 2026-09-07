@@ -1654,6 +1654,20 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
     existingChart.destroy();
   }
 
+  // 1. Extract raw numerical values from dataset
+  const numericValues = data.map(d => (typeof d === 'object' && d !== null) ? d.y : Number(d)).filter(v => !isNaN(v));
+  
+  // 2. Find maximum value between actual data points and target goal
+  const highestVal = Math.max(...numericValues, targetGoal || 0);
+
+  // 3. Compute dynamic upper limit aligned to the chosen stepSize
+  let calculatedMax = undefined;
+  if (stepSize && stepSize > 0) {
+    const padSteps = unit === "Scoops" ? 2 : 1; // Gives 1 or 2 steps of breathing room above goal/data
+    const rawMax = highestVal + (stepSize * padSteps);
+    calculatedMax = Math.ceil(rawMax / stepSize) * stepSize; // Snaps cleanly to next multiple
+  }
+
   const datasets = [{
     label: datasetLabel,
     data: data,
@@ -1694,10 +1708,10 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
       scales: {
         y: {
           beginAtZero: true,
-          suggestedMax: targetGoal ? targetGoal + (unit === "Scoops" ? 20 : 2) : undefined,
+          max: calculatedMax,
           ticks: {
             precision: 0,
-            ...(stepSize && { stepSize: stepSize }) // Applies integer step intervals (1, 2, 3...) when passed
+            stepSize: stepSize || undefined
           },
           title: {
             display: true,
