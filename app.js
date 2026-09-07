@@ -184,7 +184,7 @@ document.getElementById("toggle-wrapper")?.addEventListener("click", (e) => {
 });
 
 // Authentication State Tracker
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     userEmailEl.textContent = user.email;
@@ -192,7 +192,12 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById("auth-card")?.classList.add("hidden");
     
     resetForm();
-    loadPastRecords(user.uid);
+    await loadUserGoals();
+
+    // Renders the chart using the freshly loaded goal values
+    if (typeof renderAnalyticsChart === "function") {
+      await renderAnalyticsChart();
+    }
   } else {
     currentUser = null;
     if (unsubscribeLogs) unsubscribeLogs();
@@ -3211,6 +3216,19 @@ export async function getGoal(type) {
   return defaults[type];
 }
 
+// Populate input fields with saved or default values
+export async function loadUserGoals() {
+  const formulaInput = document.getElementById("formula-goal-input");
+  const waterInput = document.getElementById("water-goal-input");
+
+  if (formulaInput) {
+    formulaInput.value = await getGoal("formula");
+  }
+  if (waterInput) {
+    waterInput.value = await getGoal("water");
+  }
+}
+
 // Save goal to the user's subcollection
 export async function saveGoalToFirebase(type) {
   const input = document.getElementById(`${type}-goal-input`);
@@ -3236,15 +3254,14 @@ export async function saveGoalToFirebase(type) {
       updatedAt: new Date()
     }, { merge: true });
 
-    // Clear input
-    input.value = "";
+    // REPLACED: Keep input.value set to val instead of clearing with input.value = ""
+    input.value = val;
 
     // Re-render chart instantly
     if (typeof renderAnalyticsChart === "function") {
       await renderAnalyticsChart();
     }
 
-    // Trigger alert
     const label = type === "formula" ? "Formula" : "Water";
     alert(`${label} Goal saved successfully!`);
 
