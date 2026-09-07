@@ -3109,7 +3109,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
   }
 }
 
-/// Retrieve saved goal from Firebase
+// Fetch goal from the user's subcollection
 export async function getGoal(type) {
   const defaults = { formula: 80, water: 8 };
   const user = auth.currentUser;
@@ -3117,7 +3117,7 @@ export async function getGoal(type) {
   if (!user) return defaults[type];
 
   try {
-    const goalDocRef = doc(db, "logs", `goal_${user.uid}`);
+    const goalDocRef = doc(db, "users", user.uid, "logs", "goal_settings");
     const docSnap = await getDoc(goalDocRef);
 
     if (docSnap.exists() && docSnap.data()?.[type] !== undefined) {
@@ -3130,7 +3130,7 @@ export async function getGoal(type) {
   return defaults[type];
 }
 
-// Save goal to Firebase, clear input, trigger alert, and update chart
+// Save goal to the user's subcollection
 export async function saveGoalToFirebase(type) {
   const input = document.getElementById(`${type}-goal-input`);
   if (!input) return;
@@ -3148,24 +3148,22 @@ export async function saveGoalToFirebase(type) {
   }
 
   try {
-    // 1. Save directly to your existing 'logs' collection using a dedicated ID
-    const goalDocRef = doc(db, "logs", `goal_${user.uid}`);
+    const goalDocRef = doc(db, "users", user.uid, "logs", "goal_settings");
     
     await setDoc(goalDocRef, {
-      userId: user.uid,
       [type]: val,
       updatedAt: new Date()
     }, { merge: true });
 
-    // 2. Clear the textbox
+    // Clear input
     input.value = "";
 
-    // 3. Re-render charts immediately
+    // Re-render chart instantly
     if (typeof renderAnalyticsChart === "function") {
       await renderAnalyticsChart();
     }
 
-    // 4. Trigger alert notification
+    // Trigger alert
     const label = type === "formula" ? "Formula" : "Water";
     alert(`${label} Goal saved successfully!`);
 
