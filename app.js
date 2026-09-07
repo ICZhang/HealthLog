@@ -176,19 +176,44 @@ document.getElementById("clear-filter-btn")?.addEventListener("click", () => {
 
 // Toggle Handler
 function handleAuthToggle() {
-    isSignUp = !isSignUp;
-    document.getElementById("auth-title").textContent = isSignUp ? "Sign Up" : "Sign In";
-    document.getElementById("auth-btn").textContent = isSignUp ? "Sign Up" : "Sign In";
-    
-    document.getElementById("toggle-wrapper").innerHTML = isSignUp 
-      ? `Already have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign In</span>`
-      : `Don't have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign Up</span>`;
+  isSignUp = !isSignUp;
+  document.getElementById("auth-title").textContent = isSignUp ? "Sign Up" : "Sign In";
+  document.getElementById("auth-btn").textContent = isSignUp ? "Sign Up" : "Sign In";
+  
+  // Toggle Forgot Password visibility based on mode
+  const forgotBtn = document.getElementById("forgot-password-link");
+  if (forgotBtn) forgotBtn.style.display = isSignUp ? "none" : "inline";
+
+  document.getElementById("toggle-wrapper").innerHTML = isSignUp 
+    ? `Already have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign In</span>`
+    : `Don't have an account? <span class="toggle-link" id="toggle-auth" style="color: #4A90E2; cursor: pointer; text-decoration: underline;">Sign Up</span>`;
 }
   
 document.getElementById("toggle-wrapper")?.addEventListener("click", (e) => {
     if (e.target && e.target.id === "toggle-auth") {
         handleAuthToggle();
     }
+});
+
+// Forgot Password Listener
+document.getElementById("auth-card")?.addEventListener("click", async (e) => {
+  if (e.target && e.target.id === "forgot-password-link") {
+    const emailVal = document.getElementById("email")?.value.trim();
+    const errorMsg = document.getElementById("error-msg");
+
+    if (!emailVal) {
+      alert("Please enter your email address in the email field first.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, emailVal);
+      alert(`Password reset email sent to ${emailVal}. Check your inbox!`);
+    } catch (err) {
+      console.error("Reset Error:", err);
+      if (errorMsg) errorMsg.textContent = err.message.replace("Firebase: ", "");
+    }
+  }
 });
 
 // Authentication State Tracker
@@ -200,7 +225,7 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById("auth-card")?.classList.add("hidden");
     
     resetForm();
-    loadPastRecords(user.uid); // Trigger listener; snapshot callback will handle goal loading & rendering
+    loadPastRecords(user.uid);
   } else {
     currentUser = null;
     if (unsubscribeLogs) unsubscribeLogs();
@@ -228,21 +253,20 @@ document.getElementById("show-password")?.addEventListener("change", (e) => {
   pwdInput.type = e.target.checked ? "text" : "password";
 });
 
-// Auth Form Handler
+// Auth Form Handler (Direct Email Authentication)
 document.getElementById("auth-form")?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const usernameVal = document.getElementById("username").value.trim().toLowerCase();
+  const emailVal = document.getElementById("email").value.trim();
   const passwordVal = document.getElementById("password").value;
   const errorMsg = document.getElementById("error-msg");
   
   errorMsg.textContent = "";
-  const email = usernameVal.includes("@") ? usernameVal : `${usernameVal}@app.local`;
 
   try {
     if (isSignUp) {
-      await createUserWithEmailAndPassword(auth, email, passwordVal);
+      await createUserWithEmailAndPassword(auth, emailVal, passwordVal);
     } else {
-      await signInWithEmailAndPassword(auth, email, passwordVal);
+      await signInWithEmailAndPassword(auth, emailVal, passwordVal);
     }
   } catch (err) {
     console.error("Auth Error:", err);
