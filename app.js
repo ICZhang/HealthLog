@@ -1392,7 +1392,7 @@ function renderAnalyticsChart() {
 
   // --- FORMULA VIEW ---
   } else if (activeView === "formula") {
-    if (chartTitle) chartTitle.innerText = "Daily Formula Scoops Overview";
+    if (chartTitle) chartTitle.innerText = "Formula Intake Overview";
   
     const formulaByDate = {};
     records.forEach(item => {
@@ -1418,12 +1418,12 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
   
-    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", 80);
+    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", 80, "Scoops");
     renderFormulaCalendar(startDate, endDate, records);
 
   // --- WATER VIEW ---
   } else if (activeView === "water") {
-    if (chartTitle) chartTitle.innerText = "Daily Water Cups Overview";
+    if (chartTitle) chartTitle.innerText = "Water Cups Intake Overview";
   
     const waterByDate = {};
     records.forEach(item => {
@@ -1459,7 +1459,7 @@ function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
   
-    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", 8);
+    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", 8, "Cups");
   
     renderWaterCalendar(startDate, endDate, records);
   }
@@ -1637,7 +1637,7 @@ function drawChart(canvas, labels, data, barColors, yLabel = "Days") {
   });
 }
 
-function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "Value", xLabel = "Date", targetGoal = null) {
+function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "Value", xLabel = "Date", targetGoal = null, unit = "Units") {
   if (!canvas) return;
 
   const existingChart = Chart.getChart(canvas);
@@ -1645,26 +1645,25 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
     existingChart.destroy();
   }
 
-  // Construct chart datasets
   const datasets = [{
     label: datasetLabel,
     data: data,
     borderColor: color,
     backgroundColor: color,
     showLine: false,
-    fill: false,
-    pointRadius: 5
+    pointRadius: 6
   }];
 
-  // Add the goal line dataset if a target is provided
   if (targetGoal !== null) {
     datasets.push({
-      label: `Goal (${targetGoal} Cups)`,
+      // Uses the 'unit' parameter dynamically ("Scoops" or "Cups")
+      label: `Goal (${targetGoal} ${unit})`,
       data: new Array(labels.length).fill(targetGoal),
-      borderColor: "#e74c3c", // Red goal line
+      borderColor: "#e74c3c",
       backgroundColor: "transparent",
-      borderDash: [6, 6],    // Makes the line dashed
-      pointRadius: 0,        // Hides individual data points
+      showLine: true,
+      borderDash: [6, 6],
+      pointRadius: 0,
       fill: false
     });
   }
@@ -1687,8 +1686,7 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
       scales: {
         y: {
           beginAtZero: true,
-          // Ensure the Y-axis scales high enough to display the goal line clearly
-          suggestedMax: targetGoal ? targetGoal + 2 : undefined,
+          suggestedMax: targetGoal ? targetGoal + (unit === "Scoops" ? 20 : 2) : undefined,
           title: {
             display: true,
             text: yLabel,
