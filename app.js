@@ -3126,6 +3126,56 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     cell.appendChild(badgeContainer);
     grid.appendChild(cell);
   }
+
+  // ==========================================
+  // RENDER SUMMARY LIST UNDERNEATH CALENDAR
+  // ==========================================
+  const listContainer = document.getElementById("calendar-food-list");
+  if (listContainer) {
+    listContainer.innerHTML = "";
+    listContainer.style.marginTop = "20px";
+
+    // Gather all foods introduced across ALL months, sorted chronologically (newest first)
+    const sortedIntroductions = Object.entries(firstFoodDates).sort((a, b) => b[1].localeCompare(a[1]));
+
+    if (sortedIntroductions.length === 0) {
+      listContainer.innerHTML = `<p style="color: #7f8c8d; font-style: italic; font-size: 0.9rem;">No new foods introduced yet.</p>`;
+    } else {
+      const title = document.createElement("h4");
+      title.innerText = "All Introduced Foods Log";
+      title.style.marginBottom = "10px";
+      title.style.color = "#2c3e50";
+      listContainer.appendChild(title);
+
+      const ul = document.createElement("ul");
+      ul.style.listStyle = "none";
+      ul.style.padding = "0";
+      ul.style.margin = "0";
+
+      sortedIntroductions.forEach(([foodName, dateStr]) => {
+        const li = document.createElement("li");
+        li.style.display = "flex";
+        li.style.justifyContent = "space-between";
+        li.style.padding = "8px 12px";
+        li.style.marginBottom = "6px";
+        li.style.backgroundColor = "#f8f9fa";
+        li.style.borderLeft = "4px solid #2980b9";
+        li.style.borderRadius = "4px";
+        li.style.fontSize = "0.85rem";
+
+        const formattedDate = new Date(dateStr + "T00:00:00").toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+
+        li.innerHTML = `<strong>${foodName}</strong> <span style="color: #7f8c8d;">${formattedDate}</span>`;
+        ul.appendChild(li);
+      });
+
+      listContainer.appendChild(ul);
+    }
+  }
 }
 
 // Fetch goal from the user's subcollection
