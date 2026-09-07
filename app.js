@@ -1428,18 +1428,30 @@ function renderAnalyticsChart() {
     const waterByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
-      if (!logData.date) return;
-      
-      // FIX 1: Match calendar month filtering so graph and calendar display identical date ranges
-      const activeMonth = window.activeCalendarMonth || new Date().toISOString().slice(0, 7);
-      if (!logData.date.startsWith(activeMonth)) return;
+      const logDate = logData.date;
+      if (!logDate) return;
+  
+      // Filter by overall start/end date range instead of locking to a single active month
+      if (startDate && logDate < startDate) return;
+      if (endDate && logDate > endDate) return;
   
       const waterEntries = logData.warmWater || logData.water || [];
-      const totalCups = calculateWaterCups(logData.warmWater || logData.water);
+      
+      // Calculate total cups for this entry
+      let totalCups = 0;
+      if (Array.isArray(waterEntries)) {
+        totalCups = waterEntries.reduce((sum, entry) => {
+          const val = typeof entry === "object" ? parseFloat(entry.amount || entry.cups || 1) : parseFloat(entry);
+          return sum + (isNaN(val) ? 1 : val);
+        }, 0);
+      } else {
+        const parsed = parseFloat(waterEntries);
+        totalCups = isNaN(parsed) ? 0 : parsed;
+      }
   
-      // FIX 2: Accumulate cups (+=) instead of overwriting (=)
+      // Accumulate daily totals across all matching months
       if (totalCups > 0) {
-        waterByDate[logData.date] = (waterByDate[logData.date] || 0) + totalCups;
+        waterByDate[logDate] = (waterByDate[logDate] || 0) + totalCups;
       }
     });
   
@@ -1448,6 +1460,7 @@ function renderAnalyticsChart() {
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
   
     drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", 8);
+  
     renderWaterCalendar(startDate, endDate, records);
   }
   //Mood view
