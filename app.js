@@ -557,6 +557,8 @@ document.querySelectorAll("#foods-grid .food-row").forEach(row => {
   return {
     date: document.getElementById("log-date")?.value || localToday,
     time: document.getElementById("log-time")?.value || "",
+    waterGoal: parseFloat(document.getElementById("water-goal-input")?.value) || 8,
+    formulaGoal: parseFloat(document.getElementById("formula-goal-input")?.value) || 80,
     bowelMovements: bmData,
     cromolynMeds,
     herbalMeds,
@@ -1396,7 +1398,7 @@ function renderAnalyticsChart() {
   } else if (activeView === "formula") {
     if (chartTitle) chartTitle.innerText = "Formula Intake Overview";
 
-    const formulaGoal = getGoal("formula");
+    const formulaGoal = getGoalFromRecords("formula", records);
   
     const formulaByDate = {};
     records.forEach(item => {
@@ -1429,7 +1431,7 @@ function renderAnalyticsChart() {
   } else if (activeView === "water") {
     if (chartTitle) chartTitle.innerText = "Water Cups Intake Overview";
 
-    const waterGoal = getGoal("water");
+    const waterGoal = getGoalFromRecords("water", records);
   
     const waterByDate = {};
     records.forEach(item => {
@@ -3107,60 +3109,33 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
 }
 
 // Retrieve saved goal or fall back to default values
-function getGoal(type) {
+function getGoalFromRecords(type, records) {
   const defaults = { formula: 80, water: 8 };
-  const saved = localStorage.getItem(`${type}_daily_goal`);
-  return saved !== null && !isNaN(parseFloat(saved)) ? parseFloat(saved) : defaults[type];
-}
 
-// Save goal to LocalStorage and refresh active chart
-function saveGoal(type) {
-  const input = document.getElementById(`${type}-goal-input`);
-  if (!input) return;
+  if (!records || !records.length) return defaults[type];
 
-  const val = parseFloat(input.value);
-  if (isNaN(val) || val <= 0) {
-    alert("Please enter a valid positive goal number.");
-    return;
+  // Find the most recent record that contains a saved goal
+  for (let i = records.length - 1; i >= 0; i--) {
+    const logData = records[i].data || records[i];
+    const key = type === "formula" ? "formulaGoal" : "waterGoal";
+    
+    if (logData[key] !== undefined && logData[key] !== null) {
+      return parseFloat(logData[key]);
+    }
   }
 
-  // 1. Save goal to LocalStorage
-  localStorage.setItem(`${type}_daily_goal`, val);
-
-  // 2. Refresh active chart view
-  if (typeof renderAnalyticsChart === "function") {
-    renderAnalyticsChart();
-  }
-
-  // 3. Clear the textbox
-  input.value = "";
-
-  // 4. Trigger alert notification
-  const label = type === "formula" ? "Formula" : "Water";
-  alert(`${label} Goal saved successfully!`);
+  return defaults[type];
 }
 
-// Populate input values on initial page load
-document.addEventListener("DOMContentLoaded", () => {
-  // 1. Populate initial goal values into inputs
+document.addEventListener("DOMContentLoaded", async () => {
   const formulaInput = document.getElementById("formula-goal-input");
   const waterInput = document.getElementById("water-goal-input");
 
-  if (formulaInput) formulaInput.value = getGoal("formula");
-  if (waterInput) waterInput.value = getGoal("water");
-
-  // 2. Attach click listeners to goal buttons
-  const formulaBtn = document.getElementById("set-formula-goal-btn");
-  const waterBtn = document.getElementById("set-water-goal-btn");
-
-  if (formulaBtn) {
-    formulaBtn.addEventListener("click", () => saveGoal("formula"));
-  }
-
-  if (waterBtn) {
-    waterBtn.addEventListener("click", () => saveGoal("water"));
-  }
+  // Fetch initial goal values from your cloud records or defaults
+  if (formulaInput) formulaInput.value = await getGoalFromRecords("formula", window.allRecords || []);
+  if (waterInput) waterInput.value = await getGoalFromRecords("water", window.allRecords || []);
 });
+
 
 
 
