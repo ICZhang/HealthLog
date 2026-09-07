@@ -2078,7 +2078,7 @@ function renderFormulaCalendar(startDate, endDate, records) {
     }
   });
 
-  renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "scoops", "#e54363");
+  renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "scoops", "#f1c40f");
 }
 
 // Render Total Daily Water Cups
