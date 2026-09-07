@@ -1425,7 +1425,7 @@ async function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => formulaByDate[d]) : [0];
   
-    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", formulaGoal, "Scoops");
+    drawScatterChart(canvas, labels, data, "#e54363", "Formula Scoops", "Total Scoops", "Date", formulaGoal, "Scoops", 10);
     renderFormulaCalendar(startDate, endDate, records);
 
   // --- WATER VIEW ---
@@ -1468,7 +1468,7 @@ async function renderAnalyticsChart() {
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => waterByDate[d]) : [0];
   
-    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", waterGoal, "Cups");
+    drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", waterGoal, "Cups", 1);
   
     renderWaterCalendar(startDate, endDate, records);
   }
@@ -1646,7 +1646,7 @@ function drawChart(canvas, labels, data, barColors, yLabel = "Days") {
   });
 }
 
-function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "Value", xLabel = "Date", targetGoal = null, unit = "Units") {
+function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "Value", xLabel = "Date", targetGoal = null, unit = "Units", stepSize = null) {
   if (!canvas) return;
 
   const existingChart = Chart.getChart(canvas);
@@ -1665,7 +1665,6 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
 
   if (targetGoal !== null) {
     datasets.push({
-      // Uses the 'unit' parameter dynamically ("Scoops" or "Cups")
       label: `Goal (${targetGoal} ${unit})`,
       data: new Array(labels.length).fill(targetGoal),
       borderColor: "#e74c3c",
@@ -1696,6 +1695,10 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
         y: {
           beginAtZero: true,
           suggestedMax: targetGoal ? targetGoal + (unit === "Scoops" ? 20 : 2) : undefined,
+          ticks: {
+            precision: 0,
+            ...(stepSize && { stepSize: stepSize }) // Applies integer step intervals (1, 2, 3...) when passed
+          },
           title: {
             display: true,
             text: yLabel,
