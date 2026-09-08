@@ -440,8 +440,9 @@ function resetForm() {
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   
+  // Set date to today, but leave the main time input blank
   document.getElementById("log-date").value = `${year}-${month}-${day}`;
-  document.getElementById("log-time").value = now.toTimeString().slice(0, 5);
+  document.getElementById("log-time").value = ""; 
 
   bmContainer.innerHTML = "";
   formulaContainer.innerHTML = "";
