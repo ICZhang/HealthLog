@@ -434,7 +434,7 @@ function resetForm() {
   editingDocIdInput.value = "";
   saveLogBtn.textContent = "Save Care Log";
   cancelEditBtn.classList.add("hidden");
-  /*
+
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -442,9 +442,7 @@ function resetForm() {
   
   document.getElementById("log-date").value = `${year}-${month}-${day}`;
   document.getElementById("log-time").value = now.toTimeString().slice(0, 5);
-  */
-  document.getElementById("log-date").value = "";
-  document.getElementById("log-time").value = "";
+  
 
   bmContainer.innerHTML = "";
   formulaContainer.innerHTML = "";
@@ -624,6 +622,7 @@ logForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentUser) return;
   
+    /*
     // 1. Get current time in HH:MM format
     const now = new Date();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -635,7 +634,7 @@ logForm.addEventListener("submit", async (e) => {
         input.value = currentTime;
       }
     });
-  
+    */
     // 3. Now collect form data (which will now include the filled-in times)
     const logData = getFormData();
     const editingId = editingDocIdInput.value;
