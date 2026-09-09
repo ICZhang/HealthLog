@@ -647,6 +647,8 @@ logForm.addEventListener("submit", async (e) => {
         await addDoc(collection(db, "users", currentUser.uid, "logs"), logData);
         alert("Care Log saved successfully!");
       }
+      
+      showViewModal(logData);
       resetForm();
     } catch (err) {
       console.error("Error saving record: ", err);
