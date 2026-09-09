@@ -932,107 +932,121 @@ function formatTo12Hour(time24) {
     return `${hours}:${minutes} ${ampm}`;
 }
 
+const totalFormulaScoops = data.formulaHydration?.reduce((sum, item) => {
+  // Extract number from object or raw value
+  const amountStr = typeof item === 'object' ? item.amount || item.scoops || "" : item;
+  const scoops = parseFloat(amountStr) || 0;
+  return sum + scoops;
+}, 0) || 0;
+
 // Render read-only record details
 function showViewModal(data) {
-    const modal = document.getElementById("view-modal");
-    const modalBody = document.getElementById("view-modal-body");
-  
-    modalBody.innerHTML = `
-      <div style="padding-top: 15px; margin-bottom: 12px; text-align: left;">
-          <br>
-          <br>
-          <h3 style="margin: 0; color: #2c3e50; font-size: 1.3rem;">📅 Care Log Summary</h3>
-          <p style="margin: 6px 0 0 0; color: #555; font-size: 0.95rem; font-weight: bold;">
-              Date: <span style="font-weight: normal; color: #333;">${data.date || 'N/A'}</span>
-          </p>
-          <p style="margin: 2px 0 0 0; color: #555; font-size: 0.9rem;">
-              Log Entry Time: <span style="font-weight: normal; color: #333;">${formatTo12Hour(data.time)}</span>
-          </p>
-      </div>
-      <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 15px 0;" />
-      
-      <p><strong>Bowel Movements:</strong></p>
-      <ul>
-        ${data.bowelMovements?.length 
-          ? data.bowelMovements.map(bm => `<li>Time: ${formatTo12Hour(bm.time)} | Type: ${bm.type || 'N/A'} | Amount: ${bm.amount || 'N/A'} | Color: ${bm.color || 'N/A'}</li>`).join('')
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Warm Water Log:</strong></p>
-      <ul>
-        ${Array.isArray(data.warmWater) && data.warmWater.length 
-          ? data.warmWater.map((w, idx) => `<li>Cup ${idx + 1}: at ${formatTo12Hour(typeof w === 'object' ? w.time : w)}</li>`).join('')
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Cromolyn & Other Meds:</strong></p>
-      <ul>
-      ${data.cromolynMeds?.length 
-          ? data.cromolynMeds.map(m => `<li>${m.name || 'Unnamed'}: at ${formatTo12Hour(m.time)}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Herbal Meds:</strong></p>
-      <ul>
-        ${data.herbalMeds?.length 
-          ? data.herbalMeds.map(h => `<li>${h.name || 'Unnamed'}: at ${formatTo12Hour(h.time)}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Enteragram:</strong></p>
-      <ul>
-        ${data.enteragramDoses?.length 
-          ? data.enteragramDoses.map(e => `<li>Dose: ${e.dose || 'N/A'} at ${formatTo12Hour(e.time)}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Formula:</strong></p>
-      <ul>
-        ${data.formulaHydration?.length 
-          ? data.formulaHydration.map(f => `<li>${typeof f === 'object' ? `${f.name || 'Formula'}: at ${formatTo12Hour(f.time)}` : f}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Activities:</strong></p>
-      <ul>
-        ${data.activities?.length 
-          ? data.activities.map(a => `<li>${typeof a === 'object' ? `${a.name || 'Activity'}: at ${formatTo12Hour(a.time)}` : a}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Foods:</strong></p>
-      <ul>
-        ${data.foods?.length 
-          ? data.foods.map(f => `<li>${f.name}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Pain Logs:</strong></p>
-      <ul>
-      ${data.painLogs?.length 
-          ? data.painLogs.map(p => `<li>${p.level || 'Unspecified'}: at ${formatTo12Hour(p.time)}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Mood Logs:</strong></p>
-      <ul>
-      ${data.moodLogs?.length 
-          ? data.moodLogs.map(m => `<li>${m.zone || 'Unspecified'}: at ${formatTo12Hour(m.time)}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
-  
-      <p><strong>Behavior Logs:</strong></p>
-      <ul>
-      ${data.behaviorLogs?.length 
-          ? data.behaviorLogs.map(b => `<li>${b.type || 'Unspecified'}: at ${formatTo12Hour(b.time)}</li>`).join('') 
-          : '<li>None recorded</li>'}
-      </ul>
+  const modal = document.getElementById("view-modal");
+  const modalBody = document.getElementById("view-modal-body");
+
+  // Calculate total formula scoops dynamically
+  const totalFormulaScoops = data.formulaHydration?.reduce((sum, item) => {
+    const amountStr = typeof item === 'object' ? (item.amount || item.scoops || "") : item;
+    const scoops = parseFloat(amountStr) || 0;
+    return sum + scoops;
+  }, 0) || 0;
+
+  modalBody.innerHTML = `
+    <div style="padding-top: 15px; margin-bottom: 12px; text-align: left;">
+        <br>
+        <br>
+        <h3 style="margin: 0; color: #2c3e50; font-size: 1.3rem;">📅 Care Log Summary</h3>
+        <p style="margin: 6px 0 0 0; color: #555; font-size: 0.95rem; font-weight: bold;">
+            Date: <span style="font-weight: normal; color: #333;">${data.date || 'N/A'}</span>
+        </p>
+        <p style="margin: 2px 0 0 0; color: #555; font-size: 0.9rem;">
+            Log Entry Time: <span style="font-weight: normal; color: #333;">${formatTo12Hour(data.time)}</span>
+        </p>
+    </div>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 15px 0;" />
     
-      <p><strong>Day Summary:</strong> ${data.daySummary || 'N/A'}</p>
-      <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
-    `;
+    <p><strong>Bowel Movements:</strong></p>
+    <ul>
+      ${data.bowelMovements?.length 
+        ? data.bowelMovements.map(bm => `<li>Time: ${formatTo12Hour(bm.time)} | Type: ${bm.type || 'N/A'} | Amount: ${bm.amount || 'N/A'} | Color: ${bm.color || 'N/A'}</li>`).join('')
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Warm Water Log:</strong></p>
+    <ul>
+      ${Array.isArray(data.warmWater) && data.warmWater.length 
+        ? data.warmWater.map((w, idx) => `<li>Cup ${idx + 1}: at ${formatTo12Hour(typeof w === 'object' ? w.time : w)}</li>`).join('')
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Cromolyn & Other Meds:</strong></p>
+    <ul>
+    ${data.cromolynMeds?.length 
+        ? data.cromolynMeds.map(m => `<li>${m.name || 'Unnamed'}: at ${formatTo12Hour(m.time)}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Herbal Meds:</strong></p>
+    <ul>
+      ${data.herbalMeds?.length 
+        ? data.herbalMeds.map(h => `<li>${h.name || 'Unnamed'}: at ${formatTo12Hour(h.time)}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Enteragram:</strong></p>
+    <ul>
+      ${data.enteragramDoses?.length 
+        ? data.enteragramDoses.map(e => `<li>Dose: ${e.dose || 'N/A'} at ${formatTo12Hour(e.time)}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Formula (Total Scoops Today: ${totalFormulaScoops}):</strong></p>
+    <ul>
+      ${data.formulaHydration?.length 
+        ? data.formulaHydration.map(f => `<li>${typeof f === 'object' ? `${f.name || 'Formula'}: ${f.amount ? `${f.amount} scoops` : ''} at ${formatTo12Hour(f.time)}` : f}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Activities:</strong></p>
+    <ul>
+      ${data.activities?.length 
+        ? data.activities.map(a => `<li>${typeof a === 'object' ? `${a.name || 'Activity'}: at ${formatTo12Hour(a.time)}` : a}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Foods:</strong></p>
+    <ul>
+      ${data.foods?.length 
+        ? data.foods.map(f => `<li>${f.name}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Pain Logs:</strong></p>
+    <ul>
+    ${data.painLogs?.length 
+        ? data.painLogs.map(p => `<li>${p.level || 'Unspecified'}: at ${formatTo12Hour(p.time)}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Mood Logs:</strong></p>
+    <ul>
+    ${data.moodLogs?.length 
+        ? data.moodLogs.map(m => `<li>${m.zone || 'Unspecified'}: at ${formatTo12Hour(m.time)}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Behavior Logs:</strong></p>
+    <ul>
+    ${data.behaviorLogs?.length 
+        ? data.behaviorLogs.map(b => `<li>${b.type || 'Unspecified'}: at ${formatTo12Hour(b.time)}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
   
-    modal.classList.remove("hidden");
+    <p><strong>Day Summary:</strong> ${data.daySummary || 'N/A'}</p>
+    <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
+  `;
+
+  modal.classList.remove("hidden");
 }
 
 // Close Modal Event Handler
