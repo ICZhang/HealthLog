@@ -3332,7 +3332,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
+/*
 
   document.getElementById("clear-all-records-btn")?.addEventListener("click", () => {
     if (confirm("Are you sure you want to delete ALL logged records?")) {
@@ -3348,4 +3348,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
+*/
