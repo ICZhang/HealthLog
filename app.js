@@ -932,13 +932,6 @@ function formatTo12Hour(time24) {
     return `${hours}:${minutes} ${ampm}`;
 }
 
-const totalFormulaScoops = data.formulaHydration?.reduce((sum, item) => {
-  // Extract number from object or raw value
-  const amountStr = typeof item === 'object' ? item.amount || item.scoops || "" : item;
-  const scoops = parseFloat(amountStr) || 0;
-  return sum + scoops;
-}, 0) || 0;
-
 // Render read-only record details
 function showViewModal(data) {
   const modal = document.getElementById("view-modal");
