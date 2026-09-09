@@ -647,7 +647,7 @@ logForm.addEventListener("submit", async (e) => {
         await addDoc(collection(db, "users", currentUser.uid, "logs"), logData);
         alert("Care Log saved successfully!");
       }
-      
+
       showViewModal(logData);
       resetForm();
     } catch (err) {
@@ -1047,6 +1047,11 @@ function showViewModal(data) {
 // Close Modal Event Handler
 document.getElementById("close-modal-btn")?.addEventListener("click", () => {
   document.getElementById("view-modal").classList.add("hidden");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth" // Use "auto" if you want it to jump instantly
+  });
 });
 
 
