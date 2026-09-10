@@ -28,6 +28,7 @@ let painChartInstance = null;
 window.activeAnalyticsTab = "pain";
 
 const BM_TYPE_COLORS = {
+    "No BM": "#000000", //Black
     2: "#8e44ad", // Gray 
     3: "#2980b9", // Purple
     4: "#27ae60", // Blue
@@ -356,12 +357,16 @@ function addBmRow(data = {}) {
       <input type="time" class="bm-time" value="${data.time || ''}" style="flex: 1;" />
       <select class="bm-type" style="flex: 2;">
         <option value="">-- Type (1-7) --</option>
+        <option value="No BM" ${data.type === 'No BM' ? 'selected' : ''}>No BM</option>
         ${[1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${data.type == n ? 'selected' : ''}>Type ${n}</option>`).join('')}
       </select>
     </div>
     <div style="display: flex; gap: 12px; align-items: center;">
       <span style="font-size: 0.85rem; font-weight: bold;">Amount:</span>
       <div style="display: flex; gap: 12px; align-items: center;">
+        <label style="display: flex; flex-direction: column; align-items: center; margin: 0; cursor: pointer; font-size: 0.85rem;">
+          <input type="radio" name="${groupName}" value="None" ${data.amount === 'None' ? 'checked' : ''} style="margin: 0 0 2px 0;"> None
+        </label>
         <label style="display: flex; flex-direction: column; align-items: center; margin: 0; cursor: pointer; font-size: 0.85rem;">
           <input type="radio" name="${groupName}" value="S" ${data.amount === 'S' ? 'checked' : ''} style="margin: 0 0 2px 0;"> S
         </label>
