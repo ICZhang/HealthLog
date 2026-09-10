@@ -200,26 +200,22 @@
       <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
   
       <!-- Solid Foods & Enzymes -->
-<h3>Solid Foods & Enzymes</h3>
-<strong>Meal Times: </strong>
-<div class="meal-section" style="margin-bottom: 16px;">
-  <!-- Section Title & Top Right Add Button -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-    <h3 style="margin: 0; font-size: 1.1rem; font-weight: bold;">Solid Foods & Meals</h3>
-    <button type="button" onclick="addMealTimeRow()" style="background: #3498db; color: white; border: none; border-radius: 4px; padding: 5px 12px; font-weight: bold; font-size: 0.85rem; cursor: pointer;">
-      + Add Meal Time
-    </button>
-  </div>
-
-  <!-- Column Headers (Aligned to match inputs below) -->
-  <div style="display: flex; gap: 8px; margin-bottom: 4px; padding-right: 36px;">
-    <span style="flex: 1; font-weight: bold; font-size: 0.85rem; color: #333;">Meal Name</span>
-    <span style="width: 130px; font-weight: bold; font-size: 0.85rem; color: #333; text-align: center;">Time</span>
-  </div>
-
-  <!-- Dynamic Meal Rows Container -->
-  <div id="meal-times-rows"></div>
-</div>>
+      <h3>Solid Foods & Enzymes</h3>
+    <strong>Meal Times: </strong>
+    <div class="form-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h3 style="margin: 0;">Solid Foods & Meals</h3>
+        <button type="button" id="add-meal-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Meal</button>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span style="font-size: 0.9rem; font-weight: bold; color: #000; flex: 1;">Meal Name</span>
+        <span style="font-size: 0.9rem; font-weight: bold; color: #000; width: 130px; text-align: center;">Time</span>
+        <span style="width: 32px; flex-shrink: 0;"></span>
+      </div>
+    
+      <div id="meal-container"></div>
+    </div>
 
 <strong>Enzymes:</strong>
 <div style="margin-top: 8px; margin-bottom: 15px;">

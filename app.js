@@ -69,6 +69,7 @@ const painContainer = document.getElementById("pain-container");
 const moodContainer = document.getElementById("mood-container");
 const behaviorContainer = document.getElementById("behavior-container");
 const cromolynContainer = document.getElementById("cromolyn-container");
+const mealContainer = document.getElementById("meal-container");
 
 // Add Row Buttons
 const addBmBtn = document.getElementById("add-bm-btn");
@@ -81,6 +82,7 @@ const addPainBtn = document.getElementById("add-pain-btn");
 const addMoodBtn = document.getElementById("add-mood-btn");
 const addBehaviorBtn = document.getElementById("add-behavior-btn");
 const addCromolynBtn = document.getElementById("add-cromolyn-btn");
+const addMealBtn = document.getElementById("add-meal-btn");
 
 
 // Delete Entry Handler
@@ -429,6 +431,7 @@ addPainBtn?.addEventListener("click", () => addPainRow());
 addMoodBtn?.addEventListener("click", () => addMoodRow());
 addBehaviorBtn?.addEventListener("click", () => addBehaviorRow());
 addCromolynBtn?.addEventListener("click", () => addCromolynRow());
+addMealBtn?.addEventListener("click", () => addMealRow());
 
 function resetForm() {
   logForm.reset();
@@ -471,6 +474,7 @@ function resetForm() {
   addMoodRow();
   addBehaviorRow();
   addCromolynRow();
+  addMealRow();
 }
 
 cancelEditBtn.addEventListener("click", resetForm);
@@ -508,13 +512,25 @@ function getFormData() {
 
   const formulaEntries = [];
   document.querySelectorAll(".formula-row").forEach(row => {
-  const amountInput = row.querySelector(".formula-amount");
-  const timeInput = row.querySelector(".formula-time");
+    const amountInput = row.querySelector(".formula-amount");
+    const timeInput = row.querySelector(".formula-time");
     if (amountInput || timeInput) {
-        formulaEntries.push({
+      formulaEntries.push({
         amount: amountInput ? Number(amountInput.value) : 12,
         time: timeInput ? timeInput.value : ""
-        });
+      });
+    }
+  });
+
+  const mealTimes = [];
+  document.querySelectorAll("#meal-container .meal-row").forEach((row, index) => {
+    const timeInput = row.querySelector(".meal-time");
+    const time = timeInput ? timeInput.value : "";
+    if (time) {
+      mealTimes.push({
+        name: `Meal ${index + 1}`,
+        time: time
+      });
     }
   });
 
@@ -536,25 +552,24 @@ function getFormData() {
   document.querySelectorAll(".cromolyn-row").forEach(row => {
     const name = row.querySelector(".cromolyn-name").value.trim();
     const time = row.querySelector(".cromolyn-time").value;
-  if (name || time) cromolynMeds.push({ name, time });
+    if (name || time) cromolynMeds.push({ name, time });
   });
 
   const foodData = [];
-document.querySelectorAll("#foods-grid .food-row").forEach(row => {
-  const checkbox = row.querySelector("input[type='checkbox']");
-  const amountInput = row.querySelector("input[type='text']");
-  const isHighlighted = row.classList.contains("new-food-highlight");
+  document.querySelectorAll("#foods-grid .food-row").forEach(row => {
+    const checkbox = row.querySelector("input[type='checkbox']");
+    const amountInput = row.querySelector("input[type='text']");
+    const isHighlighted = row.classList.contains("new-food-highlight");
 
-  if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== ""))) {
-    foodData.push({
-      name: checkbox.value,
-      checked: checkbox.checked,
-      amount: amountInput ? amountInput.value.trim() : "",
-      isHighlighted: isHighlighted 
-    });
-  }
-});
-  
+    if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== ""))) {
+      foodData.push({
+        name: checkbox.value,
+        checked: checkbox.checked,
+        amount: amountInput ? amountInput.value.trim() : "",
+        isHighlighted: isHighlighted 
+      });
+    }
+  });
 
   const painLogs = [];
   document.querySelectorAll(".pain-row").forEach(row => {
@@ -579,17 +594,16 @@ document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const type = customEl ? customEl.value.trim() : (selectEl ? selectEl.value : "");
 
     if (type || time) {
-        behaviorLogs.push({ type, time });
+      behaviorLogs.push({ type, time });
     }
   });
 
-   // Local date fallback calculation
-   const now = new Date();
-   const year = now.getFullYear();
-   const month = String(now.getMonth() + 1).padStart(2, '0');
-   const day = String(now.getDate()).padStart(2, '0');
-   const localToday = `${year}-${month}-${day}`;
-
+  // Local date fallback calculation
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const localToday = `${year}-${month}-${day}`;
 
   return {
     date: document.getElementById("log-date")?.value || localToday,
@@ -601,12 +615,13 @@ document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     herbalMeds,
     enteragramDoses,
     formulaHydration: formulaEntries,
+    mealTimes,
     warmWater: waterData,
     activities: getValues(".activity-row"),
     enzymes: {
-      noFenol: { checked: document.getElementById("enzyme-no-fenol").checked, notes: document.getElementById("enzyme-no-fenol-notes").value },
-      carbDgts: { checked: document.getElementById("enzyme-carb-dgts").checked, notes: document.getElementById("enzyme-carb-dgts-notes").value },
-      chew: { checked: document.getElementById("enzyme-chew").checked, notes: document.getElementById("enzyme-chew-notes").value }
+      noFenol: { checked: document.getElementById("enzyme-no-fenol")?.checked || false, notes: document.getElementById("enzyme-no-fenol-notes")?.value || "" },
+      carbDgts: { checked: document.getElementById("enzyme-carb-dgts")?.checked || false, notes: document.getElementById("enzyme-carb-dgts-notes")?.value || "" },
+      chew: { checked: document.getElementById("enzyme-chew")?.checked || false, notes: document.getElementById("enzyme-chew-notes")?.value || "" }
     },
     foods: foodData,
     painLogs,
@@ -685,6 +700,13 @@ function populateFormForEdit(id, data) {
       data.herbalMeds.forEach(h => addHerbalRow(h));
     } else {
       addHerbalRow();
+    }
+
+    mealContainer.innerHTML = "";
+    if (Array.isArray(data.mealTimes) && data.mealTimes.length > 0) {
+      data.mealTimes.forEach(h => addMealRow(h));
+    } else {
+      addMealRow();
     }
   
     enteragramContainer.innerHTML = "";
@@ -3346,54 +3368,37 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// Helper to convert index numbers to ordinal strings (1 -> "1st", 2 -> "2nd", etc.)
-function getOrdinalSuffix(n) {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-function addMealTimeRow(data = {}) {
-  const container = document.getElementById("meal-times-rows");
-  if (!container) return;
+function addMealRow(data = {}) {
+  if (!mealContainer) return;
 
   const row = document.createElement("div");
-  row.className = "dynamic-row meal-time-row";
-  row.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 6px; width: 100%;";
-
-  const timeValue = data.time || "";
+  row.className = "dynamic-row meal-row";
+  row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
 
   row.innerHTML = `
-    <!-- Static Meal Label (Left Side) -->
-    <span class="meal-name-label" style="flex: 1; font-weight: bold; font-size: 0.9rem; color: #333; padding-left: 2px;"></span>
-
-    <!-- Time Input (Right Side) -->
-    <input type="time" class="meal-time-input" value="${timeValue}" style="width: 130px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; text-align: center; box-sizing: border-box; flex-shrink: 0;" />
-
-    <!-- Remove Button -->
-    <button type="button" class="remove-row-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 28px; height: 28px; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">X</button>
+    <span class="meal-name" style="flex: 2; margin: 0; font-weight: bold; font-size: 0.9rem;"></span>
+    <input type="time" class="meal-time" value="${data.time || ''}" style="width: 130px; margin: 0;" />
+    <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 8px; font-size: 0.8rem; margin: 0;">X</button>
   `;
 
-  // Attach delete logic and recalculate labels whenever a row is removed
   row.querySelector(".remove-row-btn").addEventListener("click", () => {
     row.remove();
-    updateMealNumberLabels();
+    updateMealNumbers();
   });
 
-  container.appendChild(row);
-  updateMealNumberLabels();
+  mealContainer.appendChild(row);
+  updateMealNumbers();
 }
-// Updates row labels so removing or adding rows re-sequences "1st meal", "2nd meal", etc.
-function updateMealNumberLabels() {
-  const rows = document.querySelectorAll("#meal-times-rows .meal-time-row");
+
+function updateMealNumbers() {
+  const rows = document.querySelectorAll("#meal-container .meal-row");
   rows.forEach((row, index) => {
-    const labelSpan = row.querySelector(".meal-name-label");
-    if (labelSpan) {
-      labelSpan.innerText = `Meal ${index + 1}`;
+    const span = row.querySelector(".meal-name");
+    if (span) {
+      span.innerText = `Meal ${index + 1}`;
     }
   });
 }
-
 
 
 
