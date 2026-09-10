@@ -83,6 +83,13 @@ const addBehaviorBtn = document.getElementById("add-behavior-btn");
 const addCromolynBtn = document.getElementById("add-cromolyn-btn");
 
 
+let loggedSoups = [];
+
+const saveSoupBtn = document.getElementById("save-soup-btn");
+const soupNameInput = document.getElementById("soup-name-input");
+const soupTimeInput = document.getElementById("soup-time-input");
+const savedSoupsList = document.getElementById("saved-soups-list");
+
 // Delete Entry Handler
 async function deleteLogRecord(docId) {
   const confirmed = confirm("Are you sure you want to delete this care record? This action cannot be undone.");
@@ -443,6 +450,9 @@ function resetForm() {
   
   document.getElementById("log-date").value = `${year}-${month}-${day}`;
   document.getElementById("log-time").value = now.toTimeString().slice(0, 5);
+
+  loggedSoups = [];
+  renderSavedSoups();
   
 
   bmContainer.innerHTML = "";
@@ -612,7 +622,7 @@ function getFormData() {
       carbDgts: { checked: document.getElementById("enzyme-carb-dgts")?.checked || false, notes: document.getElementById("enzyme-carb-dgts-notes")?.value || "" },
       chew: { checked: document.getElementById("enzyme-chew")?.checked || false, notes: document.getElementById("enzyme-chew-notes")?.value || "" }
     },
-    foods: foodData,
+    soups: loggedSoups,
     painLogs,
     moodLogs,
     behaviorLogs,
@@ -3349,7 +3359,91 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Render cards in the UI for each recorded soup
+function renderSavedSoups() {
+  savedSoupsList.innerHTML = "";
 
+  if (loggedSoups.length === 0) {
+    savedSoupsList.innerHTML = `<p style="font-size: 0.85rem; color: #888; margin: 0;">No soups recorded yet.</p>`;
+    return;
+  }
+
+  loggedSoups.forEach((soup, index) => {
+    const card = document.createElement("div");
+    card.style.cssText = "background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;";
+
+    const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
+    const ingredientSummary = soup.ingredients.map(i => `${i.name}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
+
+    card.innerHTML = `
+      <div style="flex: 1; padding-right: 8px;">
+        <p style="margin: 0; font-weight: bold; font-size: 0.9rem; color: #2c3e50;">
+          ${soup.name} <span style="font-weight: normal; color: #666; font-size: 0.8rem;">at ${formattedTime}</span>
+        </p>
+        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #555;">
+          <strong>Ingredients:</strong> ${ingredientSummary}
+        </p>
+      </div>
+      <button type="button" onclick="removeSoup(${index})" style="background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-weight: bold; font-size: 0.75rem;">X</button>
+    `;
+
+    savedSoupsList.appendChild(card);
+  });
+}
+
+// Clear grid inputs after a soup is saved
+function clearGridSelection() {
+  document.querySelectorAll("#foods-grid .food-row").forEach(row => {
+    const checkbox = row.querySelector("input[type='checkbox']");
+    const amountInput = row.querySelector("input[type='text']");
+    if (checkbox) checkbox.checked = false;
+    if (amountInput) amountInput.value = "";
+  });
+  soupNameInput.value = "";
+  soupTimeInput.value = "";
+}
+
+// Remove individual soup entry
+function removeSoup(index) {
+  loggedSoups.splice(index, 1);
+  renderSavedSoups();
+}
+
+saveSoupBtn.addEventListener("click", () => {
+  const selectedIngredients = [];
+
+  document.querySelectorAll("#foods-grid .food-row").forEach(row => {
+    const checkbox = row.querySelector("input[type='checkbox']");
+    const amountInput = row.querySelector("input[type='text']");
+    const isHighlighted = row.classList.contains("new-food-highlight");
+
+    if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== ""))) {
+      selectedIngredients.push({
+        name: checkbox.value,
+        checked: checkbox.checked,
+        amount: amountInput ? amountInput.value.trim() : "",
+        isHighlighted: isHighlighted
+      });
+    }
+  });
+
+  if (selectedIngredients.length === 0) {
+    alert("Please select at least one ingredient for the soup.");
+    return;
+  }
+
+  const soupName = soupNameInput.value.trim() || `Soup ${loggedSoups.length + 1}`;
+  const soupTime = soupTimeInput.value || document.getElementById("log-time")?.value || "";
+
+  loggedSoups.push({
+    name: soupName,
+    time: soupTime,
+    ingredients: selectedIngredients
+  });
+
+  renderSavedSoups();
+  clearGridSelection();
+});
 
 
 
