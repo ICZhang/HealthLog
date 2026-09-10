@@ -202,10 +202,24 @@
       <!-- Solid Foods & Enzymes -->
 <h3>Solid Foods & Enzymes</h3>
 <strong>Meal Times: </strong>
-<button type="button" id="add-meal-btn" onclick="addMealTimeRow()" style="background: #ffffff; color: #27ae60; border: 2px solid #27ae60; border-radius: 4px; padding: 4px 10px; font-weight: bold; font-size: 0.85rem; cursor: pointer;">
-  + Add meals
-</button>
-<div id="meal-times-container" style="margin-bottom: 16px;"></div>
+<div class="meal-section" style="margin-bottom: 16px;">
+  <!-- Section Title & Top Right Add Button -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+    <h3 style="margin: 0; font-size: 1.1rem; font-weight: bold;">Solid Foods & Meals</h3>
+    <button type="button" onclick="addMealTimeRow()" style="background: #3498db; color: white; border: none; border-radius: 4px; padding: 5px 12px; font-weight: bold; font-size: 0.85rem; cursor: pointer;">
+      + Add Meal Time
+    </button>
+  </div>
+
+  <!-- Column Headers (Aligned to match inputs below) -->
+  <div style="display: flex; gap: 8px; margin-bottom: 4px; padding-right: 36px;">
+    <span style="flex: 1; font-weight: bold; font-size: 0.85rem; color: #333;">Meal Name</span>
+    <span style="width: 130px; font-weight: bold; font-size: 0.85rem; color: #333; text-align: center;">Time</span>
+  </div>
+
+  <!-- Dynamic Meal Rows Container -->
+  <div id="meal-times-rows"></div>
+</div>>
 
 <strong>Enzymes:</strong>
 <div style="margin-top: 8px; margin-bottom: 15px;">

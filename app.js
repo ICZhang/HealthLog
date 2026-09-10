@@ -3353,22 +3353,21 @@ function getOrdinalSuffix(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-// Function to dynamically add a new Meal Time row
 function addMealTimeRow(data = {}) {
-  const container = document.getElementById("meal-times-container");
+  const container = document.getElementById("meal-times-rows");
   if (!container) return;
 
   const row = document.createElement("div");
   row.className = "dynamic-row meal-time-row";
-  row.style.cssText = "display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; width: 100%;";
+  row.style.cssText = "display: flex; align-items: center; gap: 8px; margin-bottom: 6px; width: 100%;";
 
   const timeValue = data.time || "";
 
   row.innerHTML = `
-    <!-- Ordinal Label (Calculated dynamically) -->
-    <span class="meal-ordinal-label" style="font-weight: bold; font-size: 0.9rem; flex: 1; color: #333;"></span>
+    <!-- Static Meal Label (Left Side) -->
+    <span class="meal-name-label" style="flex: 1; font-weight: bold; font-size: 0.9rem; color: #333; padding-left: 2px;"></span>
 
-    <!-- Time Input -->
+    <!-- Time Input (Right Side) -->
     <input type="time" class="meal-time-input" value="${timeValue}" style="width: 130px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; text-align: center; box-sizing: border-box; flex-shrink: 0;" />
 
     <!-- Remove Button -->
@@ -3378,20 +3377,19 @@ function addMealTimeRow(data = {}) {
   // Attach delete logic and recalculate labels whenever a row is removed
   row.querySelector(".remove-row-btn").addEventListener("click", () => {
     row.remove();
-    updateMealOrdinalLabels();
+    updateMealNumberLabels();
   });
 
   container.appendChild(row);
-  updateMealOrdinalLabels();
+  updateMealNumberLabels();
 }
-
 // Updates row labels so removing or adding rows re-sequences "1st meal", "2nd meal", etc.
-function updateMealOrdinalLabels() {
-  const rows = document.querySelectorAll("#meal-times-container .meal-time-row");
+function updateMealNumberLabels() {
+  const rows = document.querySelectorAll("#meal-times-rows .meal-time-row");
   rows.forEach((row, index) => {
-    const labelSpan = row.querySelector(".meal-ordinal-label");
+    const labelSpan = row.querySelector(".meal-name-label");
     if (labelSpan) {
-      labelSpan.innerText = `${getOrdinalSuffix(index + 1)} meal`;
+      labelSpan.innerText = `Meal ${index + 1}`;
     }
   });
 }
