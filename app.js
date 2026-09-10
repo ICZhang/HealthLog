@@ -477,7 +477,13 @@ function resetForm() {
   addMealRow();
 }
 
-cancelEditBtn.addEventListener("click", resetForm);
+cancelEditBtn.addEventListener("click", () => {
+  const isConfirmed = confirm("Are you sure you want to cancel editing? Any unsaved changes will be lost.");
+  
+  if (isConfirmed) {
+    resetForm();
+  }
+});
 
 // --- EXTRACT FORM DATA ---
 function getFormData() {
