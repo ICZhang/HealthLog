@@ -357,16 +357,12 @@ function addBmRow(data = {}) {
       <input type="time" class="bm-time" value="${data.time || ''}" style="flex: 1;" />
       <select class="bm-type" style="flex: 2;">
         <option value="">-- Type (1-7) --</option>
-        <option value="No BM" ${data.type === 'No BM' ? 'selected' : ''}>No BM</option>
         ${[1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${data.type == n ? 'selected' : ''}>Type ${n}</option>`).join('')}
       </select>
     </div>
     <div style="display: flex; gap: 12px; align-items: center;">
       <span style="font-size: 0.85rem; font-weight: bold;">Amount:</span>
       <div style="display: flex; gap: 12px; align-items: center;">
-        <label style="display: flex; flex-direction: column; align-items: center; margin: 0; cursor: pointer; font-size: 0.85rem;">
-          <input type="radio" name="${groupName}" value="None" ${data.amount === 'None' ? 'checked' : ''} style="margin: 0 0 2px 0;"> None
-        </label>
         <label style="display: flex; flex-direction: column; align-items: center; margin: 0; cursor: pointer; font-size: 0.85rem;">
           <input type="radio" name="${groupName}" value="S" ${data.amount === 'S' ? 'checked' : ''} style="margin: 0 0 2px 0;"> S
         </label>
@@ -1432,21 +1428,50 @@ async function renderAnalyticsChart() {
     if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
 
     const typeCounts = {};
+
+    // 1. Map existing BM entries by their log date
+    const loggedDatesWithBM = new Set();
+    
     records.forEach(item => {
       const logData = item.data || item;
       if (!logData.date) return;
       if (startDate && logData.date < startDate) return;
       if (endDate && logData.date > endDate) return;
 
-      (logData.bowelMovements || []).forEach(bm => {
-        if (!bm.type) return;
-        // Keep "No BM" clean without adding "Type " in front of it
-        const label = bm.type === "No BM" ? "No BM" : `Type ${bm.type}`;
-        typeCounts[label] = (typeCounts[label] || 0) + 1;
-      });
+      if (logData.bowelMovements && logData.bowelMovements.length > 0) {
+        logData.bowelMovements.forEach(bm => {
+          if (!bm.type) return;
+          const label = `Type ${bm.type}`;
+          typeCounts[label] = (typeCounts[label] || 0) + 1;
+          loggedDatesWithBM.add(logData.date);
+        });
+      }
     });
 
-    // Custom sorting: Put "No BM" first, then sort Types 1 through 7 numerically
+    // 2. Count days in the range that have no BM records
+    if (startDate && endDate) {
+      let current = new Date(startDate + "T00:00:00");
+      const last = new Date(endDate + "T00:00:00");
+      let noBmCount = 0;
+
+      while (current <= last) {
+        const yyyy = current.getFullYear();
+        const mm = String(current.getMonth() + 1).padStart(2, "0");
+        const dd = String(current.getDate()).padStart(2, "0");
+        const dateKey = `${yyyy}-${mm}-${dd}`;
+
+        if (!loggedDatesWithBM.has(dateKey)) {
+          noBmCount++;
+        }
+        current.setDate(current.getDate() + 1);
+      }
+
+      if (noBmCount > 0) {
+        typeCounts["No BM"] = noBmCount;
+      }
+    }
+
+    // 3. Sort keys with "No BM" first, followed by Types 1-7
     const sortedKeys = Object.keys(typeCounts).sort((a, b) => {
       if (a === "No BM") return -1;
       if (b === "No BM") return 1;
@@ -1458,7 +1483,7 @@ async function renderAnalyticsChart() {
     const labels = sortedKeys.length ? sortedKeys : ["No Logged Types"];
     const data = sortedKeys.length ? sortedKeys.map(k => typeCounts[k]) : [0];
     
-    // Look up color by key directly ("No BM" or the numeric Type)
+    // 4. Assign specific colors (pulling "No BM" directly from BM_TYPE_COLORS)
     const barColors = sortedKeys.length 
       ? sortedKeys.map(k => {
           const key = k === "No BM" ? "No BM" : parseInt(k.replace("Type ", ""), 10);
