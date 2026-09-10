@@ -1032,6 +1032,13 @@ function showViewModal(data) {
         : '<li>None recorded</li>'}
     </ul>
 
+    <p><strong>Meal Times:</strong></p>
+    <ul>
+      ${data.mealTimes?.length 
+        ? data.mealTimes.map((m, idx) => `<li>${m.name || `Meal ${idx + 1}`}: at ${formatTo12Hour(m.time)}</li>`).join('') 
+        : '<li>None recorded</li>'}
+    </ul>
+
     <p><strong>Foods:</strong></p>
     <ul>
       ${data.foods?.length 
