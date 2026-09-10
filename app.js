@@ -1428,27 +1428,25 @@ async function renderAnalyticsChart() {
     if (chartTitle) chartTitle.innerText = "Bowel Movements by Type";
 
     const typeCounts = {};
-
-    // 1. Map existing BM entries by their log date
     const loggedDatesWithBM = new Set();
-    
+
     records.forEach(item => {
       const logData = item.data || item;
       if (!logData.date) return;
       if (startDate && logData.date < startDate) return;
       if (endDate && logData.date > endDate) return;
 
-      if (logData.bowelMovements && logData.bowelMovements.length > 0) {
-        logData.bowelMovements.forEach(bm => {
-          if (!bm.type) return;
-          const label = `Type ${bm.type}`;
-          typeCounts[label] = (typeCounts[label] || 0) + 1;
-          loggedDatesWithBM.add(logData.date);
-        });
-      }
+      (logData.bowelMovements || []).forEach(bm => {
+        // Skip empty entries or old explicit "No BM" saved types
+        if (!bm.type || bm.type === "No BM") return;
+
+        const label = `Type ${bm.type}`;
+        typeCounts[label] = (typeCounts[label] || 0) + 1;
+        loggedDatesWithBM.add(logData.date);
+      });
     });
 
-    // 2. Count days in the range that have no BM records
+    // Auto-calculate "No BM" for days with no logged bowel movements
     if (startDate && endDate) {
       let current = new Date(startDate + "T00:00:00");
       const last = new Date(endDate + "T00:00:00");
@@ -1471,7 +1469,7 @@ async function renderAnalyticsChart() {
       }
     }
 
-    // 3. Sort keys with "No BM" first, followed by Types 1-7
+    // Sort: "No BM" first, then Types 1 to 7 numerically
     const sortedKeys = Object.keys(typeCounts).sort((a, b) => {
       if (a === "No BM") return -1;
       if (b === "No BM") return 1;
@@ -1483,11 +1481,12 @@ async function renderAnalyticsChart() {
     const labels = sortedKeys.length ? sortedKeys : ["No Logged Types"];
     const data = sortedKeys.length ? sortedKeys.map(k => typeCounts[k]) : [0];
     
-    // 4. Assign specific colors (pulling "No BM" directly from BM_TYPE_COLORS)
+    // Look up color: use black/grey for "No BM", or BM_TYPE_COLORS for numbers
     const barColors = sortedKeys.length 
       ? sortedKeys.map(k => {
-          const key = k === "No BM" ? "No BM" : parseInt(k.replace("Type ", ""), 10);
-          return BM_TYPE_COLORS[key] || "#8e44ad";
+          if (k === "No BM") return BM_TYPE_COLORS["No BM"] || "#000000";
+          const typeNum = parseInt(k.replace("Type ", ""), 10);
+          return BM_TYPE_COLORS[typeNum] || "#8e44ad";
         })
       : ["#bdc3c7"];
 
@@ -1855,7 +1854,7 @@ function renderBMCalendar(startDate, endDate, records) {
   const activeYear = parseInt(activeYearStr, 10);
   const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
 
-  // Render Month Navigation Buttons for BM
+  // Render Month Navigation Buttons
   if (navContainer) {
     navContainer.innerHTML = "";
     if (monthsInRange.length > 1) {
@@ -1874,7 +1873,7 @@ function renderBMCalendar(startDate, endDate, records) {
         btn.style.cursor = "pointer";
 
         if (mKey === window.activeCalendarMonth) {
-          btn.style.backgroundColor = "#8e44ad"; // BM theme color
+          btn.style.backgroundColor = "#8e44ad";
           btn.style.color = "#ffffff";
           btn.style.fontWeight = "bold";
         } else {
@@ -1906,14 +1905,15 @@ function renderBMCalendar(startDate, endDate, records) {
     if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
 
     (logData.bowelMovements || []).forEach(bm => {
-      if (!bm.type) return;
+      // Filter out empty types or "No BM" so they don't make blank badges on the calendar
+      if (!bm.type || bm.type === "No BM") return;
 
       if (!bmMap[logDate]) bmMap[logDate] = [];
       bmMap[logDate].push({
-          time: formatTo12Hour(bm.time),
+          time: bm.time ? formatTo12Hour(bm.time) : "",
           type: bm.type,
           amount: bm.amount || bm.size || "", 
-          color: bm.color || ""             
+          color: bm.color || ""            
       });
     });
   });
@@ -1946,7 +1946,6 @@ function renderBMCalendar(startDate, endDate, records) {
     cell.style.padding = "4px 2px";
     cell.style.minHeight = "55px";
     cell.style.backgroundColor = "#ffffff";
-    // Added explicit centering to match Pain Calendar cells
     cell.style.display = "flex";
     cell.style.flexDirection = "column";
     cell.style.alignItems = "center";
@@ -1963,12 +1962,12 @@ function renderBMCalendar(startDate, endDate, records) {
     container.style.flexDirection = "column";
     container.style.gap = "2px";
     container.style.width = "100%";
-    // Added explicit alignment so child badges don't stretch edge-to-edge
     container.style.alignItems = "center";
 
     entries.forEach(entry => {
       const badge = document.createElement("span");
-      const typeColor = BM_TYPE_COLORS[entry.type] || "#8e44ad";
+      const typeNum = parseInt(entry.type, 10);
+      const typeColor = BM_TYPE_COLORS[typeNum] || "#8e44ad";
       
       badge.style.backgroundColor = typeColor;
       badge.style.color = typeColor === "#f1c40f" ? "#333" : "#fff";
@@ -1976,12 +1975,14 @@ function renderBMCalendar(startDate, endDate, records) {
       badge.style.padding = "1px 3px";
       badge.style.fontSize = "0.65rem";
       badge.style.fontWeight = "600";
-      badge.style.whiteSpace = "nowrap"; // Prevents layout wrapping
+      badge.style.whiteSpace = "nowrap";
       badge.style.cursor = "pointer";
-      badge.innerText = entry.time;
+      
+      // If time is provided, display time; otherwise display "Type X"
+      badge.innerText = entry.time ? entry.time : `Type ${entry.type}`;
     
-      // Construct dynamic hover tooltip
-      let tooltipText = `Type: ${entry.type} at ${entry.time}`;
+      // Construct hover tooltip
+      let tooltipText = `Type: ${entry.type}${entry.time ? ` at ${entry.time}` : ''}`;
       if (entry.amount) tooltipText += `\nAmount: ${entry.amount.toUpperCase()}`;
       if (entry.color) tooltipText += `\nColor: ${entry.color}`;
     
