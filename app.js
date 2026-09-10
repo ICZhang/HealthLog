@@ -1440,19 +1440,30 @@ async function renderAnalyticsChart() {
 
       (logData.bowelMovements || []).forEach(bm => {
         if (!bm.type) return;
-        const label = `Type ${bm.type}`;
+        // Keep "No BM" clean without adding "Type " in front of it
+        const label = bm.type === "No BM" ? "No BM" : `Type ${bm.type}`;
         typeCounts[label] = (typeCounts[label] || 0) + 1;
       });
     });
 
+    // Custom sorting: Put "No BM" first, then sort Types 1 through 7 numerically
     const sortedKeys = Object.keys(typeCounts).sort((a, b) => {
-      return parseInt(a.replace("Type ", ""), 10) - parseInt(b.replace("Type ", ""), 10);
+      if (a === "No BM") return -1;
+      if (b === "No BM") return 1;
+      const numA = parseInt(a.replace("Type ", ""), 10);
+      const numB = parseInt(b.replace("Type ", ""), 10);
+      return numA - numB;
     });
 
     const labels = sortedKeys.length ? sortedKeys : ["No Logged Types"];
     const data = sortedKeys.length ? sortedKeys.map(k => typeCounts[k]) : [0];
+    
+    // Look up color by key directly ("No BM" or the numeric Type)
     const barColors = sortedKeys.length 
-      ? sortedKeys.map(k => BM_TYPE_COLORS[parseInt(k.replace("Type ", ""), 10)] || "#8e44ad")
+      ? sortedKeys.map(k => {
+          const key = k === "No BM" ? "No BM" : parseInt(k.replace("Type ", ""), 10);
+          return BM_TYPE_COLORS[key] || "#8e44ad";
+        })
       : ["#bdc3c7"];
 
     drawChart(canvas, labels, data, barColors, "Days");
