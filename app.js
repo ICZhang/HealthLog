@@ -3006,36 +3006,46 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     const logData = item.data || item;
     const logDate = logData.date;
     if (!logDate) return;
-  
-    const foods = logData.foods || logData.foodData || [];
-    const foodList = Array.isArray(foods) ? foods : [foods];
-  
-    foodList.forEach(f => {
+
+    // Flatten ingredients from new 'soups' format OR fallback 'foods' format
+    const ingredientsToProcess = [];
+
+    if (Array.isArray(logData.soups) && logData.soups.length > 0) {
+      logData.soups.forEach(soup => {
+        if (Array.isArray(soup.ingredients)) {
+          ingredientsToProcess.push(...soup.ingredients);
+        }
+      });
+    } else if (Array.isArray(logData.foods)) {
+      ingredientsToProcess.push(...logData.foods);
+    } else if (logData.foodData) {
+      const foods = Array.isArray(logData.foodData) ? logData.foodData : [logData.foodData];
+      ingredientsToProcess.push(...foods);
+    }
+
+    ingredientsToProcess.forEach(f => {
       if (!f) return;
-  
+
       let foodName = "";
       let isHighlighted = false;
-  
+
       if (typeof f === "object") {
         foodName = f.name || f.food || f.label || "";
-        isHighlighted = f.isHighlighted === true;
+        isHighlighted = f.isHighlighted === true || f.isNew === true;
       } else {
         foodName = String(f);
       }
-  
-      foodName = foodName.trim();
+
+      // Clean underscore formatted names (e.g., "Romaine_Lettuce" -> "Romaine Lettuce")
+      foodName = foodName.replace(/_/g, " ").trim();
       if (!foodName) return;
-  
-      // Cross-reference with localStorage customFoods as a fallback
-      const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
-      const matchingCustom = customFoods.find(cf => cf.name.toLowerCase() === foodName.toLowerCase());
-      const isNew = isHighlighted || (matchingCustom && matchingCustom.isHighlighted === true);
-  
-      // Only place on the calendar if the food is flagged as a new introduction
+
+      const lowerName = foodName.toLowerCase();
+      const isNew = isHighlighted || highlightedNames.has(lowerName);
+
+      // Store ONLY the earliest date this highlighted food was logged
       if (isNew) {
         const formattedName = foodName.charAt(0).toUpperCase() + foodName.slice(1);
-        
-        // Store ONLY the earliest date this highlighted food was logged
         if (!firstFoodDates[formattedName]) {
           firstFoodDates[formattedName] = logDate;
         }
@@ -3192,12 +3202,8 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     grid.appendChild(cell);
   }
 
-  // ==========================================
-  // RENDER SUMMARY LIST UNDERNEATH CALENDAR
-  // ==========================================
+  // Summary List Underneath Calendar
   let listContainer = document.getElementById("calendar-food-list");
-  
-  // If the container doesn't exist in HTML, create and insert it right after calendar-grid
   if (!listContainer && grid.parentNode) {
     listContainer = document.createElement("div");
     listContainer.id = "calendar-food-list";
@@ -3209,7 +3215,6 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     listContainer.style.marginTop = "20px";
     listContainer.style.width = "100%";
 
-    // Gather all foods introduced across ALL months, sorted chronologically (newest first)
     const sortedIntroductions = Object.entries(firstFoodDates).sort((a, b) => b[1].localeCompare(a[1]));
 
     if (sortedIntroductions.length === 0) {
