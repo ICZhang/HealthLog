@@ -1024,11 +1024,20 @@ function showViewModal(data) {
         : '<li>None recorded</li>'}
     </ul>
 
-    <p><strong>Foods:</strong></p>
+    <p><strong>Soups & Meals:</strong></p>
     <ul>
-      ${data.foods?.length 
-        ? data.foods.map(f => `<li>${f.name}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('') 
-        : '<li>None recorded</li>'}
+      ${data.soups?.length 
+        ? data.soups.map(s => {
+            const timeStr = s.time ? ` at ${formatTo12Hour(s.time)}` : '';
+            const ingredientsStr = s.ingredients?.length 
+              ? s.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ''}`).join(', ')
+              : 'No ingredients listed';
+            return `<li><strong>${s.name}</strong>${timeStr}: ${ingredientsStr}</li>`;
+          }).join('') 
+        : (data.foods?.length 
+            ? data.foods.map(f => `<li>${f.name.replace(/_/g, " ")}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('')
+            : '<li>None recorded</li>')
+      }
     </ul>
 
     <p><strong>Pain Logs:</strong></p>
@@ -3370,21 +3379,21 @@ function renderSavedSoups() {
 
   loggedSoups.forEach((soup, index) => {
     const card = document.createElement("div");
-    card.style.cssText = "background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;";
+    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px 36px 10px 12px;";
 
     const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
-    const ingredientSummary = soup.ingredients.map(i => `${i.name}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
+    const ingredientSummary = soup.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
 
     card.innerHTML = `
-      <div style="flex: 1; padding-right: 8px;">
+      <div>
         <p style="margin: 0; font-weight: bold; font-size: 0.9rem; color: #2c3e50;">
           ${soup.name} <span style="font-weight: normal; color: #666; font-size: 0.8rem;">at ${formattedTime}</span>
         </p>
-        <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #555;">
+        <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #555; word-break: break-word;">
           <strong>Ingredients:</strong> ${ingredientSummary}
         </p>
       </div>
-      <button type="button" onclick="removeSoup(${index})" style="background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-weight: bold; font-size: 0.75rem;">X</button>
+      <button type="button" onclick="removeSoup(${index})" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
     `;
 
     savedSoupsList.appendChild(card);
