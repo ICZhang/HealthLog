@@ -2016,28 +2016,21 @@ document.getElementById("add-custom-food-btn")?.addEventListener("click", () => 
   
     if (!foodName) return;
   
-    const today = document.getElementById("log-date")?.value || new Date().toISOString().split("T")[0];
+    // Save food with isHighlighted default set to true
     const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
-
     if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
-      customFoods.push({ 
-        name: foodName, 
-        unit: unit, 
-        isHighlighted: true, 
-        introDate: today 
-      });
+      customFoods.push({ name: foodName, unit: unit, isHighlighted: true });
       localStorage.setItem("customFoods", JSON.stringify(customFoods));
     }
   
+    // Create row with highlight enabled
     const foodsContainer = document.getElementById("foods-grid");
     const newRow = createFoodRowElement(foodName, unit, "", false, true);
     foodsContainer.appendChild(newRow);
   
+    // Clear inputs
     nameInput.value = "";
     if (unitInput) unitInput.value = "";
-
-    // Refresh calendar view
-    if (typeof renderAnalyticsChart === "function") renderAnalyticsChart();
 });
   
 
@@ -2642,6 +2635,7 @@ function renderBehaviorCalendar(startDate, endDate, records, colorMap = {}) {
     grid.appendChild(cell);
   }
 }
+
 
 function renderSummaryCalendar(startDate, endDate, records) {
   const grid = document.getElementById("calendar-grid");
