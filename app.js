@@ -69,7 +69,6 @@ const painContainer = document.getElementById("pain-container");
 const moodContainer = document.getElementById("mood-container");
 const behaviorContainer = document.getElementById("behavior-container");
 const cromolynContainer = document.getElementById("cromolyn-container");
-const mealContainer = document.getElementById("meal-container");
 
 // Add Row Buttons
 const addBmBtn = document.getElementById("add-bm-btn");
@@ -82,7 +81,6 @@ const addPainBtn = document.getElementById("add-pain-btn");
 const addMoodBtn = document.getElementById("add-mood-btn");
 const addBehaviorBtn = document.getElementById("add-behavior-btn");
 const addCromolynBtn = document.getElementById("add-cromolyn-btn");
-const addMealBtn = document.getElementById("add-meal-btn");
 
 
 // Delete Entry Handler
@@ -431,7 +429,6 @@ addPainBtn?.addEventListener("click", () => addPainRow());
 addMoodBtn?.addEventListener("click", () => addMoodRow());
 addBehaviorBtn?.addEventListener("click", () => addBehaviorRow());
 addCromolynBtn?.addEventListener("click", () => addCromolynRow());
-addMealBtn?.addEventListener("click", () => addMealRow());
 
 function resetForm() {
   logForm.reset();
@@ -474,7 +471,6 @@ function resetForm() {
   addMoodRow();
   addBehaviorRow();
   addCromolynRow();
-  addMealRow();
 }
 
 cancelEditBtn.addEventListener("click", () => {
@@ -524,18 +520,6 @@ function getFormData() {
       formulaEntries.push({
         amount: amountInput ? Number(amountInput.value) : 12,
         time: timeInput ? timeInput.value : ""
-      });
-    }
-  });
-
-  const mealTimes = [];
-  document.querySelectorAll("#meal-container .meal-row").forEach((row, index) => {
-    const timeInput = row.querySelector(".meal-time");
-    const time = timeInput ? timeInput.value : "";
-    if (time) {
-      mealTimes.push({
-        name: `Meal ${index + 1}`,
-        time: time
       });
     }
   });
@@ -621,7 +605,6 @@ function getFormData() {
     herbalMeds,
     enteragramDoses,
     formulaHydration: formulaEntries,
-    mealTimes,
     warmWater: waterData,
     activities: getValues(".activity-row"),
     enzymes: {
@@ -706,13 +689,6 @@ function populateFormForEdit(id, data) {
       data.herbalMeds.forEach(h => addHerbalRow(h));
     } else {
       addHerbalRow();
-    }
-
-    mealContainer.innerHTML = "";
-    if (Array.isArray(data.mealTimes) && data.mealTimes.length > 0) {
-      data.mealTimes.forEach(h => addMealRow(h));
-    } else {
-      addMealRow();
     }
   
     enteragramContainer.innerHTML = "";
@@ -1035,13 +1011,6 @@ function showViewModal(data) {
     <ul>
       ${data.activities?.length 
         ? data.activities.map(a => `<li>${typeof a === 'object' ? `${a.name || 'Activity'}: at ${formatTo12Hour(a.time)}` : a}</li>`).join('') 
-        : '<li>None recorded</li>'}
-    </ul>
-
-    <p><strong>Meal Times:</strong></p>
-    <ul>
-      ${data.mealTimes?.length 
-        ? data.mealTimes.map((m, idx) => `<li>${m.name || `Meal ${idx + 1}`}: at ${formatTo12Hour(m.time)}</li>`).join('') 
         : '<li>None recorded</li>'}
     </ul>
 
@@ -3381,37 +3350,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-function addMealRow(data = {}) {
-  if (!mealContainer) return;
 
-  const row = document.createElement("div");
-  row.className = "dynamic-row meal-row";
-  row.style.cssText = "display: flex; gap: 8px; margin-bottom: 6px; align-items: center;";
-
-  row.innerHTML = `
-    <span class="meal-name" style="flex: 2; margin: 0; font-weight: bold; font-size: 0.9rem;"></span>
-    <input type="time" class="meal-time" value="${data.time || ''}" style="width: 130px; margin: 0;" />
-    <button type="button" class="remove-row-btn" style="background: #e74c3c; width: auto; padding: 4px 8px; font-size: 0.8rem; margin: 0;">X</button>
-  `;
-
-  row.querySelector(".remove-row-btn").addEventListener("click", () => {
-    row.remove();
-    updateMealNumbers();
-  });
-
-  mealContainer.appendChild(row);
-  updateMealNumbers();
-}
-
-function updateMealNumbers() {
-  const rows = document.querySelectorAll("#meal-container .meal-row");
-  rows.forEach((row, index) => {
-    const span = row.querySelector(".meal-name");
-    if (span) {
-      span.innerText = `Meal ${index + 1}`;
-    }
-  });
-}
 
 
 

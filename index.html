@@ -141,7 +141,7 @@
         <div class="form-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <h3 style="margin: 0;">Formula</h3>
-            <button type="button" id="add-formula-btn" class="add-btn" style="padding: 6px 12px; font-size: 0.85rem; width: auto;">+ Add Formula</button>
+            <button type="button" id="add-formula-btn" class="add-btn" style="padding: 6px 12px; font-size: 0.8rem; width: auto;">+ Add Formula</button>
             </div>
         
             <!-- Header Labels -->
@@ -370,6 +370,23 @@
         <button type="button" id="remove-selected-food-btn" style="flex: 1; height: 36px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem;">Remove Selected</button>
     </div>
     <h4 style="font-weight: normal;">Original foods are permanent. Custom highlights and removals only apply to foods you've added.</h4>
+
+    <!-- Soup Saver Action Bar -->
+  <div style="background-color: #f0f4f8; border: 1px solid #d0dbe5; padding: 12px; border-radius: 6px; margin-top: 12px;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+        <input type="text" id="soup-name-input" placeholder="Soup Name (e.g., Lunch Soup)" style="flex: 2; min-width: 140px; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px;" />
+        <input type="time" id="soup-time-input" style="flex: 1; min-width: 100px; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px;" />
+    </div>
+    <button type="button" id="save-soup-btn" style="width: 100%; height: 38px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem;">+ Save Soup Entry</button>
+  </div>
+
+  <!-- Logged Soups Container -->
+  <div style="margin-top: 16px;">
+    <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">Recorded Soups Today:</p>
+    <div id="saved-soups-list" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Dynamically populated soup cards will render here -->
+    </div>
+  </div>
 
     <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
 
