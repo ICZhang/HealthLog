@@ -1833,7 +1833,6 @@ function renderBMCalendar(startDate, endDate, records) {
 
   if (!startDate || !endDate) return;
 
-  // Extract all "YYYY-MM" months in range
   const monthsInRange = [];
   let curr = new Date(startDate + "T00:00:00");
   const last = new Date(endDate + "T00:00:00");
@@ -1854,7 +1853,6 @@ function renderBMCalendar(startDate, endDate, records) {
   const activeYear = parseInt(activeYearStr, 10);
   const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
 
-  // Render Month Navigation Buttons
   if (navContainer) {
     navContainer.innerHTML = "";
     if (monthsInRange.length > 1) {
@@ -1866,20 +1864,7 @@ function renderBMCalendar(startDate, endDate, records) {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.innerText = btnLabel;
-        btn.style.padding = "4px 10px";
-        btn.style.fontSize = "0.8rem";
-        btn.style.borderRadius = "4px";
-        btn.style.border = "1px solid #ccc";
-        btn.style.cursor = "pointer";
-
-        if (mKey === window.activeCalendarMonth) {
-          btn.style.backgroundColor = "#8e44ad";
-          btn.style.color = "#ffffff";
-          btn.style.fontWeight = "bold";
-        } else {
-          btn.style.backgroundColor = "#ffffff";
-          btn.style.color = "#333333";
-        }
+        btn.style.cssText = `padding: 4px 10px; font-size: 0.8rem; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; background-color: ${mKey === window.activeCalendarMonth ? '#8e44ad' : '#ffffff'}; color: ${mKey === window.activeCalendarMonth ? '#ffffff' : '#333333'}; font-weight: ${mKey === window.activeCalendarMonth ? 'bold' : 'normal'};`;
 
         btn.addEventListener("click", () => {
           window.activeCalendarMonth = mKey;
@@ -1891,13 +1876,12 @@ function renderBMCalendar(startDate, endDate, records) {
     }
   }
 
-  // Update Header Title
   if (titleHeader) {
     const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
     titleHeader.innerText = `${monthName} ${activeYear} BM Calendar`;
   }
 
-  // Map BM records for active month
+  // Map valid BM records for active month
   const bmMap = {};
   records.forEach(item => {
     const logData = item.data || item;
@@ -1905,7 +1889,6 @@ function renderBMCalendar(startDate, endDate, records) {
     if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
 
     (logData.bowelMovements || []).forEach(bm => {
-      // Filter out empty types or "No BM" so they don't make blank badges on the calendar
       if (!bm.type || bm.type === "No BM") return;
 
       if (!bmMap[logDate]) bmMap[logDate] = [];
@@ -1918,7 +1901,6 @@ function renderBMCalendar(startDate, endDate, records) {
     });
   });
 
-  // Render Day Headers & Days Grid
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   dayNames.forEach(day => {
     const header = document.createElement("div");
@@ -1941,54 +1923,46 @@ function renderBMCalendar(startDate, endDate, records) {
     const entries = bmMap[fullDateKey] || [];
 
     const cell = document.createElement("div");
-    cell.style.border = "1px solid #e0e0e0";
-    cell.style.borderRadius = "4px";
-    cell.style.padding = "4px 2px";
-    cell.style.minHeight = "55px";
-    cell.style.backgroundColor = "#ffffff";
-    cell.style.display = "flex";
-    cell.style.flexDirection = "column";
-    cell.style.alignItems = "center";
+    cell.style.cssText = "border: 1px solid #e0e0e0; border-radius: 4px; padding: 4px 2px; min-height: 55px; background-color: #ffffff; display: flex; flex-direction: column; align-items: center;";
 
     const numSpan = document.createElement("span");
-    numSpan.style.fontWeight = "bold";
-    numSpan.style.fontSize = "0.8rem";
-    numSpan.style.marginBottom = "3px";
+    numSpan.style.cssText = "font-weight: bold; font-size: 0.8rem; margin-bottom: 3px;";
     numSpan.innerText = d;
     cell.appendChild(numSpan);
 
     const container = document.createElement("div");
-    container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.gap = "2px";
-    container.style.width = "100%";
-    container.style.alignItems = "center";
+    container.style.cssText = "display: flex; flex-direction: column; gap: 2px; width: 100%; align-items: center;";
 
-    entries.forEach(entry => {
-      const badge = document.createElement("span");
-      const typeNum = parseInt(entry.type, 10);
-      const typeColor = BM_TYPE_COLORS[typeNum] || "#8e44ad";
+    // IF NO ENTRIES: Render a "No BM" badge
+    if (entries.length === 0) {
+      const noBmBadge = document.createElement("span");
+      const noBmColor = BM_TYPE_COLORS["No BM"] || "#7f8c8d";
       
-      badge.style.backgroundColor = typeColor;
-      badge.style.color = typeColor === "#f1c40f" ? "#333" : "#fff";
-      badge.style.borderRadius = "3px";
-      badge.style.padding = "1px 3px";
-      badge.style.fontSize = "0.65rem";
-      badge.style.fontWeight = "600";
-      badge.style.whiteSpace = "nowrap";
-      badge.style.cursor = "pointer";
+      noBmBadge.style.cssText = `background-color: ${noBmColor}; color: #fff; border-radius: 3px; padding: 1px 3px; font-size: 0.65rem; font-weight: 600; white-space: nowrap;`;
+      noBmBadge.innerText = "No BM";
+      noBmBadge.title = "No Bowel Movements recorded for this day";
+      container.appendChild(noBmBadge);
+    } else {
+      // IF ENTRIES EXIST: Render standard type badges
+      entries.forEach(entry => {
+        const badge = document.createElement("span");
+        const typeNum = parseInt(entry.type, 10);
+        const typeColor = BM_TYPE_COLORS[typeNum] || "#8e44ad";
+        
+        badge.style.cssText = `background-color: ${typeColor}; color: ${typeColor === "#f1c40f" ? "#333" : "#fff"}; border-radius: 3px; padding: 1px 3px; font-size: 0.65rem; font-weight: 600; white-space: nowrap; cursor: pointer;`;
+        
+        // Displays "Type X" by default, or "Type X (Time)" if time is logged
+        badge.innerText = `Type ${entry.type}`;
       
-      // If time is provided, display time; otherwise display "Type X"
-      badge.innerText = entry.time ? entry.time : `Type ${entry.type}`;
-    
-      // Construct hover tooltip
-      let tooltipText = `Type: ${entry.type}${entry.time ? ` at ${entry.time}` : ''}`;
-      if (entry.amount) tooltipText += `\nAmount: ${entry.amount.toUpperCase()}`;
-      if (entry.color) tooltipText += `\nColor: ${entry.color}`;
-    
-      badge.title = tooltipText;
-      container.appendChild(badge);
-    });
+        // Hover tooltip shows full details
+        let tooltipText = `Type: ${entry.type}${entry.time ? ` at ${entry.time}` : ''}`;
+        if (entry.amount) tooltipText += `\nAmount: ${entry.amount.toUpperCase()}`;
+        if (entry.color) tooltipText += `\nColor: ${entry.color}`;
+      
+        badge.title = tooltipText;
+        container.appendChild(badge);
+      });
+    }
 
     cell.appendChild(container);
     grid.appendChild(cell);
