@@ -2016,21 +2016,28 @@ document.getElementById("add-custom-food-btn")?.addEventListener("click", () => 
   
     if (!foodName) return;
   
-    // Save food with isHighlighted default set to true
+    const today = document.getElementById("log-date")?.value || new Date().toISOString().split("T")[0];
     const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+
     if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
-      customFoods.push({ name: foodName, unit: unit, isHighlighted: true });
+      customFoods.push({ 
+        name: foodName, 
+        unit: unit, 
+        isHighlighted: true, 
+        introDate: today 
+      });
       localStorage.setItem("customFoods", JSON.stringify(customFoods));
     }
   
-    // Create row with highlight enabled
     const foodsContainer = document.getElementById("foods-grid");
     const newRow = createFoodRowElement(foodName, unit, "", false, true);
     foodsContainer.appendChild(newRow);
   
-    // Clear inputs
     nameInput.value = "";
     if (unitInput) unitInput.value = "";
+
+    // Refresh calendar view
+    if (typeof renderAnalyticsChart === "function") renderAnalyticsChart();
 });
   
 
