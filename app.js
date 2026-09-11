@@ -3184,13 +3184,13 @@ function renderSavedSoups() {
   savedSoupsList.innerHTML = "";
 
   if (loggedSoups.length === 0) {
-    savedSoupsList.innerHTML = `<p style="font-size: 0.85rem; color: #888; margin: 0;">No soups recorded yet.</p>`;
+    savedSoupsList.innerHTML = `<p style="font-size: 0.95rem; color: #888; margin: 0;">No soups recorded yet.</p>`;
     return;
   }
 
   loggedSoups.forEach((soup, index) => {
     const card = document.createElement("div");
-    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px 36px 10px 12px; margin-bottom: 8px;";
+    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 12px 40px 12px 14px; margin-bottom: 10px; width: 100%; box-sizing: border-box;";
 
     const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
     const ingredientSummary = soup.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
@@ -3199,23 +3199,23 @@ function renderSavedSoups() {
     const currentConsumedTime = soup.consumedTime !== undefined ? soup.consumedTime : (soup.time || "");
 
     card.innerHTML = `
-      <div>
-        <p style="margin: 0; font-weight: bold; font-size: 0.9rem; color: #2c3e50;">
-          ${soup.name} <span style="font-weight: normal; color: #666; font-size: 0.8rem;">(Created at ${formattedTime})</span>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <p style="margin: 0; font-weight: bold; font-size: 1rem; color: #2c3e50; line-height: 1.2;">
+          ${soup.name} <span style="font-weight: normal; color: #666; font-size: 0.9rem;">(Created at ${formattedTime})</span>
         </p>
-        <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #555; word-break: break-word;">
+        <p style="margin: 0; font-size: 0.9rem; color: #444; word-break: break-word; line-height: 1.3;">
           <strong>Ingredients:</strong> ${ingredientSummary}
         </p>
-        <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; white-space: nowrap;">
-          <label style="font-size: 0.8rem; font-weight: bold; color: #555; flex-shrink: 0;">Time Consumed:</label>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+          <label style="font-size: 0.9rem; font-weight: bold; color: #444; line-height: 1; margin: 0;">Time Consumed:</label>
           <input type="time" 
                  class="soup-consumed-time" 
                  data-index="${index}" 
                  value="${currentConsumedTime}" 
-                 style="padding: 2px 6px; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 4px; width: auto; max-width: 125px;" />
+                 style="padding: 4px 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; height: 32px; box-sizing: border-box;" />
         </div>
       </div>
-      <button type="button" onclick="window.removeSoup(${index})" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
+      <button type="button" onclick="window.removeSoup(${index})" style="position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
     `;
 
     savedSoupsList.appendChild(card);
