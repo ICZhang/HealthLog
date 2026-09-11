@@ -3403,6 +3403,7 @@ function renderHandwashRows() {
           <input type="radio" name="handwash_bm_${index}" value="no" style="margin: 0; vertical-align: middle;" /> No
         </label>
       </div>
+      <br>
     `;
     container.appendChild(div);
   });
