@@ -1922,13 +1922,14 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
     existingChart.destroy();
   }
 
-  // 1. Extract raw numerical values from dataset
+  // 1. Extract raw numerical values
   const numericValues = data.map(d => (typeof d === 'object' && d !== null) ? d.y : Number(d)).filter(v => !isNaN(v));
   
   // 2. Find maximum value between actual data points and target goal
-  const highestVal = Math.max(...numericValues, targetGoal || 0);
+  const goalNum = (targetGoal !== null && !isNaN(targetGoal)) ? Number(targetGoal) : null;
+  const highestVal = Math.max(...numericValues, goalNum || 0);
 
-  // 3. Compute dynamic upper limit aligned to the chosen stepSize
+  // 3. Compute dynamic upper limit aligned to stepSize
   let calculatedMax = undefined;
   if (stepSize && stepSize > 0) {
     const padSteps = unit === "Scoops" ? 2 : 1; 
@@ -1936,7 +1937,7 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
     calculatedMax = Math.ceil(rawMax / stepSize) * stepSize; 
   }
 
-  // Bar dataset replacing scatter points
+  // Bar dataset
   const datasets = [{
     type: "bar",
     label: datasetLabel,
@@ -1948,20 +1949,42 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
     maxBarThickness: 32
   }];
 
-  // Goal Line (kept as a dashed line overlay)
-  if (targetGoal !== null) {
+  // Goal Legend Indicator (dummy dataset purely for displaying the legend entry)
+  if (goalNum !== null) {
     datasets.push({
       type: "line",
-      label: `Goal (${targetGoal} ${unit})`,
-      data: new Array(labels.length).fill(targetGoal),
+      label: `Goal (${goalNum} ${unit})`,
+      data: [], // Empty data so it doesn't break rendering
       borderColor: "#e74c3c",
-      backgroundColor: "transparent",
-      showLine: true,
+      backgroundColor: "#e74c3c",
       borderDash: [6, 6],
-      pointRadius: 0,
-      fill: false
+      pointRadius: 0
     });
   }
+
+  // Custom Plugin to render the goal line cleanly on the canvas
+  const goalLinePlugin = {
+    id: "goalLinePlugin",
+    afterDraw(chart) {
+      if (goalNum === null) return;
+
+      const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+      const yPixel = y.getPixelForValue(goalNum);
+
+      // Don't draw if pixel value is out of bounds
+      if (yPixel < chart.chartArea.top || yPixel > chart.chartArea.bottom) return;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([6, 6]);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#e74c3c";
+      ctx.moveTo(left, yPixel);
+      ctx.lineTo(right, yPixel);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
 
   const ctx = canvas.getContext("2d");
   new Chart(ctx, {
@@ -1970,6 +1993,7 @@ function drawScatterChart(canvas, labels, data, color, datasetLabel, yLabel = "V
       labels: labels,
       datasets: datasets
     },
+    plugins: [goalLinePlugin],
     options: {
       responsive: true,
       maintainAspectRatio: false,
