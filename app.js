@@ -3190,19 +3190,30 @@ function renderSavedSoups() {
 
   loggedSoups.forEach((soup, index) => {
     const card = document.createElement("div");
-    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px 36px 10px 12px;";
+    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px 36px 10px 12px; margin-bottom: 8px;";
 
     const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
     const ingredientSummary = soup.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
+    
+    // Default consumedTime to soup creation time if not set
+    const currentConsumedTime = soup.consumedTime !== undefined ? soup.consumedTime : (soup.time || "");
 
     card.innerHTML = `
       <div>
         <p style="margin: 0; font-weight: bold; font-size: 0.9rem; color: #2c3e50;">
-          ${soup.name} <span style="font-weight: normal; color: #666; font-size: 0.8rem;">at ${formattedTime}</span>
+          ${soup.name} <span style="font-weight: normal; color: #666; font-size: 0.8rem;">(Created at ${formattedTime})</span>
         </p>
         <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #555; word-break: break-word;">
           <strong>Ingredients:</strong> ${ingredientSummary}
         </p>
+        <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+          <label style="font-size: 0.8rem; font-weight: bold; color: #555;">Time Consumed:</label>
+          <input type="time" 
+                 class="soup-consumed-time" 
+                 data-index="${index}" 
+                 value="${currentConsumedTime}" 
+                 style="padding: 4px 8px; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 4px;" />
+        </div>
       </div>
       <button type="button" onclick="removeSoup(${index})" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
     `;
@@ -3210,6 +3221,16 @@ function renderSavedSoups() {
     savedSoupsList.appendChild(card);
   });
 }
+
+// Update live time input listener
+savedSoupsList?.addEventListener("input", (e) => {
+  if (e.target.classList.contains("soup-consumed-time")) {
+    const idx = e.target.getAttribute("data-index");
+    if (idx !== null && loggedSoups[idx]) {
+      loggedSoups[idx].consumedTime = e.target.value;
+    }
+  }
+});
 
 // Clear grid inputs after a soup is saved
 function clearGridSelection() {
