@@ -493,6 +493,35 @@ cancelEditBtn.addEventListener("click", () => {
   }
 });
 
+logForm.addEventListener("submit", async (event) => {
+  event.preventDefault(); // Prevents full page refresh
+
+  // 1. Return immediately if already submitting
+  if (saveLogBtn.disabled) return;
+
+  try {
+    // 2. Lock button and update text
+    saveLogBtn.disabled = true;
+    const isEditing = Boolean(editingDocIdInput.value);
+    saveLogBtn.textContent = isEditing ? "Updating..." : "Saving...";
+
+    // --- YOUR EXISTING SAVE/UPDATE FIREBASE LOGIC HERE ---
+    // (e.g., const formData = getFormData(); await addDoc(...) or updateDoc(...);)
+
+    // 3. Reset form after successful save
+    resetForm();
+
+  } catch (error) {
+    console.error("Error saving log:", error);
+    alert("Failed to save log. Please try again.");
+  } finally {
+    // 4. Always unlock the button when done
+    saveLogBtn.disabled = false;
+    // restore appropriate text based on state
+    saveLogBtn.textContent = editingDocIdInput.value ? "Update Care Log" : "Save Care Log";
+  }
+});
+
 // --- EXTRACT FORM DATA ---
 function getFormData() {
   const bmData = [];
