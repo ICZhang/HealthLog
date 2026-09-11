@@ -493,35 +493,6 @@ cancelEditBtn.addEventListener("click", () => {
   }
 });
 
-logForm.addEventListener("submit", async (event) => {
-  event.preventDefault(); // Prevents full page refresh
-
-  // 1. Return immediately if already submitting
-  if (saveLogBtn.disabled) return;
-
-  try {
-    // 2. Lock button and update text
-    saveLogBtn.disabled = true;
-    const isEditing = Boolean(editingDocIdInput.value);
-    saveLogBtn.textContent = isEditing ? "Updating..." : "Saving...";
-
-    // --- YOUR EXISTING SAVE/UPDATE FIREBASE LOGIC HERE ---
-    // (e.g., const formData = getFormData(); await addDoc(...) or updateDoc(...);)
-
-    // 3. Reset form after successful save
-    resetForm();
-
-  } catch (error) {
-    console.error("Error saving log:", error);
-    alert("Failed to save log. Please try again.");
-  } finally {
-    // 4. Always unlock the button when done
-    saveLogBtn.disabled = false;
-    // restore appropriate text based on state
-    saveLogBtn.textContent = editingDocIdInput.value ? "Update Care Log" : "Save Care Log";
-  }
-});
-
 // --- EXTRACT FORM DATA ---
 function getFormData() {
   const bmData = [];
@@ -699,15 +670,22 @@ function getFormData() {
 
 // --- SAVE / EDIT FIRESTORE LOG ---
 logForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentUser) return;
-  
+  e.preventDefault();
+  if (!currentUser) return;
+
+  // 1. Guard check: prevent execution if button is already processing
+  if (saveLogBtn.disabled) return;
+
+  try {
+    // 2. Instantly lock the button and indicate progress
+    saveLogBtn.disabled = true;
+    const isEditing = Boolean(editingDocIdInput.value);
+    saveLogBtn.textContent = isEditing ? "Updating..." : "Saving...";
+
     /*
-    // 1. Get current time in HH:MM format
+    // Auto-fill time logic (if active)
     const now = new Date();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  
-    // 2. Auto-fill any empty time inputs in the form
     const timeInputs = logForm.querySelectorAll('input[type="time"]');
     timeInputs.forEach(input => {
       if (!input.value) {
@@ -715,25 +693,29 @@ logForm.addEventListener("submit", async (e) => {
       }
     });
     */
-    // 3. Now collect form data (which will now include the filled-in times)
+
+    // 3. Collect data and perform write
     const logData = getFormData();
     const editingId = editingDocIdInput.value;
-  
-    try {
-      if (editingId) {
-        await setDoc(doc(db, "users", currentUser.uid, "logs", editingId), logData, { merge: true });
-        alert("Care Log updated successfully!");
-      } else {
-        await addDoc(collection(db, "users", currentUser.uid, "logs"), logData);
-        alert("Care Log saved successfully!");
-      }
 
-      showViewModal(logData);
-      resetForm();
-    } catch (err) {
-      console.error("Error saving record: ", err);
-      alert("Error saving record. Please try again.");
+    if (editingId) {
+      await setDoc(doc(db, "users", currentUser.uid, "logs", editingId), logData, { merge: true });
+      alert("Care Log updated successfully!");
+    } else {
+      await addDoc(collection(db, "users", currentUser.uid, "logs"), logData);
+      alert("Care Log saved successfully!");
     }
+
+    showViewModal(logData);
+    resetForm();
+  } catch (err) {
+    console.error("Error saving record: ", err);
+    alert("Error saving record. Please try again.");
+  } finally {
+    // 4. Always re-enable button and restore UI text
+    saveLogBtn.disabled = false;
+    saveLogBtn.textContent = editingDocIdInput.value ? "Update Care Log" : "Save Care Log";
+  }
 });
 
 // Populate Form for Editing
