@@ -1035,7 +1035,7 @@ function showViewModal(data) {
               ? s.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ''}`).join(', ')
               : 'No ingredients listed';
 
-            return `<li><strong>${s.name}</strong>${createdTimeStr}${consumedTimeStr ? ` - Eaten${consumedTimeStr}` : ''} - Ingredients: ${ingredientsStr}</li>`;
+              return `<li><strong>${s.name}</strong>${consumedTimeStr ? ` - Eaten${consumedTimeStr}` : ''} - Ingredients: ${ingredientsStr}</li>`;
           }).join('') 
         : (data.foods?.length 
             ? data.foods.map(f => `<li>${f.name.replace(/_/g, " ")}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('')
