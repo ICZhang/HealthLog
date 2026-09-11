@@ -382,13 +382,18 @@
       <!-- Floss Teeth -->
       <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 16px;">
         <span style="font-weight: bold; font-size: 0.9rem; min-width: 140px; line-height: 1;">Floss Teeth:</span>
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; line-height: 1;">
-            <input type="checkbox" id="sc-floss-evening" style="margin: 0; vertical-align: middle;" /> Evening
-          </label>
-          <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; line-height: 1;">
-            <input type="checkbox" id="sc-floss-other" style="margin: 0; vertical-align: middle;" /> Other
-          </label>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <select id="sc-floss-select" style="padding: 4px 8px; font-size: 0.85rem; border: 1px solid #ccc; border-radius: 4px; height: 30px;">
+            <option value="">-- Select Time --</option>
+            <option value="Morning">Morning</option>
+            <option value="After Breakfast">After Breakfast</option>
+            <option value="After Lunch">After Lunch</option>
+            <option value="Afternoon">Afternoon</option>
+            <option value="After Dinner">After Dinner</option>
+            <option value="Evening">Evening</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="text" id="sc-floss-other-input" placeholder="Specify time..." style="display: none; width: 140px; padding: 4px 8px; font-size: 0.85rem; border: 1px solid #ccc; border-radius: 4px; height: 30px; box-sizing: border-box;" />
         </div>
       </div>
       <br>

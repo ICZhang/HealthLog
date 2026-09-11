@@ -514,15 +514,15 @@ function getFormData() {
     handwashStatus.push(checked ? checked.value : "");
   });
 
+  const flossSelect = document.getElementById("sc-floss-select")?.value || "";
+  const flossOther = document.getElementById("sc-floss-other-input")?.value.trim() || "";
+
   const selfCare = {
     brushTeeth: {
       morning: document.getElementById("sc-brush-morning")?.checked || false,
       evening: document.getElementById("sc-brush-evening")?.checked || false
     },
-    flossTeeth: {
-      evening: document.getElementById("sc-floss-evening")?.checked || false,
-      other: document.getElementById("sc-floss-other")?.checked || false
-    },
+    flossTeeth: flossSelect === "Other" ? (flossOther || "Other") : flossSelect,
     washHandsAfterBm: handwashStatus,
     walkMinutes: document.getElementById("sc-walk-minutes")?.value.trim() || "",
     sleepHours: document.getElementById("sc-sleep-hours")?.value.trim() || ""
@@ -829,11 +829,34 @@ function populateFormForEdit(id, data) {
   
   renderSavedSoups();
 
+  // Populate Self-Care Section
   if (data.selfCare) {
     document.getElementById("sc-brush-morning").checked = !!data.selfCare.brushTeeth?.morning;
     document.getElementById("sc-brush-evening").checked = !!data.selfCare.brushTeeth?.evening;
-    document.getElementById("sc-floss-evening").checked = !!data.selfCare.flossTeeth?.evening;
-    document.getElementById("sc-floss-other").checked = !!data.selfCare.flossTeeth?.other;
+
+    // Handle Floss Teeth dropdown & "Other" text box
+    const flossVal = data.selfCare.flossTeeth || "";
+    const flossSelectEl = document.getElementById("sc-floss-select");
+    const flossOtherEl = document.getElementById("sc-floss-other-input");
+
+    if (flossSelectEl && flossOtherEl) {
+      const standardOptions = ["Morning", "After Breakfast", "After Lunch", "Afternoon", "After Dinner", "Evening"];
+      
+      if (standardOptions.includes(flossVal)) {
+        flossSelectEl.value = flossVal;
+        flossOtherEl.style.display = "none";
+        flossOtherEl.value = "";
+      } else if (flossVal) {
+        flossSelectEl.value = "Other";
+        flossOtherEl.style.display = "inline-block";
+        flossOtherEl.value = flossVal;
+      } else {
+        flossSelectEl.value = "";
+        flossOtherEl.style.display = "none";
+        flossOtherEl.value = "";
+      }
+    }
+
     document.getElementById("sc-walk-minutes").value = data.selfCare.walkMinutes || "";
     document.getElementById("sc-sleep-hours").value = data.selfCare.sleepHours || "";
   
@@ -1006,10 +1029,7 @@ function showViewModal(data) {
     sc.brushTeeth?.evening ? "Evening" : ""
   ].filter(Boolean).join(", ") || "None recorded";
 
-  const flossTeethStr = [
-    sc.flossTeeth?.evening ? "Evening" : "",
-    sc.flossTeeth?.other ? "Other" : ""
-  ].filter(Boolean).join(", ") || "None recorded";
+  const flossTeethStr = data.selfCare?.flossTeeth || "None recorded";
 
   const handwashList = Array.isArray(sc.washHandsAfterBm) && sc.washHandsAfterBm.length > 0
     ? sc.washHandsAfterBm.map((status, i) => `BM #${i + 1}: ${status ? status.toUpperCase() : 'Not recorded'}`).join(", ")
@@ -3409,7 +3429,18 @@ function renderHandwashRows() {
   });
 }
 
+document.getElementById("sc-floss-select")?.addEventListener("change", (e) => {
+  const otherInput = document.getElementById("sc-floss-other-input");
+  if (!otherInput) return;
 
+  if (e.target.value === "Other") {
+    otherInput.style.display = "inline-block";
+    otherInput.focus();
+  } else {
+    otherInput.style.display = "none";
+    otherInput.value = "";
+  }
+});
 
 
 
