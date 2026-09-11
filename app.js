@@ -3294,46 +3294,41 @@ export async function loadUserGoals() {
 }
 
 // Save goal to the user's subcollection
-export async function saveGoalToFirebase(type) {
+async function saveGoalToFirebase(type) {
   const input = document.getElementById(`${type}-goal-input`);
   if (!input) return;
 
-  const val = parseFloat(input.value);
-  if (isNaN(val) || val <= 0) {
-    alert("Please enter a valid positive goal number.");
+  const newGoal = parseFloat(input.value);
+  if (isNaN(newGoal) || newGoal < 0) {
+    alert("Please enter a valid goal number.");
     return;
   }
 
   const user = auth.currentUser;
-  if (!user) {
-    alert("Please sign in to update goals.");
-    return;
-  }
+  if (!user) return;
 
   try {
     const goalDocRef = doc(db, "users", user.uid, "logs", "goal_settings");
+    await setDoc(goalDocRef, { [type]: newGoal }, { merge: true });
     
-    await setDoc(goalDocRef, {
-      [type]: val,
-      updatedAt: new Date()
-    }, { merge: true });
-
-    // REPLACED: Keep input.value set to val instead of clearing with input.value = ""
-    input.value = val;
-
-    // Re-render chart instantly
+    // Re-render chart with new goal line
     if (typeof renderAnalyticsChart === "function") {
       await renderAnalyticsChart();
     }
-
-    const label = type === "formula" ? "Formula" : "Water";
-    alert(`${label} Goal saved successfully!`);
-
-  } catch (error) {
-    console.error("Error saving goal:", error);
-    alert("Failed to save goal.");
+  } catch (err) {
+    console.error(`Error saving ${type} goal:`, err);
   }
 }
+
+// Bind button clicks on page load
+document.addEventListener("DOMContentLoaded", () => {
+  ["formula", "water", "walk", "sleep"].forEach(type => {
+    const btn = document.getElementById(`set-${type}-goal-btn`);
+    if (btn) {
+      btn.addEventListener("click", () => saveGoalToFirebase(type));
+    }
+  });
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   ["formula", "water", "walk", "sleep"].forEach(type => {
