@@ -467,6 +467,7 @@ function resetForm() {
   cromolynContainer.innerHTML = "";
   document.getElementById("day-summary-select").value = "";
   document.getElementById("day-notes").value = "";
+  document.getElementById("special-instructions-input").value = "";
 
   addBmRow(); 
   addBmRow();
@@ -604,6 +605,7 @@ function getFormData() {
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   const localToday = `${year}-${month}-${day}`;
+  const specialInstructionsText = document.getElementById("special-instructions-input")?.value.trim() || "";
 
   return {
     date: document.getElementById("log-date")?.value || localToday,
@@ -628,6 +630,7 @@ function getFormData() {
     behaviorLogs,
     daySummary: document.getElementById("day-summary-select")?.value || "", 
     notes: document.getElementById("day-notes")?.value || "",
+    specialInstructions: specialInstructionsText,
     updatedAt: new Date()
   };
 }
@@ -791,6 +794,7 @@ function populateFormForEdit(id, data) {
 
   document.getElementById("day-summary-select").value = data.daySummary || "";
   document.getElementById("day-notes").value = data.notes || "";
+  document.getElementById("special-instructions-input").value = data.specialInstructions || "";
   tabNewBtn.click();
 }
 
@@ -1038,6 +1042,8 @@ function showViewModal(data) {
   
     <p><strong>Day Summary:</strong> ${data.daySummary || 'N/A'}</p>
     <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
+
+    <p><strong>Special Instructions:</strong> ${data.specialInstructions || 'None recorded.'}</p>
   `;
 
   modal.classList.remove("hidden");
