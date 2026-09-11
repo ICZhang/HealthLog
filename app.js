@@ -385,8 +385,9 @@ function addBmRow(data = {}) {
     </div>
   `;
 
-  row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+  row.querySelector(".remove-row-btn").addEventListener("click", () => {row.remove(); renderHandwashRows();});
   bmContainer.appendChild(row);
+  renderHandwashRows();
 }
 
 function addTextRow(container, className, placeholder, value = "") {
@@ -505,6 +506,27 @@ function getFormData() {
       bmData.push({ time, type, amount, color });
     }
   });
+
+  // Capture handwashing status per BM
+  const handwashStatus = [];
+  document.querySelectorAll("#bm-handwash-container .bm-handwash-row").forEach((row, index) => {
+    const checked = row.querySelector(`input[name="handwash_bm_${index}"]:checked`);
+    handwashStatus.push(checked ? checked.value : "");
+  });
+
+  const selfCare = {
+    brushTeeth: {
+      morning: document.getElementById("sc-brush-morning")?.checked || false,
+      evening: document.getElementById("sc-brush-evening")?.checked || false
+    },
+    flossTeeth: {
+      evening: document.getElementById("sc-floss-evening")?.checked || false,
+      other: document.getElementById("sc-floss-other")?.checked || false
+    },
+    washHandsAfterBm: handwashStatus,
+    walkMinutes: document.getElementById("sc-walk-minutes")?.value.trim() || "",
+    sleepHours: document.getElementById("sc-sleep-hours")?.value.trim() || ""
+  };
 
   const getValues = (selector) => {
     const vals = [];
@@ -641,6 +663,7 @@ function getFormData() {
     daySummary: document.getElementById("day-summary-select")?.value || "", 
     notes: dayNotesText,
     specialInstructions: specialInstructionsText,
+    selfCare,
     updatedAt: new Date()
   };
 }
@@ -806,6 +829,25 @@ function populateFormForEdit(id, data) {
   
   renderSavedSoups();
 
+  if (data.selfCare) {
+    document.getElementById("sc-brush-morning").checked = !!data.selfCare.brushTeeth?.morning;
+    document.getElementById("sc-brush-evening").checked = !!data.selfCare.brushTeeth?.evening;
+    document.getElementById("sc-floss-evening").checked = !!data.selfCare.flossTeeth?.evening;
+    document.getElementById("sc-floss-other").checked = !!data.selfCare.flossTeeth?.other;
+    document.getElementById("sc-walk-minutes").value = data.selfCare.walkMinutes || "";
+    document.getElementById("sc-sleep-hours").value = data.selfCare.sleepHours || "";
+  
+    renderHandwashRows();
+    if (Array.isArray(data.selfCare.washHandsAfterBm)) {
+      data.selfCare.washHandsAfterBm.forEach((val, index) => {
+        if (val) {
+          const radio = document.querySelector(`input[name="handwash_bm_${index}"][value="${val}"]`);
+          if (radio) radio.checked = true;
+        }
+      });
+    }
+  }
+
   const specialInstructionsEl = document.getElementById("special-instructions-input");
   const dayNotesEl = document.getElementById("day-notes");
 
@@ -958,6 +1000,21 @@ function showViewModal(data) {
     return sum + scoops;
   }, 0) || 0;
 
+  const sc = data.selfCare || {};
+  const brushTeethStr = [
+    sc.brushTeeth?.morning ? "Morning" : "",
+    sc.brushTeeth?.evening ? "Evening" : ""
+  ].filter(Boolean).join(", ") || "None recorded";
+
+  const flossTeethStr = [
+    sc.flossTeeth?.evening ? "Evening" : "",
+    sc.flossTeeth?.other ? "Other" : ""
+  ].filter(Boolean).join(", ") || "None recorded";
+
+  const handwashList = Array.isArray(sc.washHandsAfterBm) && sc.washHandsAfterBm.length > 0
+    ? sc.washHandsAfterBm.map((status, i) => `BM #${i + 1}: ${status ? status.toUpperCase() : 'Not recorded'}`).join(", ")
+    : "No BM logs recorded";
+
   modalBody.innerHTML = `
     <div style="padding-top: 15px; margin-bottom: 12px; text-align: left;">
         <br>
@@ -1012,6 +1069,15 @@ function showViewModal(data) {
       ${data.formulaHydration?.length 
         ? data.formulaHydration.map(f => `<li>${typeof f === 'object' ? `${f.name || 'Formula'}: ${f.amount ? `${f.amount} scoops` : ''} at ${formatTo12Hour(f.time)}` : f}</li>`).join('') 
         : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Self-Care:</strong></p>
+    <ul style="margin: 4px 0; padding-left: 20px;">
+      <li><strong>Brush Teeth:</strong> ${brushTeethStr}</li>
+      <li><strong>Floss Teeth:</strong> ${flossTeethStr}</li>
+      <li><strong>Handwashing (after BM):</strong> ${handwashList}</li>
+      <li><strong>Walk:</strong> ${sc.walkMinutes ? `${sc.walkMinutes} minutes` : 'None recorded'}</li>
+      <li><strong>Sleep:</strong> ${sc.sleepHours ? `${sc.sleepHours} hours` : 'None recorded'}</li>
     </ul>
 
     <p><strong>Activities:</strong></p>
@@ -3310,7 +3376,35 @@ saveSoupBtn.addEventListener("click", () => {
   clearGridSelection();
 });
 
+function renderHandwashRows() {
+  const container = document.getElementById("bm-handwash-container");
+  if (!container) return;
 
+  const bmRows = document.querySelectorAll(".bm-row");
+  if (bmRows.length === 0) {
+    container.innerHTML = `<p style="font-size: 0.85rem; color: #888; margin: 0;">No bowel movements logged yet.</p>`;
+    return;
+  }
+
+  container.innerHTML = "";
+  bmRows.forEach((row, index) => {
+    const timeVal = row.querySelector(".bm-time")?.value || `BM #${index + 1}`;
+    
+    const div = document.createElement("div");
+    div.className = "bm-handwash-row";
+    div.style.cssText = "display: flex; align-items: center; gap: 12px; font-size: 0.85rem;";
+    div.innerHTML = `
+      <span style="color: #555; min-width: 90px;">${timeVal}:</span>
+      <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+        <input type="radio" name="handwash_bm_${index}" value="yes" /> Yes
+      </label>
+      <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+        <input type="radio" name="handwash_bm_${index}" value="no" /> No
+      </label>
+    `;
+    container.appendChild(div);
+  });
+}
 
 
 
