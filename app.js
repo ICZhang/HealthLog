@@ -1551,7 +1551,6 @@ async function renderAnalyticsChart() {
       if (endDate && logData.date > endDate) return;
 
       (logData.bowelMovements || []).forEach(bm => {
-        // Skip empty entries or old explicit "No BM" saved types
         if (!bm.type || bm.type === "No BM") return;
 
         const label = `Type ${bm.type}`;
@@ -1560,7 +1559,6 @@ async function renderAnalyticsChart() {
       });
     });
 
-    // Auto-calculate "No BM" for days with no logged bowel movements
     if (startDate && endDate) {
       let current = new Date(startDate + "T00:00:00");
       const last = new Date(endDate + "T00:00:00");
@@ -1583,7 +1581,6 @@ async function renderAnalyticsChart() {
       }
     }
 
-    // Sort: "No BM" first, then Types 1 to 7 numerically
     const sortedKeys = Object.keys(typeCounts).sort((a, b) => {
       if (a === "No BM") return -1;
       if (b === "No BM") return 1;
@@ -1595,7 +1592,6 @@ async function renderAnalyticsChart() {
     const labels = sortedKeys.length ? sortedKeys : ["No Logged Types"];
     const data = sortedKeys.length ? sortedKeys.map(k => typeCounts[k]) : [0];
     
-    // Look up color: use black/grey for "No BM", or BM_TYPE_COLORS for numbers
     const barColors = sortedKeys.length 
       ? sortedKeys.map(k => {
           if (k === "No BM") return BM_TYPE_COLORS["No BM"] || "#000000";
@@ -1679,6 +1675,62 @@ async function renderAnalyticsChart() {
   
     drawScatterChart(canvas, labels, data, "#1abc9c", "Cups of Water", "Cups of Water", "Date", waterGoal, "Cups", 1);
     renderWaterCalendar(startDate, endDate, records);
+
+  // --- WALK / STEPS VIEW ---
+  } else if (activeView === "walk" || activeView === "steps") {
+    if (chartTitle) chartTitle.innerText = "Daily Walk Duration";
+
+    const walkGoal = await getGoal("walk");
+    const walkByDate = {};
+
+    records.forEach(item => {
+      const logData = item.data || item;
+      const logDate = logData.date;
+      if (!logDate) return;
+
+      if (startDate && logDate < startDate) return;
+      if (endDate && logDate > endDate) return;
+
+      const walkMins = parseFloat(logData.selfCare?.walkMinutes || 0);
+      if (walkMins > 0) {
+        walkByDate[logDate] = (walkByDate[logDate] || 0) + walkMins;
+      }
+    });
+
+    const dates = Object.keys(walkByDate).sort();
+    const labels = dates.length ? dates : ["No Data"];
+    const data = dates.length ? dates.map(d => walkByDate[d]) : [0];
+
+    drawScatterChart(canvas, labels, data, "#e67e22", "Walk Duration", "Minutes", "Date", walkGoal, "Minutes", 10);
+    renderWalkCalendar(startDate, endDate, records);
+
+  // --- SLEEP VIEW ---
+  } else if (activeView === "sleep") {
+    if (chartTitle) chartTitle.innerText = "Daily Sleep Duration";
+
+    const sleepGoal = await getGoal("sleep");
+    const sleepByDate = {};
+
+    records.forEach(item => {
+      const logData = item.data || item;
+      const logDate = logData.date;
+      if (!logDate) return;
+
+      if (startDate && logDate < startDate) return;
+      if (endDate && logDate > endDate) return;
+
+      const sleepHrs = parseFloat(logData.selfCare?.sleepHours || 0);
+      if (sleepHrs > 0) {
+        sleepByDate[logDate] = (sleepByDate[logDate] || 0) + sleepHrs;
+      }
+    });
+
+    const dates = Object.keys(sleepByDate).sort();
+    const labels = dates.length ? dates : ["No Data"];
+    const data = dates.length ? dates.map(d => sleepByDate[d]) : [0];
+
+    drawScatterChart(canvas, labels, data, "#9b59b6", "Sleep Duration", "Hours", "Date", sleepGoal, "Hours", 2);
+    renderSleepCalendar(startDate, endDate, records);
 
   // --- MOOD VIEW ---
   } else if (activeView === "mood") {
@@ -3202,7 +3254,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
 
 // Fetch goal from the user's subcollection
 export async function getGoal(type) {
-  const defaults = { formula: 80, water: 8 };
+  const defaults = { formula: 80, water: 8, walk: 30, sleep: 8 };
   const user = auth.currentUser;
 
   if (!user) return defaults[type];
@@ -3223,14 +3275,10 @@ export async function getGoal(type) {
 
 // Populate input fields with saved or default values
 export async function loadUserGoals() {
-  const formulaInput = document.getElementById("formula-goal-input");
-  const waterInput = document.getElementById("water-goal-input");
-
-  if (formulaInput) {
-    formulaInput.value = await getGoal("formula");
-  }
-  if (waterInput) {
-    waterInput.value = await getGoal("water");
+  const fields = ["formula", "water", "walk", "sleep"];
+  for (const type of fields) {
+    const input = document.getElementById(`${type}-goal-input`);
+    if (input) input.value = await getGoal(type);
   }
 }
 
@@ -3277,16 +3325,10 @@ export async function saveGoalToFirebase(type) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const formulaBtn = document.getElementById("set-formula-goal-btn");
-  const waterBtn = document.getElementById("set-water-goal-btn");
-
-  if (formulaBtn) {
-    formulaBtn.addEventListener("click", () => saveGoalToFirebase("formula"));
-  }
-
-  if (waterBtn) {
-    waterBtn.addEventListener("click", () => saveGoalToFirebase("water"));
-  }
+  ["formula", "water", "walk", "sleep"].forEach(type => {
+    const btn = document.getElementById(`set-${type}-goal-btn`);
+    if (btn) btn.addEventListener("click", () => saveGoalToFirebase(type));
+  });
 });
 
 // Render cards in the UI for each recorded soup
@@ -3441,6 +3483,68 @@ document.getElementById("sc-floss-select")?.addEventListener("change", (e) => {
     otherInput.value = "";
   }
 });
+
+// Render Walk Calendar
+function renderWalkCalendar(startDate, endDate, records) {
+  const grid = document.getElementById("calendar-grid");
+  const titleHeader = document.getElementById("calendar-title");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  const [activeYearStr, activeMonthStr] = (window.activeCalendarMonth || new Date().toISOString().slice(0, 7)).split("-");
+  const activeYear = parseInt(activeYearStr, 10);
+  const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  if (titleHeader) {
+    const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+    titleHeader.innerText = `${monthName} ${activeYear} Walk Duration Calendar`;
+  }
+
+  const dailyTotals = {};
+  records.forEach(item => {
+    const logData = item.data || item;
+    const logDate = logData.date;
+    if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
+
+    const walkMins = parseFloat(logData.selfCare?.walkMinutes || 0);
+    if (walkMins > 0) {
+      dailyTotals[logDate] = (dailyTotals[logDate] || 0) + walkMins;
+    }
+  });
+
+  renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "mins", "#e67e22");
+}
+
+// Render Sleep Calendar
+function renderSleepCalendar(startDate, endDate, records) {
+  const grid = document.getElementById("calendar-grid");
+  const titleHeader = document.getElementById("calendar-title");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  const [activeYearStr, activeMonthStr] = (window.activeCalendarMonth || new Date().toISOString().slice(0, 7)).split("-");
+  const activeYear = parseInt(activeYearStr, 10);
+  const activeMonthIndex = parseInt(activeMonthStr, 10) - 1;
+
+  if (titleHeader) {
+    const monthName = new Date(activeYear, activeMonthIndex, 1).toLocaleString("default", { month: "long" });
+    titleHeader.innerText = `${monthName} ${activeYear} Sleep Calendar`;
+  }
+
+  const dailyTotals = {};
+  records.forEach(item => {
+    const logData = item.data || item;
+    const logDate = logData.date;
+    if (!logDate || !logDate.startsWith(window.activeCalendarMonth)) return;
+
+    const sleepHrs = parseFloat(logData.selfCare?.sleepHours || 0);
+    if (sleepHrs > 0) {
+      dailyTotals[logDate] = (dailyTotals[logDate] || 0) + sleepHrs;
+    }
+  });
+
+  renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "hrs", "#9b59b6");
+}
 
 
 
