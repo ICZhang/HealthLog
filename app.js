@@ -510,7 +510,7 @@ function getFormData() {
     const vals = [];
     document.querySelectorAll(selector).forEach(row => {
       const input = row.querySelector(".row-input");
-      if (input && input.value) { // Guard against null
+      if (input && input.value) {
         vals.push(input.value.trim());
       }
     });
@@ -599,13 +599,23 @@ function getFormData() {
     }
   });
 
+  // Ensure DOM soup consumption times sync back to loggedSoups before saving
+  document.querySelectorAll(".soup-consumed-time").forEach(input => {
+    const idx = input.getAttribute("data-index");
+    if (idx !== null && loggedSoups[idx]) {
+      loggedSoups[idx].consumedTime = input.value;
+    }
+  });
+
   // Local date fallback calculation
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   const localToday = `${year}-${month}-${day}`;
+
   const specialInstructionsText = document.getElementById("special-instructions-input")?.value.trim() || "";
+  const dayNotesText = document.getElementById("day-notes")?.value.trim() || "";
 
   return {
     date: document.getElementById("log-date")?.value || localToday,
@@ -629,7 +639,7 @@ function getFormData() {
     moodLogs,
     behaviorLogs,
     daySummary: document.getElementById("day-summary-select")?.value || "", 
-    notes: document.getElementById("day-notes")?.value || "",
+    notes: dayNotesText,
     specialInstructions: specialInstructionsText,
     updatedAt: new Date()
   };
@@ -776,14 +786,18 @@ function populateFormForEdit(id, data) {
     if (amountInput) amountInput.value = "";
   });
 
-  // Load saved soups into state and update UI
+  // Load saved soups into state and ensure consumedTime exists
   if (Array.isArray(data.soups)) {
-    loggedSoups = [...data.soups];
+    loggedSoups = data.soups.map(s => ({
+      ...s,
+      consumedTime: s.consumedTime !== undefined ? s.consumedTime : (s.time || "")
+    }));
   } else if (Array.isArray(data.foods) && data.foods.length > 0) {
-    // Legacy conversion: convert old foods array into a single soup entry
+    // Legacy conversion
     loggedSoups = [{
       name: "Restored Soup",
       time: data.time || "",
+      consumedTime: data.time || "",
       ingredients: [...data.foods]
     }];
   } else {
@@ -792,9 +806,13 @@ function populateFormForEdit(id, data) {
   
   renderSavedSoups();
 
+  const specialInstructionsEl = document.getElementById("special-instructions-input");
+  const dayNotesEl = document.getElementById("day-notes");
+
   document.getElementById("day-summary-select").value = data.daySummary || "";
-  document.getElementById("day-notes").value = data.notes || "";
-  document.getElementById("special-instructions-input").value = data.specialInstructions || "";
+  if (dayNotesEl) dayNotesEl.value = data.notes || "";
+  if (specialInstructionsEl) specialInstructionsEl.value = data.specialInstructions || data.notes || "";
+
   tabNewBtn.click();
 }
 
@@ -1007,11 +1025,17 @@ function showViewModal(data) {
     <ul>
       ${data.soups?.length 
         ? data.soups.map(s => {
-            const timeStr = s.time ? ` at ${formatTo12Hour(s.time)}` : '';
+            const createdTimeStr = s.time ? ` (Created: ${formatTo12Hour(s.time)})` : '';
+            
+            // Fall back to s.time if consumedTime isn't set yet
+            const consumedTimeVal = s.consumedTime || s.time;
+            const consumedTimeStr = consumedTimeVal ? ` at ${formatTo12Hour(consumedTimeVal)}` : '';
+
             const ingredientsStr = s.ingredients?.length 
               ? s.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ''}`).join(', ')
               : 'No ingredients listed';
-            return `<li><strong>${s.name}</strong>${timeStr}: ${ingredientsStr}</li>`;
+
+            return `<li><strong>${s.name}</strong>${createdTimeStr}${consumedTimeStr ? ` - Eaten${consumedTimeStr}` : ''}: ${ingredientsStr}</li>`;
           }).join('') 
         : (data.foods?.length 
             ? data.foods.map(f => `<li>${f.name.replace(/_/g, " ")}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('')
