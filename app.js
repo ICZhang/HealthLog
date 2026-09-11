@@ -3195,7 +3195,7 @@ function renderSavedSoups() {
     const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
     const ingredientSummary = soup.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
     
-    // Default consumedTime to soup creation time if not set
+    // Default consumedTime to creation time if not set
     const currentConsumedTime = soup.consumedTime !== undefined ? soup.consumedTime : (soup.time || "");
 
     card.innerHTML = `
@@ -3206,16 +3206,16 @@ function renderSavedSoups() {
         <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #555; word-break: break-word;">
           <strong>Ingredients:</strong> ${ingredientSummary}
         </p>
-        <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
-          <label style="font-size: 0.8rem; font-weight: bold; color: #555;">Time Consumed:</label>
+        <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; white-space: nowrap;">
+          <label style="font-size: 0.8rem; font-weight: bold; color: #555; flex-shrink: 0;">Time Consumed:</label>
           <input type="time" 
                  class="soup-consumed-time" 
                  data-index="${index}" 
                  value="${currentConsumedTime}" 
-                 style="padding: 4px 8px; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 4px;" />
+                 style="padding: 2px 6px; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 4px; width: auto; max-width: 125px;" />
         </div>
       </div>
-      <button type="button" onclick="removeSoup(${index})" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
+      <button type="button" onclick="window.removeSoup(${index})" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
     `;
 
     savedSoupsList.appendChild(card);
@@ -3245,10 +3245,10 @@ function clearGridSelection() {
 }
 
 // Remove individual soup entry
-function removeSoup(index) {
+window.removeSoup = function(index) {
   loggedSoups.splice(index, 1);
   renderSavedSoups();
-}
+};
 
 saveSoupBtn.addEventListener("click", () => {
   const selectedIngredients = [];
