@@ -3190,7 +3190,7 @@ function renderSavedSoups() {
 
   loggedSoups.forEach((soup, index) => {
     const card = document.createElement("div");
-    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px 36px 10px 12px; margin-bottom: 8px;";
+    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px 36px 10px 12px;";
 
     const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
     const ingredientSummary = soup.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
@@ -3200,17 +3200,9 @@ function renderSavedSoups() {
         <p style="margin: 0; font-weight: bold; font-size: 0.9rem; color: #2c3e50;">
           ${soup.name} <span style="font-weight: normal; color: #666; font-size: 0.8rem;">at ${formattedTime}</span>
         </p>
-        <p style="margin: 4px 0 6px 0; font-size: 0.8rem; color: #555; word-break: break-word;">
+        <p style="margin: 4px 0 0 0; font-size: 0.8rem; color: #555; word-break: break-word;">
           <strong>Ingredients:</strong> ${ingredientSummary}
         </p>
-        <div style="margin-top: 6px;">
-          <input type="text" 
-                 class="soup-consumed-input" 
-                 data-index="${index}" 
-                 placeholder="Time eaten or consumption notes..." 
-                 value="${soup.consumedNote || ""}" 
-                 style="width: 100%; padding: 4px 8px; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
-        </div>
       </div>
       <button type="button" onclick="removeSoup(${index})" style="position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
     `;
@@ -3218,53 +3210,6 @@ function renderSavedSoups() {
     savedSoupsList.appendChild(card);
   });
 }
-
-// Keep loggedSoups updated when typing into any card's textbox
-savedSoupsList?.addEventListener("input", (e) => {
-  if (e.target.classList.contains("soup-consumed-input")) {
-    const idx = e.target.getAttribute("data-index");
-    if (idx !== null && loggedSoups[idx]) {
-      loggedSoups[idx].consumedNote = e.target.value.trim();
-    }
-  }
-});
-
-saveSoupBtn.addEventListener("click", () => {
-  const selectedIngredients = [];
-
-  document.querySelectorAll("#foods-grid .food-row").forEach(row => {
-    const checkbox = row.querySelector("input[type='checkbox']");
-    const amountInput = row.querySelector("input[type='text']");
-    const isHighlighted = row.classList.contains("new-food-highlight");
-
-    if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== ""))) {
-      selectedIngredients.push({
-        name: checkbox.value,
-        checked: checkbox.checked,
-        amount: amountInput ? amountInput.value.trim() : "",
-        isHighlighted: isHighlighted
-      });
-    }
-  });
-
-  if (selectedIngredients.length === 0) {
-    alert("Please select at least one ingredient for the soup.");
-    return;
-  }
-
-  const soupName = soupNameInput.value.trim() || `Soup ${loggedSoups.length + 1}`;
-  const soupTime = soupTimeInput.value || document.getElementById("log-time")?.value || "";
-
-  loggedSoups.push({
-    name: soupName,
-    time: soupTime,
-    consumedNote: "", // Initialized empty so user can fill it in card
-    ingredients: selectedIngredients
-  });
-
-  renderSavedSoups();
-  clearGridSelection();
-});
 
 // Clear grid inputs after a soup is saved
 function clearGridSelection() {
