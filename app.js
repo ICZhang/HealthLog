@@ -157,11 +157,29 @@ function loadPastRecords(userId) {
   const q = query(collection(db, "users", userId, "logs"), orderBy("date", "desc"));
   
   unsubscribeLogs = onSnapshot(q, async (snapshot) => {
-    allPastRecords = [];
+    let records = [];
     snapshot.forEach((docSnap) => {
-      allPastRecords.push({ docId: docSnap.id, data: docSnap.data() });
+      records.push({ docId: docSnap.id, data: docSnap.data() });
     });
-    
+
+    // Sort records chronologically (Newest first) by date AND time/timestamp
+    records.sort((a, b) => {
+      const dateA = a.data.date || "";
+      const dateB = b.data.date || "";
+
+      // 1. Primary sort: Date string comparison
+      if (dateA !== dateB) {
+        return dateB.localeCompare(dateA); // Descending (newest date first)
+      }
+
+      // 2. Secondary sort: Compare time string or createdAt timestamp
+      const timeA = a.data.time || a.data.timeLogged || (a.data.createdAt?.toDate ? a.data.createdAt.toDate().toISOString() : "");
+      const timeB = b.data.time || b.data.timeLogged || (b.data.createdAt?.toDate ? b.data.createdAt.toDate().toISOString() : "");
+
+      return timeB.localeCompare(timeA); // Descending (newest time first)
+    });
+
+    allPastRecords = records;
     window.allRecords = allPastRecords;
 
     applySearchAndFilter();
