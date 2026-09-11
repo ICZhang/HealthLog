@@ -1691,27 +1691,30 @@ async function renderAnalyticsChart() {
   } else if (activeView === "walk" || activeView === "steps") {
     if (chartTitle) chartTitle.innerText = "Daily Walk Duration";
 
+    // 1. Fetch walk goal
     const walkGoal = await getGoal("walk");
-    const walkByDate = {};
+    
+    // 2. Update input field if present on page
+    const walkInput = document.getElementById("walk-goal-input");
+    if (walkInput) walkInput.value = walkGoal;
 
+    const walkByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
       const logDate = logData.date;
       if (!logDate) return;
-
       if (startDate && logDate < startDate) return;
       if (endDate && logDate > endDate) return;
 
       const walkMins = parseFloat(logData.selfCare?.walkMinutes || 0);
-      if (walkMins > 0) {
-        walkByDate[logDate] = (walkByDate[logDate] || 0) + walkMins;
-      }
+      if (walkMins > 0) walkByDate[logDate] = walkMins;
     });
 
     const dates = Object.keys(walkByDate).sort();
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => walkByDate[d]) : [0];
 
+    // Ensure walkGoal is passed as the 8th argument
     drawScatterChart(canvas, labels, data, "#e67e22", "Walk Duration", "Minutes", "Date", walkGoal, "Minutes", 10);
     renderWalkCalendar(startDate, endDate, records);
 
@@ -1719,27 +1722,30 @@ async function renderAnalyticsChart() {
   } else if (activeView === "sleep") {
     if (chartTitle) chartTitle.innerText = "Daily Sleep Duration";
 
+    // 1. Fetch sleep goal
     const sleepGoal = await getGoal("sleep");
-    const sleepByDate = {};
+    
+    // 2. Update input field if present on page
+    const sleepInput = document.getElementById("sleep-goal-input");
+    if (sleepInput) sleepInput.value = sleepGoal;
 
+    const sleepByDate = {};
     records.forEach(item => {
       const logData = item.data || item;
       const logDate = logData.date;
       if (!logDate) return;
-
       if (startDate && logDate < startDate) return;
       if (endDate && logDate > endDate) return;
 
       const sleepHrs = parseFloat(logData.selfCare?.sleepHours || 0);
-      if (sleepHrs > 0) {
-        sleepByDate[logDate] = (sleepByDate[logDate] || 0) + sleepHrs;
-      }
+      if (sleepHrs > 0) sleepByDate[logDate] = sleepHrs;
     });
 
     const dates = Object.keys(sleepByDate).sort();
     const labels = dates.length ? dates : ["No Data"];
     const data = dates.length ? dates.map(d => sleepByDate[d]) : [0];
 
+    // Ensure sleepGoal is passed as the 8th argument
     drawScatterChart(canvas, labels, data, "#9b59b6", "Sleep Duration", "Hours", "Date", sleepGoal, "Hours", 2);
     renderSleepCalendar(startDate, endDate, records);
 
@@ -3264,24 +3270,31 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
 }
 
 // Fetch goal from the user's subcollection
-export async function getGoal(type) {
-  const defaults = { formula: 80, water: 8, walk: 30, sleep: 8 };
-  const user = auth.currentUser;
+async function getGoal(type) {
+  // Hardcoded defaults if no goal is stored in Firebase yet
+  const defaultGoals = {
+    water: 8,
+    formula: 30,
+    walk: 30,  // 30 minutes
+    sleep: 8   // 8 hours
+  };
 
-  if (!user) return defaults[type];
+  const user = currentUser || auth.currentUser;
+  if (!user) return defaultGoals[type] || 0;
 
   try {
-    const goalDocRef = doc(db, "users", user.uid, "logs", "goal_settings");
-    const docSnap = await getDoc(goalDocRef);
+    const docRef = doc(db, "users", user.uid, "logs", "goal_settings");
+    const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists() && docSnap.data()?.[type] !== undefined) {
-      return parseFloat(docSnap.data()[type]);
+    if (docSnap.exists() && docSnap.data()[type] !== undefined) {
+      const val = parseFloat(docSnap.data()[type]);
+      return isNaN(val) ? (defaultGoals[type] || 0) : val;
     }
   } catch (err) {
-    console.error("Error fetching goal:", err);
+    console.error(`Error reading ${type} goal: `, err);
   }
 
-  return defaults[type];
+  return defaultGoals[type] || 0;
 }
 
 // Populate input fields with saved or default values
