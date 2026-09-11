@@ -3392,15 +3392,17 @@ function renderHandwashRows() {
     
     const div = document.createElement("div");
     div.className = "bm-handwash-row";
-    div.style.cssText = "display: flex; align-items: center; gap: 12px; font-size: 0.85rem;";
+    div.style.cssText = "display: flex; align-items: center; gap: 16px; font-size: 0.85rem;";
     div.innerHTML = `
-      <span style="color: #555; min-width: 90px;">${timeVal}:</span>
-      <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-        <input type="radio" name="handwash_bm_${index}" value="yes" /> Yes
-      </label>
-      <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-        <input type="radio" name="handwash_bm_${index}" value="no" /> No
-      </label>
+      <span style="color: #555; min-width: 130px; line-height: 1;">${timeVal}:</span>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0; line-height: 1;">
+          <input type="radio" name="handwash_bm_${index}" value="yes" style="margin: 0; vertical-align: middle;" /> Yes
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0; line-height: 1;">
+          <input type="radio" name="handwash_bm_${index}" value="no" style="margin: 0; vertical-align: middle;" /> No
+        </label>
+      </div>
     `;
     container.appendChild(div);
   });
