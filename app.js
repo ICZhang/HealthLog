@@ -3388,7 +3388,7 @@ function renderHandwashRows() {
 
   container.innerHTML = "";
   bmRows.forEach((row, index) => {
-    const timeVal = row.querySelector(".bm-time")?.value || `BM #${index + 1}`;
+    const timeVal = row.querySelector(".bm-time")?.value || `Bowel Movement #${index + 1}`;
     
     const div = document.createElement("div");
     div.className = "bm-handwash-row";
