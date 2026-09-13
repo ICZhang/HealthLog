@@ -489,7 +489,6 @@ function resetForm() {
   document.getElementById("special-instructions-input").value = "";
 
   addBmRow(); 
-  addBmRow();
   addFormulaRow();
   addFormulaRow();
   addTextRow(activitiesContainer, "activity-row", "#1 Activity");
