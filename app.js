@@ -1065,20 +1065,21 @@ function showViewModal(data) {
     : "No BM logs recorded";
 
     // Process Enzymes
-  const enzymeList = [
-    { key: "noFenol", label: "No-Fenol" },
-    { key: "carbDgts", label: "Carb Digest" },
-    { key: "chew", label: "Chewable" }
-  ];
-
-  const activeEnzymes = data.enzymes 
-    ? enzymeList
-        .filter(e => data.enzymes[e.key]?.checked)
-        .map(e => {
-          const notes = data.enzymes[e.key]?.notes ? ` (${data.enzymes[e.key].notes})` : "";
-          return `<li><strong>${e.label}</strong>${notes}</li>`;
-        })
-    : [];
+    const enzymeList = [
+      { key: "noFenol", label: "No-Fenol" },
+      { key: "carbDgts", label: "Carb Digest" },
+      { key: "chew", label: "Chewable" }
+    ];
+  
+    const activeEnzymes = data.enzymes 
+      ? enzymeList
+          .filter(e => data.enzymes[e.key]?.checked)
+          .map(e => {
+            const rawVal = data.enzymes[e.key]?.notes || "";
+            const amountStr = rawVal ? ` - Amount: ${rawVal}` : "";
+            return `<li><strong>${e.label}</strong>${amountStr}</li>`;
+          })
+      : [];
 
   modalBody.innerHTML = `
     <div style="padding-top: 15px; margin-bottom: 12px; text-align: left;">
