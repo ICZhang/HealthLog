@@ -1064,6 +1064,22 @@ function showViewModal(data) {
     ? sc.washHandsAfterBm.map((status, i) => `BM #${i + 1}: ${status ? status.toUpperCase() : 'Not recorded'}`).join(", ")
     : "No BM logs recorded";
 
+    // Process Enzymes
+  const enzymeList = [
+    { key: "noFenol", label: "No-Fenol" },
+    { key: "carbDgts", label: "Carb Digest" },
+    { key: "chew", label: "Chewable" }
+  ];
+
+  const activeEnzymes = data.enzymes 
+    ? enzymeList
+        .filter(e => data.enzymes[e.key]?.checked)
+        .map(e => {
+          const notes = data.enzymes[e.key]?.notes ? ` (${data.enzymes[e.key].notes})` : "";
+          return `<li><strong>${e.label}</strong>${notes}</li>`;
+        })
+    : [];
+
   modalBody.innerHTML = `
     <div style="padding-top: 15px; margin-bottom: 12px; text-align: left;">
         <br>
@@ -1120,19 +1136,10 @@ function showViewModal(data) {
         : '<li>None recorded</li>'}
     </ul>
 
-    <p><strong>Self-Care:</strong></p>
-    <ul style="margin: 4px 0; padding-left: 20px;">
-      <li><strong>Brush Teeth:</strong> ${brushTeethStr}</li>
-      <li><strong>Floss Teeth:</strong> ${flossTeethStr}</li>
-      <li><strong>Handwashing (after BM):</strong> ${handwashList}</li>
-      <li><strong>Walk:</strong> ${sc.walkMinutes ? `${sc.walkMinutes} minutes` : 'None recorded'}</li>
-      <li><strong>Sleep:</strong> ${sc.sleepHours ? `${sc.sleepHours} hours` : 'None recorded'}</li>
-    </ul>
-
-    <p><strong>Activities:</strong></p>
+    <p><strong>Enzymes:</strong></p>
     <ul>
-      ${data.activities?.length 
-        ? data.activities.map(a => `<li>${typeof a === 'object' ? `${a.name || 'Activity'}: at ${formatTo12Hour(a.time)}` : a}</li>`).join('') 
+      ${activeEnzymes.length 
+        ? activeEnzymes.join('') 
         : '<li>None recorded</li>'}
     </ul>
 
@@ -1156,6 +1163,22 @@ function showViewModal(data) {
             ? data.foods.map(f => `<li>${f.name.replace(/_/g, " ")}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('')
             : '<li>None recorded</li>')
       }
+    </ul>
+
+    <p><strong>Self-Care:</strong></p>
+    <ul style="margin: 4px 0; padding-left: 20px;">
+      <li><strong>Brush Teeth:</strong> ${brushTeethStr}</li>
+      <li><strong>Floss Teeth:</strong> ${flossTeethStr}</li>
+      <li><strong>Handwashing (after BM):</strong> ${handwashList}</li>
+      <li><strong>Walk:</strong> ${sc.walkMinutes ? `${sc.walkMinutes} minutes` : 'None recorded'}</li>
+      <li><strong>Sleep:</strong> ${sc.sleepHours ? `${sc.sleepHours} hours` : 'None recorded'}</li>
+    </ul>
+
+    <p><strong>Activities:</strong></p>
+    <ul>
+      ${data.activities?.length 
+        ? data.activities.map(a => `<li>${typeof a === 'object' ? `${a.name || 'Activity'}: at ${formatTo12Hour(a.time)}` : a}</li>`).join('') 
+        : '<li>None recorded</li>'}
     </ul>
 
     <p><strong>Pain Logs:</strong></p>
