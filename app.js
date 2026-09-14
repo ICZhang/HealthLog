@@ -3766,16 +3766,6 @@ function createMedRow(sectionPrefix, initialData = {}) {
   return row;
 }
 
-document.getElementById("add-morning-med-btn")?.addEventListener("click", () => {
-  const list = document.getElementById("morning-meds-list");
-  if (list) list.appendChild(createMedRow("morning-med"));
-});
-
-document.getElementById("add-evening-med-btn")?.addEventListener("click", () => {
-  const list = document.getElementById("evening-meds-list");
-  if (list) list.appendChild(createMedRow("evening-med"));
-});
-
 // Event delegation for remove buttons and toggle buttons inside med lists
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("remove-med-btn")) {
