@@ -655,14 +655,15 @@ function getFormData() {
 
   const specialInstructionsText = document.getElementById("special-instructions-input")?.value.trim() || "";
 
-  const newNotesText = document.getElementById("day-notes")?.value.trim() || "";
-  const existingNotes = currentRecordData?.notes || "";
+  // 1. Get raw text from the textarea
+  const rawNotes = document.getElementById("day-notes")?.value || "";
 
-  // Combine existing notes and new notes with a blank line between them
-  let finalNotes = newNotesText;
-  if (existingNotes && newNotesText && existingNotes !== newNotesText) {
-    finalNotes = `${existingNotes}\n\n${newNotesText}`;
-  }
+  // 2. Clean up extra spaces while preserving paragraph breaks
+  const dayNotesText = rawNotes
+    .split("\n")
+    .map(line => line.trim())
+    .filter((line, index, arr) => line !== "" || (index > 0 && arr[index - 1] !== "")) // Remove consecutive blank lines
+    .join("\n");
 
   return {
     date: document.getElementById("log-date")?.value || localToday,
@@ -686,7 +687,7 @@ function getFormData() {
     moodLogs,
     behaviorLogs,
     daySummary: document.getElementById("day-summary-select")?.value || "", 
-    notes: finalNotes,
+    notes: dayNotesText,
     specialInstructions: specialInstructionsText,
     selfCare,
     updatedAt: new Date()
