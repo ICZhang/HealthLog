@@ -457,78 +457,49 @@ addBehaviorBtn?.addEventListener("click", () => addBehaviorRow());
 addCromolynBtn?.addEventListener("click", () => addCromolynRow());
 
 function resetForm() {
-  if (logForm) logForm.reset();
-  if (editingDocIdInput) editingDocIdInput.value = "";
-  if (saveLogBtn) saveLogBtn.textContent = "Save Care Log";
-  if (cancelEditBtn) cancelEditBtn.classList.add("hidden");
+  logForm.reset();
+  editingDocIdInput.value = "";
+  saveLogBtn.textContent = "Save Care Log";
+  cancelEditBtn.classList.add("hidden");
 
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   
-  const dateInput = document.getElementById("log-date");
-  const timeInput = document.getElementById("log-time");
-  if (dateInput) dateInput.value = `${year}-${month}-${day}`;
-  if (timeInput) timeInput.value = now.toTimeString().slice(0, 5);
+  document.getElementById("log-date").value = `${year}-${month}-${day}`;
+  document.getElementById("log-time").value = now.toTimeString().slice(0, 5);
 
   loggedSoups = [];
-  if (typeof renderSavedSoups === "function") renderSavedSoups();
+  renderSavedSoups();
+  
 
-  // Array of all dynamic containers to reset safely
-  const containers = [
-    bmContainer,
-    formulaContainer,
-    activitiesContainer,
-    waterContainer,
-    herbalContainer,
-    enteragramContainer,
-    painContainer,
-    moodContainer,
-    behaviorContainer,
-    cromolynContainer,
-    document.getElementById("morning-meds-list"),
-    document.getElementById("evening-meds-list")
-  ];
+  bmContainer.innerHTML = "";
+  formulaContainer.innerHTML = "";
+  activitiesContainer.innerHTML = "";
+  waterContainer.innerHTML = "";
+  herbalContainer.innerHTML = "";
+  enteragramContainer.innerHTML = "";
+  painContainer.innerHTML = "";
+  moodContainer.innerHTML = "";
+  behaviorContainer.innerHTML = "";
+  cromolynContainer.innerHTML = "";
+  document.getElementById("day-summary-select").value = "";
+  document.getElementById("day-notes").value = "";
+  document.getElementById("special-instructions-input").value = "";
 
-  // Clear container HTML safely
-  containers.forEach(container => {
-    if (container) container.innerHTML = "";
-  });
-
-  // Safe input resets
-  const summarySelect = document.getElementById("day-summary-select");
-  const dayNotes = document.getElementById("day-notes");
-  const specialInstructions = document.getElementById("special-instructions-input");
-  const morningTime = document.getElementById("morning-meds-time");
-  const eveningTime = document.getElementById("evening-meds-time");
-
-  if (summarySelect) summarySelect.value = "";
-  if (dayNotes) dayNotes.value = "";
-  if (specialInstructions) specialInstructions.value = "";
-  if (morningTime) morningTime.value = "";
-  if (eveningTime) eveningTime.value = "";
-
-  // Re-initialize default dynamic rows
-  if (typeof addBmRow === "function") addBmRow(); 
-  if (typeof addFormulaRow === "function") { addFormulaRow(); addFormulaRow(); }
-  if (typeof addTextRow === "function" && activitiesContainer) {
-    addTextRow(activitiesContainer, "activity-row", "#1 Activity");
-    addTextRow(activitiesContainer, "activity-row", "#2 Activity");
-  }
-  if (typeof addWaterRow === "function") addWaterRow();
-  if (typeof addHerbalRow === "function") addHerbalRow();     
-  if (typeof addEnteragramRow === "function") addEnteragramRow();
-  if (typeof addPainRow === "function") addPainRow();
-  if (typeof addMoodRow === "function") addMoodRow();
-  if (typeof addBehaviorRow === "function") addBehaviorRow();
-  if (typeof addCromolynRow === "function") addCromolynRow();
-
-  // Add default initial med rows
-  const mList = document.getElementById("morning-meds-list");
-  const eList = document.getElementById("evening-meds-list");
-  if (mList && typeof createMedRow === "function") mList.appendChild(createMedRow("morning-med"));
-  if (eList && typeof createMedRow === "function") eList.appendChild(createMedRow("evening-med"));
+  addBmRow(); 
+  addFormulaRow();
+  addFormulaRow();
+  addTextRow(activitiesContainer, "activity-row", "#1 Activity");
+  addTextRow(activitiesContainer, "activity-row", "#2 Activity");
+  addWaterRow();
+  addHerbalRow();     
+  addEnteragramRow();
+  addPainRow();
+  addMoodRow();
+  addBehaviorRow();
+  addCromolynRow();
 }
 
 cancelEditBtn.addEventListener("click", () => {
@@ -885,39 +856,6 @@ function populateFormForEdit(id, data) {
     data.behaviorLogs.forEach(b => addBehaviorRow(b));
   } else {
     addBehaviorRow();
-  }
-
-  const morningList = document.getElementById("morning-meds-list");
-  const morningTimeEl = document.getElementById("morning-meds-time");
-  if (morningList) morningList.innerHTML = "";
-
-  if (data.morningMeds) {
-    if (morningTimeEl) morningTimeEl.value = data.morningMeds.timeTaken || "";
-    if (Array.isArray(data.morningMeds.list) && data.morningMeds.list.length > 0) {
-      data.morningMeds.list.forEach(med => morningList?.appendChild(createMedRow("morning-med", med)));
-    } else if (morningList) {
-      morningList.appendChild(createMedRow("morning-med"));
-    }
-  } else if (morningList) {
-    if (morningTimeEl) morningTimeEl.value = "";
-    morningList.appendChild(createMedRow("morning-med"));
-  }
-
-  // --- POPULATE EVENING MEDS ---
-  const eveningList = document.getElementById("evening-meds-list");
-  const eveningTimeEl = document.getElementById("evening-meds-time");
-  if (eveningList) eveningList.innerHTML = "";
-
-  if (data.eveningMeds) {
-    if (eveningTimeEl) eveningTimeEl.value = data.eveningMeds.timeTaken || "";
-    if (Array.isArray(data.eveningMeds.list) && data.eveningMeds.list.length > 0) {
-      data.eveningMeds.list.forEach(med => eveningList?.appendChild(createMedRow("evening-med", med)));
-    } else if (eveningList) {
-      eveningList.appendChild(createMedRow("evening-med"));
-    }
-  } else if (eveningList) {
-    if (eveningTimeEl) eveningTimeEl.value = "";
-    eveningList.appendChild(createMedRow("evening-med"));
   }
 
   if (data.enzymes) {
@@ -3734,34 +3672,23 @@ function renderSleepCalendar(startDate, endDate, records) {
 
 
 // Helper to create a new Med Row matching grid proportions
-function createMedRow(sectionPrefix, initialData = {}) {
+function createMedRow(sectionPrefix) {
   const row = document.createElement("div");
   row.className = `${sectionPrefix}-row`;
   row.style.cssText = "display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; align-items: center;";
 
-  const state = initialData.active || "checked";
-  let btnIcon = "✓";
-  let btnBg = "#27ae60";
-
-  if (state === "discontinued") {
-    btnIcon = "✕";
-    btnBg = "#e74c3c";
-  } else if (state === "unchecked") {
-    btnIcon = "";
-    btnBg = "#bdc3c7";
-  }
-
   row.innerHTML = `
-    <input type="text" class="${sectionPrefix}-name" placeholder="Medication Name" value="${initialData.name || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
-    <input type="text" class="${sectionPrefix}-dosage" placeholder="e.g. 10mg" value="${initialData.dosage || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    <input type="text" class="${sectionPrefix}-name" placeholder="Medication Name" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    <input type="text" class="${sectionPrefix}-dosage" placeholder="e.g. 10mg" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
     
     <div style="text-align: center;">
-      <button type="button" class="${sectionPrefix}-active-toggle" data-state="${state}" style="background: ${btnBg}; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem;">
-        ${btnIcon}
+      <!-- Active Toggle Button: Custom checkbox that toggles states -->
+      <button type="button" class="${sectionPrefix}-active-toggle active-state-checked" data-state="checked" style="background: #27ae60; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+        ✓
       </button>
     </div>
 
-    <input type="text" class="${sectionPrefix}-notes" placeholder="Notes..." value="${initialData.notes || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    <input type="text" class="${sectionPrefix}-notes" placeholder="Notes..." style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
     
     <button type="button" class="remove-med-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; cursor: pointer; font-weight: bold; line-height: 1;">
       ×
