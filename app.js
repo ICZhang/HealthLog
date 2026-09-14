@@ -472,6 +472,16 @@ function resetForm() {
 
   loggedSoups = [];
   renderSavedSoups();
+
+  const morningList = document.getElementById("morning-meds-list");
+  const eveningList = document.getElementById("evening-meds-list");
+  if (morningList) morningList.innerHTML = "";
+  if (eveningList) eveningList.innerHTML = "";
+
+  const morningTimeInput = document.getElementById("morning-meds-time");
+  const eveningTimeInput = document.getElementById("evening-meds-time");
+  if (morningTimeInput) morningTimeInput.value = "";
+  if (eveningTimeInput) eveningTimeInput.value = "";
   
 
   bmContainer.innerHTML = "";
@@ -828,6 +838,40 @@ function populateFormForEdit(id, data) {
     document.getElementById("enzyme-carb-dgts-notes").value = data.enzymes.carbDgts?.notes || "";
     document.getElementById("enzyme-chew").checked = !!data.enzymes.chew?.checked;
     document.getElementById("enzyme-chew-notes").value = data.enzymes.chew?.notes || "";
+  }
+
+  // Morning Meds
+  const morningList = document.getElementById("morning-meds-list");
+  const morningTimeEl = document.getElementById("morning-meds-time");
+  if (morningList) morningList.innerHTML = "";
+
+  if (data.morningMeds) {
+    if (morningTimeEl) morningTimeEl.value = data.morningMeds.timeTaken || "";
+    if (Array.isArray(data.morningMeds.list) && data.morningMeds.list.length > 0) {
+      data.morningMeds.list.forEach(med => morningList.appendChild(createMedRow("morning-med", med)));
+    } else if (morningList) {
+      morningList.appendChild(createMedRow("morning-med"));
+    }
+  } else if (morningList) {
+    if (morningTimeEl) morningTimeEl.value = "";
+    morningList.appendChild(createMedRow("morning-med"));
+  }
+
+  // Evening Meds
+  const eveningList = document.getElementById("evening-meds-list");
+  const eveningTimeEl = document.getElementById("evening-meds-time");
+  if (eveningList) eveningList.innerHTML = "";
+
+  if (data.eveningMeds) {
+    if (eveningTimeEl) eveningTimeEl.value = data.eveningMeds.timeTaken || "";
+    if (Array.isArray(data.eveningMeds.list) && data.eveningMeds.list.length > 0) {
+      data.eveningMeds.list.forEach(med => eveningList.appendChild(createMedRow("evening-med", med)));
+    } else if (eveningList) {
+      eveningList.appendChild(createMedRow("evening-med"));
+    }
+  } else if (eveningList) {
+    if (eveningTimeEl) eveningTimeEl.value = "";
+    eveningList.appendChild(createMedRow("evening-med"));
   }
 
   // Reset ingredient selections in grid
@@ -3632,6 +3676,81 @@ function renderSleepCalendar(startDate, endDate, records) {
   renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "hrs", "#9b59b6");
 }
 
+
+
+function createMedRow(sectionPrefix, initialData = {}) {
+  const row = document.createElement("div");
+  row.className = `${sectionPrefix}-row`;
+  row.style.cssText = "display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; align-items: center;";
+
+  const state = initialData.active || "checked";
+  let btnIcon = "✓";
+  let btnBg = "#27ae60";
+
+  if (state === "discontinued") {
+    btnIcon = "✕";
+    btnBg = "#e74c3c";
+  } else if (state === "unchecked") {
+    btnIcon = "";
+    btnBg = "#bdc3c7";
+  }
+
+  row.innerHTML = `
+    <input type="text" class="${sectionPrefix}-name" placeholder="Medication Name" value="${initialData.name || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    <input type="text" class="${sectionPrefix}-dosage" placeholder="e.g. 10mg" value="${initialData.dosage || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    
+    <div style="text-align: center;">
+      <button type="button" class="${sectionPrefix}-active-toggle" data-state="${state}" style="background: ${btnBg}; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+        ${btnIcon}
+      </button>
+    </div>
+
+    <input type="text" class="${sectionPrefix}-notes" placeholder="Notes..." value="${initialData.notes || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    
+    <button type="button" class="remove-med-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; cursor: pointer; font-weight: bold; line-height: 1;">
+      ×
+    </button>
+  `;
+
+  return row;
+}
+
+document.getElementById("add-morning-med-btn")?.addEventListener("click", () => {
+  const list = document.getElementById("morning-meds-list");
+  if (list) list.appendChild(createMedRow("morning-med"));
+});
+
+document.getElementById("add-evening-med-btn")?.addEventListener("click", () => {
+  const list = document.getElementById("evening-meds-list");
+  if (list) list.appendChild(createMedRow("evening-med"));
+});
+
+// Event delegation for remove buttons and toggle buttons inside med lists
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("remove-med-btn")) {
+    const row = e.target.closest(".morning-med-row, .evening-med-row");
+    if (row) row.remove();
+  }
+
+  if (e.target.classList.contains("morning-med-active-toggle") || e.target.classList.contains("evening-med-active-toggle")) {
+    const btn = e.target;
+    const currentState = btn.getAttribute("data-state");
+
+    if (currentState === "checked") {
+      btn.setAttribute("data-state", "discontinued");
+      btn.style.background = "#e74c3c";
+      btn.textContent = "✕";
+    } else if (currentState === "discontinued") {
+      btn.setAttribute("data-state", "unchecked");
+      btn.style.background = "#bdc3c7";
+      btn.textContent = "";
+    } else {
+      btn.setAttribute("data-state", "checked");
+      btn.style.background = "#27ae60";
+      btn.textContent = "✓";
+    }
+  }
+});
 
 
 
