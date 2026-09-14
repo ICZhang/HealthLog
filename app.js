@@ -655,15 +655,7 @@ function getFormData() {
 
   const specialInstructionsText = document.getElementById("special-instructions-input")?.value.trim() || "";
 
-  // 1. Get raw text from the textarea
-  const rawNotes = document.getElementById("day-notes")?.value || "";
-
-  // 2. Clean up extra spaces while preserving paragraph breaks
-  const dayNotesText = rawNotes
-    .split("\n")
-    .map(line => line.trim())
-    .filter((line, index, arr) => line !== "" || (index > 0 && arr[index - 1] !== "")) // Remove consecutive blank lines
-    .join("\n");
+  const dayNotesText = document.getElementById("day-notes")?.value.trim() || ""; 
 
   return {
     date: document.getElementById("log-date")?.value || localToday,
