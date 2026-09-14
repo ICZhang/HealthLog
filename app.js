@@ -654,7 +654,15 @@ function getFormData() {
   const localToday = `${year}-${month}-${day}`;
 
   const specialInstructionsText = document.getElementById("special-instructions-input")?.value.trim() || "";
-  const dayNotesText = document.getElementById("day-notes")?.value.trim() || "";
+
+  const newNotesText = document.getElementById("day-notes")?.value.trim() || "";
+  const existingNotes = currentRecordData?.notes || "";
+
+  // Combine existing notes and new notes with a blank line between them
+  let finalNotes = newNotesText;
+  if (existingNotes && newNotesText && existingNotes !== newNotesText) {
+    finalNotes = `${existingNotes}\n\n${newNotesText}`;
+  }
 
   return {
     date: document.getElementById("log-date")?.value || localToday,
@@ -678,7 +686,7 @@ function getFormData() {
     moodLogs,
     behaviorLogs,
     daySummary: document.getElementById("day-summary-select")?.value || "", 
-    notes: dayNotesText,
+    notes: finalNotes,
     specialInstructions: specialInstructionsText,
     selfCare,
     updatedAt: new Date()
@@ -1203,7 +1211,10 @@ function showViewModal(data) {
     </ul>
   
     <p><strong>Day Summary:</strong> ${data.daySummary || 'N/A'}</p>
-    <p><strong>Notes:</strong> ${data.notes || 'No extra notes.'}</p>
+    <p><strong>Notes:</strong></p>
+    <div style="white-space: pre-line; margin-top: 4px; color: #333;">
+      ${data.notes || 'No extra notes.'}
+    </div>
 
     <p><strong>Special Instructions:</strong> ${data.specialInstructions || 'None recorded.'}</p>
   `;
