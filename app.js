@@ -458,7 +458,7 @@ addMoodBtn?.addEventListener("click", () => addMoodRow());
 addBehaviorBtn?.addEventListener("click", () => addBehaviorRow());
 addCromolynBtn?.addEventListener("click", () => addCromolynRow());
 
-function resetForm() {
+async function resetForm() {
   logForm.reset();
   editingDocIdInput.value = "";
   saveLogBtn.textContent = "Save Care Log";
@@ -512,6 +512,8 @@ function resetForm() {
   addMoodRow();
   addBehaviorRow();
   addCromolynRow();
+
+  await loadUserMedications();
 }
 
 cancelEditBtn.addEventListener("click", () => {
@@ -882,38 +884,36 @@ function populateFormForEdit(id, data) {
     document.getElementById("enzyme-chew-notes").value = data.enzymes.chew?.notes || "";
   }
 
-  // Morning Meds
-  const morningList = document.getElementById("morning-meds-list");
+  // Populate Morning Meds for this log
+  const morningContainer = document.getElementById("morning-meds-container");
   const morningTimeEl = document.getElementById("morning-meds-time");
-  if (morningList) morningList.innerHTML = "";
 
-  if (data.morningMeds) {
-    if (morningTimeEl) morningTimeEl.value = data.morningMeds.timeTaken || "";
-    if (Array.isArray(data.morningMeds.list) && data.morningMeds.list.length > 0) {
-      data.morningMeds.list.forEach(med => morningList.appendChild(createMedRow("morning-med", med)));
-    } else if (morningList) {
-      morningList.appendChild(createMedRow("morning-med"));
+  if (morningContainer) {
+    morningContainer.innerHTML = "";
+    if (data.morningMeds) {
+      if (morningTimeEl) morningTimeEl.value = data.morningMeds.timeTaken || "";
+      if (Array.isArray(data.morningMeds.list) && data.morningMeds.list.length > 0) {
+        data.morningMeds.list.forEach(med => {
+          morningContainer.appendChild(createMedRow("morning-med", med));
+        });
+      }
     }
-  } else if (morningList) {
-    if (morningTimeEl) morningTimeEl.value = "";
-    morningList.appendChild(createMedRow("morning-med"));
   }
 
-  // Evening Meds
-  const eveningList = document.getElementById("evening-meds-list");
+  // Populate Evening Meds for this log
+  const eveningContainer = document.getElementById("evening-meds-container");
   const eveningTimeEl = document.getElementById("evening-meds-time");
-  if (eveningList) eveningList.innerHTML = "";
 
-  if (data.eveningMeds) {
-    if (eveningTimeEl) eveningTimeEl.value = data.eveningMeds.timeTaken || "";
-    if (Array.isArray(data.eveningMeds.list) && data.eveningMeds.list.length > 0) {
-      data.eveningMeds.list.forEach(med => eveningList.appendChild(createMedRow("evening-med", med)));
-    } else if (eveningList) {
-      eveningList.appendChild(createMedRow("evening-med"));
+  if (eveningContainer) {
+    eveningContainer.innerHTML = "";
+    if (data.eveningMeds) {
+      if (eveningTimeEl) eveningTimeEl.value = data.eveningMeds.timeTaken || "";
+      if (Array.isArray(data.eveningMeds.list) && data.eveningMeds.list.length > 0) {
+        data.eveningMeds.list.forEach(med => {
+          eveningContainer.appendChild(createMedRow("evening-med", med));
+        });
+      }
     }
-  } else if (eveningList) {
-    if (eveningTimeEl) eveningTimeEl.value = "";
-    eveningList.appendChild(createMedRow("evening-med"));
   }
 
   // Reset ingredient selections in grid
@@ -3825,6 +3825,94 @@ document.addEventListener("click", (e) => {
   }
 });
 
+
+// Fetch persistent meds from user's subcollection
+export async function loadUserMedications() {
+  const user = currentUser || auth.currentUser;
+  if (!user) return;
+
+  try {
+    const docRef = doc(db, "users", user.uid, "logs", "medication_settings");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      
+      const morningContainer = document.getElementById("morning-meds-container");
+      if (morningContainer && Array.isArray(data.morningMeds)) {
+        morningContainer.innerHTML = "";
+        data.morningMeds.forEach(med => {
+          morningContainer.appendChild(createMedRow("morning-med", med));
+        });
+      }
+
+      const eveningContainer = document.getElementById("evening-meds-container");
+      if (eveningContainer && Array.isArray(data.eveningMeds)) {
+        eveningContainer.innerHTML = "";
+        data.eveningMeds.forEach(med => {
+          eveningContainer.appendChild(createMedRow("evening-med", med));
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error reading medication settings:", err);
+  }
+}
+
+// Save current medication UI inputs to user's subcollection
+async function saveMedicationsToFirebase() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const getMedList = (prefix) => {
+    const list = [];
+    document.querySelectorAll(`.${prefix}-row`).forEach(row => {
+      const name = row.querySelector(`.med-name`)?.value.trim() || "";
+      const dosage = row.querySelector(`.med-dosage`)?.value.trim() || "";
+      const active = row.querySelector(`.med-toggle`)?.getAttribute("data-state") || "checked";
+      const notes = row.querySelector(`.med-notes`)?.value.trim() || "";
+
+      if (name || dosage || notes) {
+        list.push({ name, dosage, active, notes });
+      }
+    });
+    return list;
+  };
+
+  const morningMeds = getMedList("morning-med");
+  const eveningMeds = getMedList("evening-med");
+
+  try {
+    const medDocRef = doc(db, "users", user.uid, "logs", "medication_settings");
+    await setDoc(medDocRef, { morningMeds, eveningMeds }, { merge: true });
+  } catch (err) {
+    console.error("Error saving medication settings:", err);
+  }
+}
+
+// Bind automatic Firebase updates on user changes
+document.addEventListener("DOMContentLoaded", () => {
+  // Load saved meds when user logs in/page loads
+  loadUserMedications();
+
+  // Save changes when user edits any medication input field
+  document.addEventListener("change", (e) => {
+    if (e.target.closest(".dynamic-med-row")) {
+      saveMedicationsToFirebase();
+    }
+  });
+
+  // Save changes when user deletes a row
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("remove-med-btn")) {
+      const row = e.target.closest(".dynamic-med-row");
+      if (row) {
+        row.remove();
+        saveMedicationsToFirebase();
+      }
+    }
+  });
+});
 
 
 
