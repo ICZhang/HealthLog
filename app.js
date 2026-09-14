@@ -3434,7 +3434,7 @@ function renderSavedSoups() {
     const ingredientSummary = soup.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
     
     // Default consumedTime to creation time if not set
-    const currentConsumedTime = soup.consumedTime !== undefined ? soup.consumedTime : (soup.time || "");
+    const currentConsumedTime = soup.consumedTime || "";
 
     card.innerHTML = `
       <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -3512,11 +3512,12 @@ saveSoupBtn.addEventListener("click", () => {
   }
 
   const soupName = soupNameInput.value.trim() || `Soup ${loggedSoups.length + 1}`;
-  const soupTime = soupTimeInput.value || "";
+  const createdTime = soupTimeInput?.value || document.getElementById("log-time")?.value || "";
 
   loggedSoups.push({
     name: soupName,
     time: soupTime,
+    consumedTime: "",
     ingredients: selectedIngredients
   });
 
