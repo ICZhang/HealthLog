@@ -3749,8 +3749,8 @@ function createMedRow(sectionPrefix, initialData = {}) {
   }
 
   row.innerHTML = `
-    <input type="text" class="${sectionPrefix}-name med-name" placeholder="Medication Name" value="${initialData.name || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
-    <input type="text" class="${sectionPrefix}-dosage med-dosage" placeholder="e.g. 10mg" value="${initialData.dosage || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
+    <input type="text" class="${sectionPrefix}-name med-name" placeholder="Name" value="${initialData.name || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
+    <input type="text" class="${sectionPrefix}-dosage med-dosage" placeholder="" value="${initialData.dosage || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
     
     <div style="display: flex; justify-content: center; align-items: center;">
       <button type="button" class="${sectionPrefix}-active-toggle med-toggle" data-state="${state}" style="background: ${btnBg}; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; padding: 0; margin: 0;">
@@ -3799,6 +3799,12 @@ export async function loadUserMedications() {
   const user = currentUser || auth.currentUser;
   if (!user) return;
 
+  const morningList = document.getElementById("morning-meds-list");
+  const eveningList = document.getElementById("evening-meds-list");
+
+  if (morningList) morningList.innerHTML = "";
+  if (eveningList) eveningList.innerHTML = "";
+
   try {
     const docRef = doc(db, "users", user.uid, "logs", "medication_settings");
     const docSnap = await getDoc(docRef);
@@ -3806,16 +3812,27 @@ export async function loadUserMedications() {
     if (docSnap.exists()) {
       const data = docSnap.data();
 
-      const morningList = document.getElementById("morning-meds-list");
       if (morningList && Array.isArray(data.morningMeds)) {
-        morningList.innerHTML = "";
-        data.morningMeds.forEach(med => morningList.appendChild(createMedRow("morning-med", med)));
+        data.morningMeds.forEach(med => {
+          // Pass empty dosage and notes for daily log entry
+          morningList.appendChild(createMedRow("morning-med", {
+            name: med.name,
+            active: med.active,
+            dosage: "",
+            notes: ""
+          }));
+        });
       }
 
-      const eveningList = document.getElementById("evening-meds-list");
       if (eveningList && Array.isArray(data.eveningMeds)) {
-        eveningList.innerHTML = "";
-        data.eveningMeds.forEach(med => eveningList.appendChild(createMedRow("evening-med", med)));
+        data.eveningMeds.forEach(med => {
+          eveningList.appendChild(createMedRow("evening-med", {
+            name: med.name,
+            active: med.active,
+            dosage: "",
+            notes: ""
+          }));
+        });
       }
     }
   } catch (err) {
@@ -3828,16 +3845,15 @@ export async function saveMedicationsToFirebase() {
   const user = auth.currentUser;
   if (!user) return;
 
-  const parseRows = (prefix) => {
+  const parseMasterRows = (prefix) => {
     const list = [];
     document.querySelectorAll(`.${prefix}-row`).forEach(row => {
       const name = row.querySelector(".med-name")?.value.trim() || "";
-      const dosage = row.querySelector(".med-dosage")?.value.trim() || "";
       const active = row.querySelector(".med-toggle")?.getAttribute("data-state") || "checked";
-      const notes = row.querySelector(".med-notes")?.value.trim() || "";
 
-      if (name || dosage || notes) {
-        list.push({ name, dosage, active, notes });
+      // Only save if there's a name listed
+      if (name) {
+        list.push({ name, active });
       }
     });
     return list;
@@ -3846,8 +3862,8 @@ export async function saveMedicationsToFirebase() {
   try {
     const medDocRef = doc(db, "users", user.uid, "logs", "medication_settings");
     await setDoc(medDocRef, {
-      morningMeds: parseRows("morning-med"),
-      eveningMeds: parseRows("evening-med")
+      morningMeds: parseMasterRows("morning-med"),
+      eveningMeds: parseMasterRows("evening-med")
     }, { merge: true });
   } catch (err) {
     console.error("Error auto-saving medication template:", err);
