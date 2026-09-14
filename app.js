@@ -646,41 +646,6 @@ function getFormData() {
     }
   });
 
-
-  const morningMedsList = [];
-  document.querySelectorAll(".morning-med-row").forEach(row => {
-    const name = row.querySelector(".morning-med-name")?.value.trim() || "";
-    const dosage = row.querySelector(".morning-med-dosage")?.value.trim() || "";
-    const activeState = row.querySelector(".morning-med-active-toggle")?.getAttribute("data-state") || "checked";
-    const notes = row.querySelector(".morning-med-notes")?.value.trim() || "";
-
-    if (name || dosage || notes) {
-      morningMedsList.push({ name, dosage, active: activeState, notes });
-    }
-  });
-
-  const morningMedsData = {
-    timeTaken: document.getElementById("morning-meds-time")?.value || "",
-    list: morningMedsList
-  };
-
-  const eveningMedsList = [];
-  document.querySelectorAll(".evening-med-row").forEach(row => {
-    const name = row.querySelector(".evening-med-name")?.value.trim() || "";
-    const dosage = row.querySelector(".evening-med-dosage")?.value.trim() || "";
-    const activeState = row.querySelector(".evening-med-active-toggle")?.getAttribute("data-state") || "checked";
-    const notes = row.querySelector(".evening-med-notes")?.value.trim() || "";
-
-    if (name || dosage || notes) {
-      eveningMedsList.push({ name, dosage, active: activeState, notes });
-    }
-  });
-
-  const eveningMedsData = {
-    timeTaken: document.getElementById("evening-meds-time")?.value || "",
-    list: eveningMedsList
-  };
-
   // Local date fallback calculation
   const now = new Date();
   const year = now.getFullYear();
@@ -701,8 +666,6 @@ function getFormData() {
     cromolynMeds,
     herbalMeds,
     enteragramDoses,
-    morningMeds: morningMedsData,
-    eveningMeds: eveningMedsData,
     formulaHydration: formulaEntries,
     warmWater: waterData,
     activities: getValues(".activity-row"),
@@ -3668,79 +3631,6 @@ function renderSleepCalendar(startDate, endDate, records) {
 
   renderSummaryCalendarGrid(grid, activeYear, activeMonthIndex, dailyTotals, "hrs", "#9b59b6");
 }
-
-
-
-// Helper to create a new Med Row matching grid proportions
-function createMedRow(sectionPrefix) {
-  const row = document.createElement("div");
-  row.className = `${sectionPrefix}-row`;
-  row.style.cssText = "display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; align-items: center;";
-
-  row.innerHTML = `
-    <input type="text" class="${sectionPrefix}-name" placeholder="Medication Name" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
-    <input type="text" class="${sectionPrefix}-dosage" placeholder="e.g. 10mg" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
-    
-    <div style="text-align: center;">
-      <!-- Active Toggle Button: Custom checkbox that toggles states -->
-      <button type="button" class="${sectionPrefix}-active-toggle active-state-checked" data-state="checked" style="background: #27ae60; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem;">
-        ✓
-      </button>
-    </div>
-
-    <input type="text" class="${sectionPrefix}-notes" placeholder="Notes..." style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
-    
-    <button type="button" class="remove-med-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; cursor: pointer; font-weight: bold; line-height: 1;">
-      ×
-    </button>
-  `;
-
-  return row;
-}
-
-// Attach listeners for dynamic dynamic addition, deletion, and Active button state toggling
-document.addEventListener("DOMContentLoaded", () => {
-  // Add Morning Med
-  document.getElementById("add-morning-med-btn")?.addEventListener("click", () => {
-    const container = document.getElementById("morning-meds-list");
-    if (container) container.appendChild(createMedRow("morning-med"));
-  });
-
-  // Add Evening Med
-  document.getElementById("add-evening-med-btn")?.addEventListener("click", () => {
-    const container = document.getElementById("evening-meds-list");
-    if (container) container.appendChild(createMedRow("evening-med"));
-  });
-
-  // Delegated Event Listener for Delete & Active State Toggles
-  document.addEventListener("click", (e) => {
-    // 1. Remove Row
-    if (e.target.classList.contains("remove-med-btn")) {
-      const row = e.target.closest("div[class$='-row']");
-      if (row) row.remove();
-    }
-
-    // 2. Toggle Active State (Cycles through: Active/Checked -> Discontinued/X -> Inactive/Blank)
-    if (e.target.classList.contains("morning-med-active-toggle") || e.target.classList.contains("evening-med-active-toggle")) {
-      const btn = e.target;
-      const currentState = btn.getAttribute("data-state");
-
-      if (currentState === "checked") {
-        btn.setAttribute("data-state", "discontinued");
-        btn.innerText = "✕";
-        btn.style.background = "#e74c3c"; // Red for discontinued
-      } else if (currentState === "discontinued") {
-        btn.setAttribute("data-state", "unchecked");
-        btn.innerText = "";
-        btn.style.background = "#bdc3c7"; // Gray for unchecked
-      } else {
-        btn.setAttribute("data-state", "checked");
-        btn.innerText = "✓";
-        btn.style.background = "#27ae60"; // Green for checked
-      }
-    }
-  });
-});
 
 
 
