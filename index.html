@@ -130,27 +130,27 @@
     <div class="meds-section" style="margin-bottom: 24px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
       <h3 style="margin: 0 0 12px 0; color: #2c3e50;">Morning Meds</h3>
 
-      <!-- Top Controls: Aligned Time Box & Add Button -->
-      <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px;">
-        <div>
-          <label for="morning-meds-time" style="display: block; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 4px;">Time Taken:</label>
-          <input type="time" id="morning-meds-time" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; line-height: 1.2; box-sizing: border-box;" />
+      <!-- Top Controls: Aligned Grid Layout -->
+      <div style="display: grid; grid-template-columns: auto auto 1fr; align-items: end; gap: 12px; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column;">
+          <label for="morning-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 4px;">Time Taken:</label>
+          <input type="time" id="morning-meds-time" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; margin: 0; box-sizing: border-box; height: 34px;" />
         </div>
 
         <div>
-          <span style="display: block; font-size: 0.85rem; visibility: hidden; margin-bottom: 4px;">Spacer</span>
-          <button type="button" id="add-morning-med-btn" style="background: #27ae60; color: white; border: none; padding: 7px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; line-height: 1.2;">
+          <button type="button" id="add-morning-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; margin: 0; box-sizing: border-box; height: 34px; display: inline-flex; align-items: center; justify-content: center;">
             + Add Med
           </button>
         </div>
       </div>
 
-      <!-- Column Header Labels -->
-      <div style="display: flex; gap: 8px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 8px; padding-right: 36px;">
-        <div style="flex: 1; text-align: left;">Name</div>
-        <div style="flex: 1; text-align: left;">Dosage</div>
-        <div style="flex: 1; text-align: center;">Active</div>
-        <div style="flex: 1; text-align: left;">Notes</div>
+      <!-- Column Header Labels: Strict Equal Grid -->
+      <div style="display: grid; grid-template-columns: calc((100% - 36px) / 4) calc((100% - 36px) / 4) calc((100% - 36px) / 4) calc((100% - 36px) / 4) 36px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 8px; text-align: left;">
+        <div>Name</div>
+        <div>Dosage</div>
+        <div style="text-align: center;">Active</div>
+        <div>Notes</div>
+        <div></div> <!-- Empty spacer matching delete button width -->
       </div>
 
       <!-- Dynamic Rows Container -->
@@ -163,51 +163,33 @@
     <div class="meds-section" style="margin-bottom: 24px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
       <h3 style="margin: 0 0 12px 0; color: #2c3e50;">Evening Meds</h3>
 
-      <!-- Top Controls: Aligned Time Box & Add Button -->
-      <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px;">
-        <div>
-          <label for="evening-meds-time" style="display: block; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 4px;">Time Taken:</label>
-          <input type="time" id="evening-meds-time" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; line-height: 1.2; box-sizing: border-box;" />
+      <!-- Top Controls: Aligned Grid Layout -->
+      <div style="display: grid; grid-template-columns: auto auto 1fr; align-items: end; gap: 12px; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column;">
+          <label for="evening-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 4px;">Time Taken:</label>
+          <input type="time" id="evening-meds-time" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; margin: 0; box-sizing: border-box; height: 34px;" />
         </div>
 
         <div>
-          <span style="display: block; font-size: 0.85rem; visibility: hidden; margin-bottom: 4px;">Spacer</span>
-          <button type="button" id="add-evening-med-btn" style="background: #27ae60; color: white; border: none; padding: 7px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; line-height: 1.2;">
+          <button type="button" id="add-evening-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; margin: 0; box-sizing: border-box; height: 34px; display: inline-flex; align-items: center; justify-content: center;">
             + Add Med
           </button>
         </div>
       </div>
 
-      <!-- Column Header Labels -->
-      <div style="display: flex; gap: 8px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 8px; padding-right: 36px;">
-        <div style="flex: 1; text-align: left;">Name</div>
-        <div style="flex: 1; text-align: left;">Dosage</div>
-        <div style="flex: 1; text-align: center;">Active</div>
-        <div style="flex: 1; text-align: left;">Notes</div>
+      <!-- Column Header Labels: Strict Equal Grid -->
+      <div style="display: grid; grid-template-columns: calc((100% - 36px) / 4) calc((100% - 36px) / 4) calc((100% - 36px) / 4) calc((100% - 36px) / 4) 36px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 8px; text-align: left;">
+        <div>Name</div>
+        <div>Dosage</div>
+        <div style="text-align: center;">Active</div>
+        <div>Notes</div>
+        <div></div> <!-- Empty spacer matching delete button width -->
       </div>
 
       <!-- Dynamic Rows Container -->
       <div id="evening-meds-list" style="display: flex; flex-direction: column; gap: 8px;">
         <!-- Rows injected via JS -->
       </div>
-    </div>
-
-    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
-  
-      <!-- Herbal Meds Section -->
-    <div class="form-section">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <h3 style="margin: 0;">Herbal Meds</h3>
-        <button type="button" id="add-herbal-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Herbal Med</button>
-        </div>
-        
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-        <span style="font-size: 0.9rem; font-weight: bold; color: #000; flex: 1;">Medicine Name</span>
-        <span style="font-size: 0.9rem; font-weight: bold; color: #000; width: 130px; text-align: center;">Time</span>
-        <span style="width: 32px; flex-shrink: 0;"></span>
-        </div>
-    
-        <div id="herbal-container"></div>
     </div>
 
     <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
