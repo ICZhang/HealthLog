@@ -827,40 +827,6 @@ function populateFormForEdit(id, data) {
     addCromolynRow();
   }
 
-  
-  const morningList = document.getElementById("morning-meds-list");
-  const morningTimeEl = document.getElementById("morning-meds-time");
-  if (morningList) morningList.innerHTML = "";
-  
-  if (data.morningMeds) {
-    if (morningTimeEl) morningTimeEl.value = data.morningMeds.timeTaken || "";
-    if (Array.isArray(data.morningMeds.list) && data.morningMeds.list.length > 0) {
-      data.morningMeds.list.forEach(med => morningList.appendChild(createMedRow("morning-med", med)));
-    } else if (morningList) {
-      morningList.appendChild(createMedRow("morning-med"));
-    }
-  } else if (morningList) {
-    if (morningTimeEl) morningTimeEl.value = "";
-    morningList.appendChild(createMedRow("morning-med"));
-  }
-
-  
-  const eveningList = document.getElementById("evening-meds-list");
-  const eveningTimeEl = document.getElementById("evening-meds-time");
-  if (eveningList) eveningList.innerHTML = "";
-
-  if (data.eveningMeds) {
-    if (eveningTimeEl) eveningTimeEl.value = data.eveningMeds.timeTaken || "";
-    if (Array.isArray(data.eveningMeds.list) && data.eveningMeds.list.length > 0) {
-      data.eveningMeds.list.forEach(med => eveningList.appendChild(createMedRow("evening-med", med)));
-    } else if (eveningList) {
-      eveningList.appendChild(createMedRow("evening-med"));
-    }
-  } else if (eveningList) {
-    if (eveningTimeEl) eveningTimeEl.value = "";
-    eveningList.appendChild(createMedRow("evening-med"));
-  }
-
   formulaContainer.innerHTML = "";
   if (data.formulaHydration && data.formulaHydration.length > 0) {
     data.formulaHydration.forEach(f => {
@@ -902,6 +868,39 @@ function populateFormForEdit(id, data) {
     addBehaviorRow();
   }
 
+  const morningList = document.getElementById("morning-meds-list");
+  const morningTimeEl = document.getElementById("morning-meds-time");
+  if (morningList) morningList.innerHTML = "";
+
+  if (data.morningMeds) {
+    if (morningTimeEl) morningTimeEl.value = data.morningMeds.timeTaken || "";
+    if (Array.isArray(data.morningMeds.list) && data.morningMeds.list.length > 0) {
+      data.morningMeds.list.forEach(med => morningList?.appendChild(createMedRow("morning-med", med)));
+    } else if (morningList) {
+      morningList.appendChild(createMedRow("morning-med"));
+    }
+  } else if (morningList) {
+    if (morningTimeEl) morningTimeEl.value = "";
+    morningList.appendChild(createMedRow("morning-med"));
+  }
+
+  // --- POPULATE EVENING MEDS ---
+  const eveningList = document.getElementById("evening-meds-list");
+  const eveningTimeEl = document.getElementById("evening-meds-time");
+  if (eveningList) eveningList.innerHTML = "";
+
+  if (data.eveningMeds) {
+    if (eveningTimeEl) eveningTimeEl.value = data.eveningMeds.timeTaken || "";
+    if (Array.isArray(data.eveningMeds.list) && data.eveningMeds.list.length > 0) {
+      data.eveningMeds.list.forEach(med => eveningList?.appendChild(createMedRow("evening-med", med)));
+    } else if (eveningList) {
+      eveningList.appendChild(createMedRow("evening-med"));
+    }
+  } else if (eveningList) {
+    if (eveningTimeEl) eveningTimeEl.value = "";
+    eveningList.appendChild(createMedRow("evening-med"));
+  }
+
   if (data.enzymes) {
     document.getElementById("enzyme-no-fenol").checked = !!data.enzymes.noFenol?.checked;
     document.getElementById("enzyme-no-fenol-notes").value = data.enzymes.noFenol?.notes || "";
@@ -911,6 +910,7 @@ function populateFormForEdit(id, data) {
     document.getElementById("enzyme-chew-notes").value = data.enzymes.chew?.notes || "";
   }
 
+  // Reset ingredient selections in grid
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
     const amountInput = row.querySelector("input[type='text']");
@@ -918,12 +918,14 @@ function populateFormForEdit(id, data) {
     if (amountInput) amountInput.value = "";
   });
 
+  // Load saved soups into state and ensure consumedTime exists
   if (Array.isArray(data.soups)) {
     loggedSoups = data.soups.map(s => ({
       ...s,
       consumedTime: s.consumedTime !== undefined ? s.consumedTime : (s.time || "")
     }));
   } else if (Array.isArray(data.foods) && data.foods.length > 0) {
+    // Legacy conversion
     loggedSoups = [{
       name: "Restored Soup",
       time: data.time || "",
@@ -936,10 +938,12 @@ function populateFormForEdit(id, data) {
   
   renderSavedSoups();
 
+  // Populate Self-Care Section
   if (data.selfCare) {
     document.getElementById("sc-brush-morning").checked = !!data.selfCare.brushTeeth?.morning;
     document.getElementById("sc-brush-evening").checked = !!data.selfCare.brushTeeth?.evening;
 
+    // Handle Floss Teeth dropdown & "Other" text box
     const flossVal = data.selfCare.flossTeeth || "";
     const flossSelectEl = document.getElementById("sc-floss-select");
     const flossOtherEl = document.getElementById("sc-floss-other-input");
