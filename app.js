@@ -2441,31 +2441,6 @@ export async function loadUserCustomFoods() {
   });
 }
 
-// Setup Event Handlers using direct handler assignment to prevent duplicates
-export async function loadUserCustomFoods() {
-  const foodsContainer = document.getElementById("foods-grid");
-  if (!foodsContainer) return;
-
-  const customFoods = await getStoredCustomFoods();
-  customFoods.forEach(food => {
-    // Check if food element already exists in the grid (checking inputs or labels)
-    const existingInput = Array.from(foodsContainer.querySelectorAll('input[name="food-check"]')).find(
-      input => input.value.toLowerCase() === food.name.toLowerCase()
-    );
-
-    if (!existingInput) {
-      const row = createFoodRowElement(food.name, food.unit || "", "", false, food.isHighlighted);
-      foodsContainer.appendChild(row);
-    } else {
-      // If element exists, sync its highlight class with saved state
-      const row = existingInput.closest(".food-row");
-      if (row) {
-        row.classList.toggle("new-food-highlight", !!food.isHighlighted);
-      }
-    }
-  });
-}
-
 // Setup Event Handlers
 document.addEventListener("DOMContentLoaded", () => {
   // Load custom foods when page mounts
