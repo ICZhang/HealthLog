@@ -2422,21 +2422,23 @@ export async function loadUserCustomFoods() {
   if (!foodsContainer) return;
 
   const customFoods = await getStoredCustomFoods();
+
   customFoods.forEach(food => {
-    // Check if food element already exists in the grid (checking inputs or labels)
-    const existingInput = Array.from(foodsContainer.querySelectorAll('input[name="food-check"]')).find(
-      input => input.value.toLowerCase() === food.name.toLowerCase()
+    // Find matching checkbox (works for both static HTML and custom rows)
+    const existingInput = Array.from(foodsContainer.querySelectorAll('input[type="checkbox"]')).find(
+      input => input.value.toLowerCase().trim() === food.name.toLowerCase().trim()
     );
 
-    if (!existingInput) {
-      const row = createFoodRowElement(food.name, food.unit || "", "", false, food.isHighlighted);
-      foodsContainer.appendChild(row);
-    } else {
-      // If element exists, sync its highlight class with saved state
+    if (existingInput) {
+      // Sync highlight class onto existing standard/custom DOM element
       const row = existingInput.closest(".food-row");
       if (row) {
         row.classList.toggle("new-food-highlight", !!food.isHighlighted);
       }
+    } else {
+      // Create new custom food row if it doesn't exist in HTML yet
+      const row = createFoodRowElement(food.name, food.unit || "", "", false, food.isHighlighted);
+      foodsContainer.appendChild(row);
     }
   });
 }
@@ -2516,7 +2518,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const container = document.getElementById("foods-grid");
       if (!container) return;
 
-      const checkedInputs = container.querySelectorAll('input[name="food-check"]:checked');
+      const checkedInputs = container.querySelectorAll('input[type="checkbox"]:checked');
       let customFoods = await getStoredCustomFoods();
 
       checkedInputs.forEach(input => {
@@ -2524,13 +2526,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!row) return;
 
         const foodName = input.value;
-        
-        // Toggle class and store resulting state directly
         const nowHighlighted = row.classList.toggle("new-food-highlight");
 
         const customIndex = customFoods.findIndex(f => f.name.toLowerCase() === foodName.toLowerCase());
+
         if (customIndex !== -1) {
-          customFoods[customIndex].isHighlighted = nowHighlighted;
+          if (!nowHighlighted && !customFoods[customIndex].isCustom) {
+            // If standard food is un-highlighted, remove from custom list
+            customFoods.splice(customIndex, 1);
+          } else {
+            customFoods[customIndex].isHighlighted = nowHighlighted;
+          }
+        } else if (nowHighlighted) {
+          // Save highlighted standard food
+          customFoods.push({ name: foodName, unit: "", isHighlighted: true });
         }
       });
 
