@@ -3512,7 +3512,7 @@ saveSoupBtn.addEventListener("click", () => {
   }
 
   const soupName = soupNameInput.value.trim() || `Soup ${loggedSoups.length + 1}`;
-  const soupTime = soupTimeInput.value || document.getElementById("log-time")?.value || "";
+  const soupTime = soupTimeInput.value || "";
 
   loggedSoups.push({
     name: soupName,
