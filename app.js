@@ -1089,6 +1089,29 @@ function showViewModal(data) {
   const modal = document.getElementById("view-modal");
   const modalBody = document.getElementById("view-modal-body");
 
+  // Helper function to render medication lists cleanly
+  const renderMedSection = (medSectionData) => {
+    if (!medSectionData || !Array.isArray(medSectionData.list) || medSectionData.list.length === 0) {
+      return '<li>None recorded</li>';
+    }
+
+    const timeStr = medSectionData.timeTaken ? ` (Time Taken: ${formatTo12Hour(medSectionData.timeTaken)})` : '';
+    const items = medSectionData.list.map(med => {
+      const name = med.name || 'Unnamed';
+      const dosage = med.dosage ? ` - ${med.dosage}` : '';
+      const notes = med.notes ? ` (${med.notes})` : '';
+      
+      let statusBadge = '';
+      if (med.active === 'checked') statusBadge = ' [Active]';
+      else if (med.active === 'discontinued') statusBadge = ' [Discontinued]';
+      else if (med.active === 'unchecked') statusBadge = ' [Inactive]';
+
+      return `<li><strong>${name}</strong>${dosage}${statusBadge}${notes}</li>`;
+    }).join('');
+
+    return `${timeStr ? `<div style="margin-bottom: 4px; font-size: 0.85rem; color: #666;">${timeStr}</div>` : ''}${items}`;
+  };
+
   // Calculate total formula scoops dynamically
   const totalFormulaScoops = data.formulaHydration?.reduce((sum, item) => {
     const amountStr = typeof item === 'object' ? (item.amount || item.scoops || "") : item;
@@ -1108,22 +1131,22 @@ function showViewModal(data) {
     ? sc.washHandsAfterBm.map((status, i) => `BM #${i + 1}: ${status ? status.toUpperCase() : 'Not recorded'}`).join(", ")
     : "No BM logs recorded";
 
-    // Process Enzymes
-    const enzymeList = [
-      { key: "noFenol", label: "No-Fenol" },
-      { key: "carbDgts", label: "Carb Digest" },
-      { key: "chew", label: "Chewable" }
-    ];
-  
-    const activeEnzymes = data.enzymes 
-      ? enzymeList
-          .filter(e => data.enzymes[e.key]?.checked)
-          .map(e => {
-            const rawVal = data.enzymes[e.key]?.notes || "";
-            const amountStr = rawVal ? ` - Amount: ${rawVal}` : "";
-            return `<li><strong>${e.label}</strong>${amountStr}</li>`;
-          })
-      : [];
+  // Process Enzymes
+  const enzymeList = [
+    { key: "noFenol", label: "No-Fenol" },
+    { key: "carbDgts", label: "Carb Digest" },
+    { key: "chew", label: "Chewable" }
+  ];
+
+  const activeEnzymes = data.enzymes 
+    ? enzymeList
+        .filter(e => data.enzymes[e.key]?.checked)
+        .map(e => {
+          const rawVal = data.enzymes[e.key]?.notes || "";
+          const amountStr = rawVal ? ` - Amount: ${rawVal}` : "";
+          return `<li><strong>${e.label}</strong>${amountStr}</li>`;
+        })
+    : [];
 
   modalBody.innerHTML = `
     <div style="padding-top: 15px; margin-bottom: 12px; text-align: left;">
@@ -1139,6 +1162,16 @@ function showViewModal(data) {
     </div>
     <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 15px 0;" />
     
+    <p><strong>Morning Meds:</strong></p>
+    <ul>
+      ${renderMedSection(data.morningMeds)}
+    </ul>
+
+    <p><strong>Evening Meds:</strong></p>
+    <ul>
+      ${renderMedSection(data.eveningMeds)}
+    </ul>
+
     <p><strong>Bowel Movements:</strong></p>
     <ul>
       ${data.bowelMovements?.length 
@@ -1193,10 +1226,7 @@ function showViewModal(data) {
       ${data.soups?.length 
         ? data.soups.map(s => {
             const createdTimeStr = s.time ? ` (Created: ${formatTo12Hour(s.time)})` : '';
-            
-            // Only format consumedTime if it actually exists
             const consumedTimeStr = s.consumedTime ? ` - Eaten at ${formatTo12Hour(s.consumedTime)}` : ' - Not consumed yet';
-
             const ingredientsStr = s.ingredients?.length 
               ? s.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ''}`).join(', ')
               : 'No ingredients listed';
