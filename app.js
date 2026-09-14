@@ -2423,18 +2423,50 @@ export async function loadUserCustomFoods() {
 
   const customFoods = await getStoredCustomFoods();
   customFoods.forEach(food => {
-    const existing = Array.from(foodsContainer.querySelectorAll("label")).some(
-      lbl => lbl.textContent.toLowerCase() === food.name.toLowerCase()
+    // Check if food element already exists in the grid (checking inputs or labels)
+    const existingInput = Array.from(foodsContainer.querySelectorAll('input[name="food-check"]')).find(
+      input => input.value.toLowerCase() === food.name.toLowerCase()
     );
 
-    if (!existing) {
+    if (!existingInput) {
       const row = createFoodRowElement(food.name, food.unit || "", "", false, food.isHighlighted);
       foodsContainer.appendChild(row);
+    } else {
+      // If element exists, sync its highlight class with saved state
+      const row = existingInput.closest(".food-row");
+      if (row) {
+        row.classList.toggle("new-food-highlight", !!food.isHighlighted);
+      }
     }
   });
 }
 
 // Setup Event Handlers using direct handler assignment to prevent duplicates
+export async function loadUserCustomFoods() {
+  const foodsContainer = document.getElementById("foods-grid");
+  if (!foodsContainer) return;
+
+  const customFoods = await getStoredCustomFoods();
+  customFoods.forEach(food => {
+    // Check if food element already exists in the grid (checking inputs or labels)
+    const existingInput = Array.from(foodsContainer.querySelectorAll('input[name="food-check"]')).find(
+      input => input.value.toLowerCase() === food.name.toLowerCase()
+    );
+
+    if (!existingInput) {
+      const row = createFoodRowElement(food.name, food.unit || "", "", false, food.isHighlighted);
+      foodsContainer.appendChild(row);
+    } else {
+      // If element exists, sync its highlight class with saved state
+      const row = existingInput.closest(".food-row");
+      if (row) {
+        row.classList.toggle("new-food-highlight", !!food.isHighlighted);
+      }
+    }
+  });
+}
+
+// Setup Event Handlers
 document.addEventListener("DOMContentLoaded", () => {
   // Load custom foods when page mounts
   loadUserCustomFoods();
@@ -2446,18 +2478,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const nameInput = document.getElementById("new-food-input");
       const unitInput = document.getElementById("new-food-unit");
 
-      const foodName = nameInput.value.trim();
+      const foodName = nameInput ? nameInput.value.trim() : "";
       const unit = unitInput ? unitInput.value.trim() : "";
 
       if (!foodName) return;
 
-      const customFoods = await getStoredCustomFoods();
+      const foodsContainer = document.getElementById("foods-grid");
+      const existingInput = Array.from(foodsContainer.querySelectorAll('input[name="food-check"]')).find(
+        input => input.value.toLowerCase() === foodName.toLowerCase()
+      );
+
+      // Prevent adding duplicate DOM rows
+      if (existingInput) {
+        nameInput.value = "";
+        if (unitInput) unitInput.value = "";
+        return;
+      }
+
+      let customFoods = await getStoredCustomFoods();
       if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
         customFoods.push({ name: foodName, unit: unit, isHighlighted: true });
         await saveCustomFoodsToFirebase(customFoods);
       }
 
-      const foodsContainer = document.getElementById("foods-grid");
       const newRow = createFoodRowElement(foodName, unit, "", false, true);
       foodsContainer.appendChild(newRow);
 
@@ -2506,13 +2549,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!row) return;
 
         const foodName = input.value;
-        const isCurrentlyHighlighted = row.classList.contains("new-food-highlight");
-
-        row.classList.toggle("new-food-highlight");
+        
+        // Toggle class and store resulting state directly
+        const nowHighlighted = row.classList.toggle("new-food-highlight");
 
         const customIndex = customFoods.findIndex(f => f.name.toLowerCase() === foodName.toLowerCase());
         if (customIndex !== -1) {
-          customFoods[customIndex].isHighlighted = !isCurrentlyHighlighted;
+          customFoods[customIndex].isHighlighted = nowHighlighted;
         }
       });
 
