@@ -110,7 +110,7 @@
       <!-- Cromolyn Doses & Other Meds Section -->
     <div class="form-section" style="margin-top: 15px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <h4 style="margin: 0; font-size: 1.1rem; font-weight: bold;">Cromolyn Doses & Other Meds</h4>
+        <h3 style="margin: 0;">Cromolyn Doses & Other Meds</h3>
         <button type="button" id="add-cromolyn-btn" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #4A90E2;">+ Add Med</button>
         </div>
         
@@ -127,68 +127,74 @@
     <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
 
     <!-- MORNING MEDS SECTION -->
-    <div class="meds-section" style="margin-bottom: 24px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
-      <h3 style="margin: 0 0 12px 0; color: #2c3e50;">Morning Meds</h3>
+    <div class="meds-container" style="margin-bottom: 24px;">
+      <!-- Outside Header: Title + Time Taken + Add Button on One Line -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 12px;">
+        <h3 style="margin: 0; color: #2c3e50; font-size: 1.2rem;">Morning Meds</h3>
 
-      <!-- Top Controls: Aligned Grid Layout -->
-      <div style="display: grid; grid-template-columns: auto auto 1fr; align-items: end; gap: 12px; margin-bottom: 20px;">
-        <div style="display: flex; flex-direction: column;">
-          <label for="morning-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 4px;">Time Taken:</label>
-          <input type="time" id="morning-meds-time" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; margin: 0; box-sizing: border-box; height: 34px;" />
-        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="morning-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555;">Time Taken:</label>
+            <input type="time" id="morning-meds-time" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; height: 32px; box-sizing: border-box;" />
+          </div>
 
-        <div>
-          <button type="button" id="add-morning-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; margin: 0; box-sizing: border-box; height: 34px; display: inline-flex; align-items: center; justify-content: center;">
+          <button type="button" id="add-morning-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 14px; height: 32px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center;">
             + Add Med
           </button>
         </div>
       </div>
 
-      <!-- Column Header Labels: Strict Equal Grid -->
-      <div style="display: grid; grid-template-columns: calc((100% - 36px) / 4) calc((100% - 36px) / 4) calc((100% - 36px) / 4) calc((100% - 36px) / 4) 36px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 8px; text-align: left;">
-        <div>Name</div>
-        <div>Dosage</div>
-        <div style="text-align: center;">Active</div>
-        <div>Notes</div>
-        <div></div> <!-- Empty spacer matching delete button width -->
-      </div>
+      <!-- Inner Content Box -->
+      <div class="meds-section" style="padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
+        <!-- Column Header Labels -->
+        <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 10px; align-items: center;">
+          <div>Name</div>
+          <div>Dosage</div>
+          <div style="text-align: center;">Active</div>
+          <div>Notes</div>
+          <div></div> <!-- Delete button column alignment offset -->
+        </div>
 
-      <!-- Dynamic Rows Container -->
-      <div id="morning-meds-list" style="display: flex; flex-direction: column; gap: 8px;">
-        <!-- Rows injected via JS -->
+        <!-- Dynamic Rows Container -->
+        <div id="morning-meds-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Rows injected via JS -->
+        </div>
       </div>
     </div>
 
     <!-- EVENING MEDS SECTION -->
-    <div class="meds-section" style="margin-bottom: 24px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
-      <h3 style="margin: 0 0 12px 0; color: #2c3e50;">Evening Meds</h3>
+    <div class="meds-container" style="margin-bottom: 24px;">
+      <!-- Outside Header: Title + Time Taken + Add Button on One Line -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 12px;">
+        <h3 style="margin: 0; color: #2c3e50; font-size: 1.2rem;">Evening Meds</h3>
 
-      <!-- Top Controls: Aligned Grid Layout -->
-      <div style="display: grid; grid-template-columns: auto auto 1fr; align-items: end; gap: 12px; margin-bottom: 20px;">
-        <div style="display: flex; flex-direction: column;">
-          <label for="evening-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 4px;">Time Taken:</label>
-          <input type="time" id="evening-meds-time" style="padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; margin: 0; box-sizing: border-box; height: 34px;" />
-        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="evening-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555;">Time Taken:</label>
+            <input type="time" id="evening-meds-time" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; height: 32px; box-sizing: border-box;" />
+          </div>
 
-        <div>
-          <button type="button" id="add-evening-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem; margin: 0; box-sizing: border-box; height: 34px; display: inline-flex; align-items: center; justify-content: center;">
+          <button type="button" id="add-evening-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 14px; height: 32px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center;">
             + Add Med
           </button>
         </div>
       </div>
 
-      <!-- Column Header Labels: Strict Equal Grid -->
-      <div style="display: grid; grid-template-columns: calc((100% - 36px) / 4) calc((100% - 36px) / 4) calc((100% - 36px) / 4) calc((100% - 36px) / 4) 36px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 8px; text-align: left;">
-        <div>Name</div>
-        <div>Dosage</div>
-        <div style="text-align: center;">Active</div>
-        <div>Notes</div>
-        <div></div> <!-- Empty spacer matching delete button width -->
-      </div>
+      <!-- Inner Content Box -->
+      <div class="meds-section" style="padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
+        <!-- Column Header Labels -->
+        <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 10px; align-items: center;">
+          <div>Name</div>
+          <div>Dosage</div>
+          <div style="text-align: center;">Active</div>
+          <div>Notes</div>
+          <div></div> <!-- Delete button column alignment offset -->
+        </div>
 
-      <!-- Dynamic Rows Container -->
-      <div id="evening-meds-list" style="display: flex; flex-direction: column; gap: 8px;">
-        <!-- Rows injected via JS -->
+        <!-- Dynamic Rows Container -->
+        <div id="evening-meds-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Rows injected via JS -->
+        </div>
       </div>
     </div>
 
