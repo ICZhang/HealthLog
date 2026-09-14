@@ -19,6 +19,8 @@ import {
   deleteDoc 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+//Key functions are showviewmodal, populateform, getformdata, resetform
+
 // Global Variables
 let currentUser = null;
 let unsubscribeLogs = null;
@@ -534,6 +536,44 @@ function getFormData() {
     }
   });
 
+  // Capture Morning Meds
+  const morningList = [];
+  document.querySelectorAll(".morning-med-row").forEach(row => {
+    const name = row.querySelector(".morning-med-name")?.value.trim() || "";
+    const dosage = row.querySelector(".morning-med-dosage")?.value.trim() || "";
+    const activeToggle = row.querySelector(".morning-med-active-toggle");
+    const active = activeToggle ? activeToggle.getAttribute("data-state") : "checked";
+    const notes = row.querySelector(".morning-med-notes")?.value.trim() || "";
+
+    if (name || dosage || notes) {
+      morningList.push({ name, dosage, active, notes });
+    }
+  });
+
+  const morningMeds = {
+    timeTaken: document.getElementById("morning-meds-time")?.value || "",
+    list: morningList
+  };
+
+  // Capture Evening Meds
+  const eveningList = [];
+  document.querySelectorAll(".evening-med-row").forEach(row => {
+    const name = row.querySelector(".evening-med-name")?.value.trim() || "";
+    const dosage = row.querySelector(".evening-med-dosage")?.value.trim() || "";
+    const activeToggle = row.querySelector(".evening-med-active-toggle");
+    const active = activeToggle ? activeToggle.getAttribute("data-state") : "checked";
+    const notes = row.querySelector(".evening-med-notes")?.value.trim() || "";
+
+    if (name || dosage || notes) {
+      eveningList.push({ name, dosage, active, notes });
+    }
+  });
+
+  const eveningMeds = {
+    timeTaken: document.getElementById("evening-meds-time")?.value || "",
+    list: eveningList
+  };
+
   // Capture handwashing status per BM
   const handwashStatus = [];
   document.querySelectorAll("#bm-handwash-container .bm-handwash-row").forEach((row, index) => {
@@ -670,6 +710,8 @@ function getFormData() {
   return {
     date: document.getElementById("log-date")?.value || localToday,
     time: document.getElementById("log-time")?.value || "",
+    morningMeds,
+    eveningMeds,
     waterGoal: parseFloat(document.getElementById("water-goal-input")?.value) || 8,
     formulaGoal: parseFloat(document.getElementById("formula-goal-input")?.value) || 80,
     bowelMovements: bmData,
@@ -1161,16 +1203,6 @@ function showViewModal(data) {
         </p>
     </div>
     <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 15px 0;" />
-    
-    <p><strong>Morning Meds:</strong></p>
-    <ul>
-      ${renderMedSection(data.morningMeds)}
-    </ul>
-
-    <p><strong>Evening Meds:</strong></p>
-    <ul>
-      ${renderMedSection(data.eveningMeds)}
-    </ul>
 
     <p><strong>Bowel Movements:</strong></p>
     <ul>
@@ -1191,6 +1223,16 @@ function showViewModal(data) {
     ${data.cromolynMeds?.length 
         ? data.cromolynMeds.map(m => `<li>${m.name || 'Unnamed'}: at ${formatTo12Hour(m.time)}</li>`).join('') 
         : '<li>None recorded</li>'}
+    </ul>
+
+    <p><strong>Morning Meds:</strong></p>
+    <ul>
+      ${renderMedSection(data.morningMeds)}
+    </ul>
+
+    <p><strong>Evening Meds:</strong></p>
+    <ul>
+      ${renderMedSection(data.eveningMeds)}
     </ul>
 
     <p><strong>Herbal Meds:</strong></p>
