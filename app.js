@@ -457,59 +457,78 @@ addBehaviorBtn?.addEventListener("click", () => addBehaviorRow());
 addCromolynBtn?.addEventListener("click", () => addCromolynRow());
 
 function resetForm() {
-  logForm.reset();
-  editingDocIdInput.value = "";
-  saveLogBtn.textContent = "Save Care Log";
-  cancelEditBtn.classList.add("hidden");
+  if (logForm) logForm.reset();
+  if (editingDocIdInput) editingDocIdInput.value = "";
+  if (saveLogBtn) saveLogBtn.textContent = "Save Care Log";
+  if (cancelEditBtn) cancelEditBtn.classList.add("hidden");
 
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   
-  document.getElementById("log-date").value = `${year}-${month}-${day}`;
-  document.getElementById("log-time").value = now.toTimeString().slice(0, 5);
+  const dateInput = document.getElementById("log-date");
+  const timeInput = document.getElementById("log-time");
+  if (dateInput) dateInput.value = `${year}-${month}-${day}`;
+  if (timeInput) timeInput.value = now.toTimeString().slice(0, 5);
 
   loggedSoups = [];
-  renderSavedSoups();
+  if (typeof renderSavedSoups === "function") renderSavedSoups();
 
-  bmContainer.innerHTML = "";
-  formulaContainer.innerHTML = "";
-  activitiesContainer.innerHTML = "";
-  waterContainer.innerHTML = "";
-  herbalContainer.innerHTML = "";
-  enteragramContainer.innerHTML = "";
-  painContainer.innerHTML = "";
-  moodContainer.innerHTML = "";
-  behaviorContainer.innerHTML = "";
-  cromolynContainer.innerHTML = "";
+  // Array of all dynamic containers to reset safely
+  const containers = [
+    bmContainer,
+    formulaContainer,
+    activitiesContainer,
+    waterContainer,
+    herbalContainer,
+    enteragramContainer,
+    painContainer,
+    moodContainer,
+    behaviorContainer,
+    cromolynContainer,
+    document.getElementById("morning-meds-list"),
+    document.getElementById("evening-meds-list")
+  ];
 
-  const morningList = document.getElementById("morning-meds-list");
-  const eveningList = document.getElementById("evening-meds-list");
-  if (morningList) morningList.innerHTML = "";
-  if (eveningList) eveningList.innerHTML = "";
+  // Clear container HTML safely
+  containers.forEach(container => {
+    if (container) container.innerHTML = "";
+  });
 
-  const morningTimeInput = document.getElementById("morning-meds-time");
-  const eveningTimeInput = document.getElementById("evening-meds-time");
-  if (morningTimeInput) morningTimeInput.value = "";
-  if (eveningTimeInput) eveningTimeInput.value = "";
+  // Safe input resets
+  const summarySelect = document.getElementById("day-summary-select");
+  const dayNotes = document.getElementById("day-notes");
+  const specialInstructions = document.getElementById("special-instructions-input");
+  const morningTime = document.getElementById("morning-meds-time");
+  const eveningTime = document.getElementById("evening-meds-time");
 
-  document.getElementById("day-summary-select").value = "";
-  document.getElementById("day-notes").value = "";
-  document.getElementById("special-instructions-input").value = "";
+  if (summarySelect) summarySelect.value = "";
+  if (dayNotes) dayNotes.value = "";
+  if (specialInstructions) specialInstructions.value = "";
+  if (morningTime) morningTime.value = "";
+  if (eveningTime) eveningTime.value = "";
 
-  addBmRow(); 
-  addFormulaRow();
-  addFormulaRow();
-  addTextRow(activitiesContainer, "activity-row", "#1 Activity");
-  addTextRow(activitiesContainer, "activity-row", "#2 Activity");
-  addWaterRow();
-  addHerbalRow();     
-  addEnteragramRow();
-  addPainRow();
-  addMoodRow();
-  addBehaviorRow();
-  addCromolynRow();
+  // Re-initialize default dynamic rows
+  if (typeof addBmRow === "function") addBmRow(); 
+  if (typeof addFormulaRow === "function") { addFormulaRow(); addFormulaRow(); }
+  if (typeof addTextRow === "function" && activitiesContainer) {
+    addTextRow(activitiesContainer, "activity-row", "#1 Activity");
+    addTextRow(activitiesContainer, "activity-row", "#2 Activity");
+  }
+  if (typeof addWaterRow === "function") addWaterRow();
+  if (typeof addHerbalRow === "function") addHerbalRow();     
+  if (typeof addEnteragramRow === "function") addEnteragramRow();
+  if (typeof addPainRow === "function") addPainRow();
+  if (typeof addMoodRow === "function") addMoodRow();
+  if (typeof addBehaviorRow === "function") addBehaviorRow();
+  if (typeof addCromolynRow === "function") addCromolynRow();
+
+  // Add default initial med rows
+  const mList = document.getElementById("morning-meds-list");
+  const eList = document.getElementById("evening-meds-list");
+  if (mList && typeof createMedRow === "function") mList.appendChild(createMedRow("morning-med"));
+  if (eList && typeof createMedRow === "function") eList.appendChild(createMedRow("evening-med"));
 }
 
 cancelEditBtn.addEventListener("click", () => {
