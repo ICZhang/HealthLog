@@ -1150,15 +1150,14 @@ function showViewModal(data) {
         ? data.soups.map(s => {
             const createdTimeStr = s.time ? ` (Created: ${formatTo12Hour(s.time)})` : '';
             
-            // Fall back to s.time if consumedTime isn't set yet
-            const consumedTimeVal = s.consumedTime || s.time;
-            const consumedTimeStr = consumedTimeVal ? ` at ${formatTo12Hour(consumedTimeVal)}` : '';
+            // Only format consumedTime if it actually exists
+            const consumedTimeStr = s.consumedTime ? ` - Eaten at ${formatTo12Hour(s.consumedTime)}` : ' - Not consumed yet';
 
             const ingredientsStr = s.ingredients?.length 
               ? s.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ''}`).join(', ')
               : 'No ingredients listed';
 
-              return `<li><strong>${s.name}</strong>${consumedTimeStr ? ` - Eaten${consumedTimeStr}` : ''} - Ingredients: ${ingredientsStr}</li>`;
+            return `<li><strong>${s.name}</strong>${createdTimeStr}${consumedTimeStr} - Ingredients: ${ingredientsStr}</li>`;
           }).join('') 
         : (data.foods?.length 
             ? data.foods.map(f => `<li>${f.name.replace(/_/g, " ")}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('')
