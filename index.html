@@ -127,32 +127,28 @@
     <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;" />
 
     <!-- MORNING MEDS SECTION -->
-    <div class="meds-container" style="margin-bottom: 24px;">
-      <!-- Outside Header: Title + Time Taken + Add Button on One Line -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 12px;">
-        <h3 style="margin: 0; color: #2c3e50; font-size: 1.2rem;">Morning Meds</h3>
-
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label for="morning-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555;">Time Taken:</label>
-            <input type="time" id="morning-meds-time" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; height: 32px; box-sizing: border-box;" />
-          </div>
-
-          <button type="button" id="add-morning-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 14px; height: 32px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center;">
-            + Add Med
-          </button>
-        </div>
+    <div class="meds-container" style="margin-bottom: 24px; width: 100%;">
+      <!-- Outside Header: Title, Label, Input & Button Locked on One Line -->
+      <div style="display: grid; grid-template-columns: auto auto auto auto; align-items: center; gap: 8px; margin-bottom: 8px; width: 100%;">
+        <h3 style="margin: 0 12px 0 0; color: #2c3e50; font-size: 1.1rem; white-space: nowrap;">Morning Meds</h3>
+        
+        <label for="morning-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555; white-space: nowrap; margin: 0;">Time Taken:</label>
+        
+        <input type="time" id="morning-meds-time" style="padding: 2px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; height: 32px; box-sizing: border-box;" />
+        
+        <button type="button" id="add-morning-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 12px; height: 32px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; white-space: nowrap; margin-left: 4px;">
+          + Add Med
+        </button>
       </div>
 
       <!-- Inner Content Box -->
-      <div class="meds-section" style="padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
-        <!-- Column Header Labels -->
-        <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 10px; align-items: center;">
-          <div>Name</div>
-          <div>Dosage</div>
+      <div class="meds-section" style="padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; width: 100%; box-sizing: border-box;">
+        <!-- Column Header Labels: 4 Equal Columns -->
+        <div style="display: grid; grid-template-columns: 25% 25% 25% 25%; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 10px; width: 100%;">
+          <div style="text-align: left;">Name</div>
+          <div style="text-align: left;">Dosage</div>
           <div style="text-align: center;">Active</div>
-          <div>Notes</div>
-          <div></div> <!-- Delete button column alignment offset -->
+          <div style="text-align: left;">Notes</div>
         </div>
 
         <!-- Dynamic Rows Container -->
@@ -163,32 +159,28 @@
     </div>
 
     <!-- EVENING MEDS SECTION -->
-    <div class="meds-container" style="margin-bottom: 24px;">
-      <!-- Outside Header: Title + Time Taken + Add Button on One Line -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 12px;">
-        <h3 style="margin: 0; color: #2c3e50; font-size: 1.2rem;">Evening Meds</h3>
-
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label for="evening-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555;">Time Taken:</label>
-            <input type="time" id="evening-meds-time" style="padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; height: 32px; box-sizing: border-box;" />
-          </div>
-
-          <button type="button" id="add-evening-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 14px; height: 32px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center;">
-            + Add Med
-          </button>
-        </div>
+    <div class="meds-container" style="margin-bottom: 24px; width: 100%;">
+      <!-- Outside Header: Title, Label, Input & Button Locked on One Line -->
+      <div style="display: grid; grid-template-columns: auto auto auto auto; align-items: center; gap: 8px; margin-bottom: 8px; width: 100%;">
+        <h3 style="margin: 0 12px 0 0; color: #2c3e50; font-size: 1.1rem; white-space: nowrap;">Evening Meds</h3>
+        
+        <label for="evening-meds-time" style="font-weight: bold; font-size: 0.85rem; color: #555; white-space: nowrap; margin: 0;">Time Taken:</label>
+        
+        <input type="time" id="evening-meds-time" style="padding: 2px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; height: 32px; box-sizing: border-box;" />
+        
+        <button type="button" id="add-evening-med-btn" style="background: #27ae60; color: white; border: none; padding: 0 12px; height: 32px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; white-space: nowrap; margin-left: 4px;">
+          + Add Med
+        </button>
       </div>
 
       <!-- Inner Content Box -->
-      <div class="meds-section" style="padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
-        <!-- Column Header Labels -->
-        <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 10px; align-items: center;">
-          <div>Name</div>
-          <div>Dosage</div>
+      <div class="meds-section" style="padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fff; width: 100%; box-sizing: border-box;">
+        <!-- Column Header Labels: 4 Equal Columns -->
+        <div style="display: grid; grid-template-columns: 25% 25% 25% 25%; font-weight: bold; font-size: 0.85rem; color: #555; margin-bottom: 10px; width: 100%;">
+          <div style="text-align: left;">Name</div>
+          <div style="text-align: left;">Dosage</div>
           <div style="text-align: center;">Active</div>
-          <div>Notes</div>
-          <div></div> <!-- Delete button column alignment offset -->
+          <div style="text-align: left;">Notes</div>
         </div>
 
         <!-- Dynamic Rows Container -->
