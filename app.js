@@ -3516,7 +3516,7 @@ saveSoupBtn.addEventListener("click", () => {
 
   loggedSoups.push({
     name: soupName,
-    time: soupTime,
+    time: createdTime,
     consumedTime: "",
     ingredients: selectedIngredients
   });
