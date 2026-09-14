@@ -1645,7 +1645,7 @@ async function renderAnalyticsChart() {
     if (canvasCard) canvasCard.style.display = "none";
     if (foodListContainer) foodListContainer.style.display = "block";
     
-    renderFirstFoodCalendar(startDate, endDate, records);
+    await renderFirstFoodCalendar(startDate, endDate, records);
     return; // Safely exits so no chart logic runs
   } else {
     if (titleCard) titleCard.style.display = "block";
@@ -2337,54 +2337,42 @@ function createFoodRowElement(foodName, unit = "", amount = "", isChecked = fals
   return row;
 }
 
-document.getElementById("foods-grid")?.addEventListener("click", (e) => {
-  if (e.target.classList.contains("remove-food-btn")) {
-    const foodToRemove = e.target.getAttribute("data-food");
+// Helper to save array of custom foods directly to Firestore
+async function saveCustomFoodsToFirebase(customFoodsList) {
+  const user = auth.currentUser;
+  if (!user) return;
 
-    // Update localStorage
-    let customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
-    customFoods = customFoods.filter(f => f.name.toLowerCase() !== foodToRemove.toLowerCase());
-    localStorage.setItem("customFoods", JSON.stringify(customFoods));
-
-    // Remove row from DOM
-    const row = e.target.closest(".food-row");
-    if (row) row.remove();
+  try {
+    const foodDocRef = doc(db, "users", user.uid, "logs", "food_settings");
+    await setDoc(foodDocRef, { customFoods: customFoodsList }, { merge: true });
+  } catch (err) {
+    console.error("Error saving custom foods to Firebase:", err);
   }
-});
-  
-  // Add Custom Food Button Handler
-document.getElementById("add-custom-food-btn")?.addEventListener("click", () => {
-    const nameInput = document.getElementById("new-food-input");
-    const unitInput = document.getElementById("new-food-unit");
-  
-    const foodName = nameInput.value.trim();
-    const unit = unitInput ? unitInput.value.trim() : "";
-  
-    if (!foodName) return;
-  
-    // Save food with isHighlighted default set to true
-    const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
-    if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
-      customFoods.push({ name: foodName, unit: unit, isHighlighted: true });
-      localStorage.setItem("customFoods", JSON.stringify(customFoods));
-    }
-  
-    // Create row with highlight enabled
-    const foodsContainer = document.getElementById("foods-grid");
-    const newRow = createFoodRowElement(foodName, unit, "", false, true);
-    foodsContainer.appendChild(newRow);
-  
-    // Clear inputs
-    nameInput.value = "";
-    if (unitInput) unitInput.value = "";
-});
-  
+}
 
-function loadStoredCustomFoods() {
+// Helper to fetch current array of custom foods from Firestore
+async function getStoredCustomFoods() {
+  const user = currentUser || auth.currentUser;
+  if (!user) return [];
+
+  try {
+    const docRef = doc(db, "users", user.uid, "logs", "food_settings");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists() && Array.isArray(docSnap.data().customFoods)) {
+      return docSnap.data().customFoods;
+    }
+  } catch (err) {
+    console.error("Error loading custom foods from Firebase:", err);
+  }
+  return [];
+}
+
+// Load custom foods into DOM
+export async function loadUserCustomFoods() {
   const foodsContainer = document.getElementById("foods-grid");
   if (!foodsContainer) return;
 
-  const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+  const customFoods = await getStoredCustomFoods();
   customFoods.forEach(food => {
     const existing = Array.from(foodsContainer.querySelectorAll("label")).some(
       lbl => lbl.textContent.toLowerCase() === food.name.toLowerCase()
@@ -2396,58 +2384,92 @@ function loadStoredCustomFoods() {
     }
   });
 }
-  
-loadStoredCustomFoods();
 
-// Remove checked custom foods
-document.getElementById("remove-selected-food-btn")?.addEventListener("click", () => {
-  const container = document.getElementById("foods-grid");
-  if (!container) return;
+// Setup Event Handlers using direct handler assignment to prevent duplicates
+document.addEventListener("DOMContentLoaded", () => {
+  // Load custom foods when page mounts
+  loadUserCustomFoods();
 
-  const checkedInputs = container.querySelectorAll('input[name="food-check"]:checked');
-  let customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+  // Add Custom Food Handler
+  const addFoodBtn = document.getElementById("add-custom-food-btn");
+  if (addFoodBtn) {
+    addFoodBtn.onclick = async () => {
+      const nameInput = document.getElementById("new-food-input");
+      const unitInput = document.getElementById("new-food-unit");
 
-  checkedInputs.forEach(input => {
-    const foodName = input.value;
-    const row = input.closest(".food-row");
+      const foodName = nameInput.value.trim();
+      const unit = unitInput ? unitInput.value.trim() : "";
 
-    // Only allow removing custom items, keeping standard default items safe
-    const isCustom = customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase());
-    if (isCustom) {
-      customFoods = customFoods.filter(f => f.name.toLowerCase() !== foodName.toLowerCase());
-      if (row) row.remove();
-    }
-  });
+      if (!foodName) return;
 
-  localStorage.setItem("customFoods", JSON.stringify(customFoods));
-});
+      const customFoods = await getStoredCustomFoods();
+      if (!customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase())) {
+        customFoods.push({ name: foodName, unit: unit, isHighlighted: true });
+        await saveCustomFoodsToFirebase(customFoods);
+      }
 
-// Toggle highlight state on checked foods
-document.getElementById("toggle-highlight-btn")?.addEventListener("click", () => {
-  const container = document.getElementById("foods-grid");
-  if (!container) return;
+      const foodsContainer = document.getElementById("foods-grid");
+      const newRow = createFoodRowElement(foodName, unit, "", false, true);
+      foodsContainer.appendChild(newRow);
 
-  const checkedInputs = container.querySelectorAll('input[name="food-check"]:checked');
-  let customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+      nameInput.value = "";
+      if (unitInput) unitInput.value = "";
+    };
+  }
 
-  checkedInputs.forEach(input => {
-    const row = input.closest(".food-row");
-    if (!row) return;
+  // Remove Checked Custom Foods Handler
+  const removeFoodBtn = document.getElementById("remove-selected-food-btn");
+  if (removeFoodBtn) {
+    removeFoodBtn.onclick = async () => {
+      const container = document.getElementById("foods-grid");
+      if (!container) return;
 
-    const foodName = input.value;
-    const isCurrentlyHighlighted = row.classList.contains("new-food-highlight");
+      const checkedInputs = container.querySelectorAll('input[name="food-check"]:checked');
+      let customFoods = await getStoredCustomFoods();
 
-    // 1. Toggle visual class on DOM element immediately
-    row.classList.toggle("new-food-highlight");
+      checkedInputs.forEach(input => {
+        const foodName = input.value;
+        const row = input.closest(".food-row");
 
-    // 2. If it's a custom food, update its saved state in localStorage
-    const customIndex = customFoods.findIndex(f => f.name.toLowerCase() === foodName.toLowerCase());
-    if (customIndex !== -1) {
-      customFoods[customIndex].isHighlighted = !isCurrentlyHighlighted;
-    }
-  });
+        const isCustom = customFoods.some(f => f.name.toLowerCase() === foodName.toLowerCase());
+        if (isCustom) {
+          customFoods = customFoods.filter(f => f.name.toLowerCase() !== foodName.toLowerCase());
+          if (row) row.remove();
+        }
+      });
 
-  localStorage.setItem("customFoods", JSON.stringify(customFoods));
+      await saveCustomFoodsToFirebase(customFoods);
+    };
+  }
+
+  // Toggle Highlight Handler
+  const toggleHighlightBtn = document.getElementById("toggle-highlight-btn");
+  if (toggleHighlightBtn) {
+    toggleHighlightBtn.onclick = async () => {
+      const container = document.getElementById("foods-grid");
+      if (!container) return;
+
+      const checkedInputs = container.querySelectorAll('input[name="food-check"]:checked');
+      let customFoods = await getStoredCustomFoods();
+
+      checkedInputs.forEach(input => {
+        const row = input.closest(".food-row");
+        if (!row) return;
+
+        const foodName = input.value;
+        const isCurrentlyHighlighted = row.classList.contains("new-food-highlight");
+
+        row.classList.toggle("new-food-highlight");
+
+        const customIndex = customFoods.findIndex(f => f.name.toLowerCase() === foodName.toLowerCase());
+        if (customIndex !== -1) {
+          customFoods[customIndex].isHighlighted = !isCurrentlyHighlighted;
+        }
+      });
+
+      await saveCustomFoodsToFirebase(customFoods);
+    };
+  }
 });
 
 // Render Total Daily Formula Scoops
@@ -3148,7 +3170,7 @@ function renderSummaryCalendar(startDate, endDate, records) {
   }
 }
 
-function renderFirstFoodCalendar(startDate, endDate, records) {
+export async function renderFirstFoodCalendar(startDate, endDate, records) {
   const grid = document.getElementById("calendar-grid");
   const titleHeader = document.getElementById("calendar-title");
   const navContainer = document.getElementById("calendar-month-nav");
@@ -3157,8 +3179,21 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
 
   if (!startDate || !endDate) return;
 
-  // Retrieve saved custom foods to check highlight status
-  const customFoods = JSON.parse(localStorage.getItem("customFoods") || "[]");
+  // Retrieve custom foods from Firestore instead of localStorage
+  let customFoods = [];
+  const user = currentUser || auth.currentUser;
+  if (user) {
+    try {
+      const docRef = doc(db, "users", user.uid, "logs", "food_settings");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && Array.isArray(docSnap.data().customFoods)) {
+        customFoods = docSnap.data().customFoods;
+      }
+    } catch (err) {
+      console.error("Error fetching custom foods for calendar:", err);
+    }
+  }
+
   const highlightedNames = new Set(
     customFoods
       .filter(f => f.isHighlighted === true)
@@ -3178,7 +3213,7 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
     const logDate = logData.date;
     if (!logDate) return;
 
-    // Flatten ingredients from new 'soups' format OR fallback 'foods' format
+    // Flatten ingredients from 'soups', 'foods', or 'foodData'
     const ingredientsToProcess = [];
 
     if (Array.isArray(logData.soups) && logData.soups.length > 0) {
@@ -3207,7 +3242,6 @@ function renderFirstFoodCalendar(startDate, endDate, records) {
         foodName = String(f);
       }
 
-      // Clean underscore formatted names (e.g., "Romaine_Lettuce" -> "Romaine Lettuce")
       foodName = foodName.replace(/_/g, " ").trim();
       if (!foodName) return;
 
