@@ -538,43 +538,27 @@ function getFormData() {
     }
   });
 
-  // Capture Morning Meds
-  const morningList = [];
-  document.querySelectorAll(".morning-med-row").forEach(row => {
-    const name = row.querySelector(".morning-med-name")?.value.trim() || "";
-    const dosage = row.querySelector(".morning-med-dosage")?.value.trim() || "";
-    const activeToggle = row.querySelector(".morning-med-active-toggle");
-    const active = activeToggle ? activeToggle.getAttribute("data-state") : "checked";
-    const notes = row.querySelector(".morning-med-notes")?.value.trim() || "";
-
-    if (name || dosage || notes) {
-      morningList.push({ name, dosage, active, notes });
-    }
-  });
-
-  const morningMeds = {
-    timeTaken: document.getElementById("morning-meds-time")?.value || "",
-    list: morningList
+  const extractMedSection = (prefix, timeInputId) => {
+    const list = [];
+    document.querySelectorAll(`.${prefix}-row`).forEach(row => {
+      const name = row.querySelector(".med-name")?.value.trim() || "";
+      const dosage = row.querySelector(".med-dosage")?.value.trim() || "";
+      const active = row.querySelector(".med-toggle")?.getAttribute("data-state") || "checked";
+      const notes = row.querySelector(".med-notes")?.value.trim() || "";
+  
+      if (name || dosage || notes) {
+        list.push({ name, dosage, active, notes });
+      }
+    });
+  
+    return {
+      timeTaken: document.getElementById(timeInputId)?.value || "",
+      list: list
+    };
   };
-
-  // Capture Evening Meds
-  const eveningList = [];
-  document.querySelectorAll(".evening-med-row").forEach(row => {
-    const name = row.querySelector(".evening-med-name")?.value.trim() || "";
-    const dosage = row.querySelector(".evening-med-dosage")?.value.trim() || "";
-    const activeToggle = row.querySelector(".evening-med-active-toggle");
-    const active = activeToggle ? activeToggle.getAttribute("data-state") : "checked";
-    const notes = row.querySelector(".evening-med-notes")?.value.trim() || "";
-
-    if (name || dosage || notes) {
-      eveningList.push({ name, dosage, active, notes });
-    }
-  });
-
-  const eveningMeds = {
-    timeTaken: document.getElementById("evening-meds-time")?.value || "",
-    list: eveningList
-  };
+  
+  const morningMeds = extractMedSection("morning-med", "morning-meds-time");
+  const eveningMeds = extractMedSection("evening-med", "evening-meds-time");
 
   // Capture handwashing status per BM
   const handwashStatus = [];
@@ -884,35 +868,29 @@ function populateFormForEdit(id, data) {
     document.getElementById("enzyme-chew-notes").value = data.enzymes.chew?.notes || "";
   }
 
-  // Populate Morning Meds for this log
-  const morningContainer = document.getElementById("morning-meds-container");
+  // Populate Morning Meds
+  const morningList = document.getElementById("morning-meds-list");
   const morningTimeEl = document.getElementById("morning-meds-time");
 
-  if (morningContainer) {
-    morningContainer.innerHTML = "";
+  if (morningList) {
+    morningList.innerHTML = "";
     if (data.morningMeds) {
       if (morningTimeEl) morningTimeEl.value = data.morningMeds.timeTaken || "";
-      if (Array.isArray(data.morningMeds.list) && data.morningMeds.list.length > 0) {
-        data.morningMeds.list.forEach(med => {
-          morningContainer.appendChild(createMedRow("morning-med", med));
-        });
-      }
+      const list = Array.isArray(data.morningMeds.list) ? data.morningMeds.list : (Array.isArray(data.morningMeds) ? data.morningMeds : []);
+      list.forEach(med => morningList.appendChild(createMedRow("morning-med", med)));
     }
   }
 
-  // Populate Evening Meds for this log
-  const eveningContainer = document.getElementById("evening-meds-container");
+  // Populate Evening Meds
+  const eveningList = document.getElementById("evening-meds-list");
   const eveningTimeEl = document.getElementById("evening-meds-time");
 
-  if (eveningContainer) {
-    eveningContainer.innerHTML = "";
+  if (eveningList) {
+    eveningList.innerHTML = "";
     if (data.eveningMeds) {
       if (eveningTimeEl) eveningTimeEl.value = data.eveningMeds.timeTaken || "";
-      if (Array.isArray(data.eveningMeds.list) && data.eveningMeds.list.length > 0) {
-        data.eveningMeds.list.forEach(med => {
-          eveningContainer.appendChild(createMedRow("evening-med", med));
-        });
-      }
+      const list = Array.isArray(data.eveningMeds.list) ? data.eveningMeds.list : (Array.isArray(data.eveningMeds) ? data.eveningMeds : []);
+      list.forEach(med => eveningList.appendChild(createMedRow("evening-med", med)));
     }
   }
 
@@ -3753,10 +3731,10 @@ function renderSleepCalendar(startDate, endDate, records) {
 
 function createMedRow(sectionPrefix, initialData = {}) {
   const row = document.createElement("div");
-  row.className = `${sectionPrefix}-row`;
+  row.className = `${sectionPrefix}-row dynamic-med-row`;
+  row.setAttribute("data-section", sectionPrefix);
   
-  // Grid layout matching header columns cleanly
-  row.style.cssText = "display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr auto; gap: 10px; align-items: center; width: 100%; margin-bottom: 8px;";
+  row.style.cssText = "display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; align-items: center; width: 100%;";
 
   const state = initialData.active || "checked";
   let btnIcon = "✓";
@@ -3771,18 +3749,18 @@ function createMedRow(sectionPrefix, initialData = {}) {
   }
 
   row.innerHTML = `
-    <input type="text" class="${sectionPrefix}-name" placeholder="Medication Name" value="${initialData.name || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
-    <input type="text" class="${sectionPrefix}-dosage" placeholder="e.g. 10mg" value="${initialData.dosage || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
+    <input type="text" class="${sectionPrefix}-name med-name" placeholder="Medication Name" value="${initialData.name || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
+    <input type="text" class="${sectionPrefix}-dosage med-dosage" placeholder="e.g. 10mg" value="${initialData.dosage || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
     
     <div style="display: flex; justify-content: center; align-items: center;">
-      <button type="button" class="${sectionPrefix}-active-toggle" data-state="${state}" style="background: ${btnBg}; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; padding: 0; margin: 0;">
+      <button type="button" class="${sectionPrefix}-active-toggle med-toggle" data-state="${state}" style="background: ${btnBg}; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; padding: 0; margin: 0;">
         ${btnIcon}
       </button>
     </div>
 
-    <input type="text" class="${sectionPrefix}-notes" placeholder="Notes..." value="${initialData.notes || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
+    <input type="text" class="${sectionPrefix}-notes med-notes" placeholder="Notes..." value="${initialData.notes || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; margin: 0;" />
     
-    <button type="button" class="remove-row-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: auto; padding: 4px 8px; font-size: 0.8rem; cursor: pointer; margin: 0;">X</button>
+    <button type="button" class="remove-med-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; height: 28px; width: 30px; font-size: 0.8rem; cursor: pointer; margin: 0; display: flex; align-items: center; justify-content: center;">✕</button>
   `;
 
   return row;
@@ -3837,40 +3815,36 @@ export async function loadUserMedications() {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
-      
-      const morningContainer = document.getElementById("morning-meds-container");
-      if (morningContainer && Array.isArray(data.morningMeds)) {
-        morningContainer.innerHTML = "";
-        data.morningMeds.forEach(med => {
-          morningContainer.appendChild(createMedRow("morning-med", med));
-        });
+
+      const morningList = document.getElementById("morning-meds-list");
+      if (morningList && Array.isArray(data.morningMeds)) {
+        morningList.innerHTML = "";
+        data.morningMeds.forEach(med => morningList.appendChild(createMedRow("morning-med", med)));
       }
 
-      const eveningContainer = document.getElementById("evening-meds-container");
-      if (eveningContainer && Array.isArray(data.eveningMeds)) {
-        eveningContainer.innerHTML = "";
-        data.eveningMeds.forEach(med => {
-          eveningContainer.appendChild(createMedRow("evening-med", med));
-        });
+      const eveningList = document.getElementById("evening-meds-list");
+      if (eveningList && Array.isArray(data.eveningMeds)) {
+        eveningList.innerHTML = "";
+        data.eveningMeds.forEach(med => eveningList.appendChild(createMedRow("evening-med", med)));
       }
     }
   } catch (err) {
-    console.error("Error reading medication settings:", err);
+    console.error("Error loading persistent medication settings:", err);
   }
 }
 
 // Save current medication UI inputs to user's subcollection
-async function saveMedicationsToFirebase() {
+export async function saveMedicationsToFirebase() {
   const user = auth.currentUser;
   if (!user) return;
 
-  const getMedList = (prefix) => {
+  const parseRows = (prefix) => {
     const list = [];
     document.querySelectorAll(`.${prefix}-row`).forEach(row => {
-      const name = row.querySelector(`.med-name`)?.value.trim() || "";
-      const dosage = row.querySelector(`.med-dosage`)?.value.trim() || "";
-      const active = row.querySelector(`.med-toggle`)?.getAttribute("data-state") || "checked";
-      const notes = row.querySelector(`.med-notes`)?.value.trim() || "";
+      const name = row.querySelector(".med-name")?.value.trim() || "";
+      const dosage = row.querySelector(".med-dosage")?.value.trim() || "";
+      const active = row.querySelector(".med-toggle")?.getAttribute("data-state") || "checked";
+      const notes = row.querySelector(".med-notes")?.value.trim() || "";
 
       if (name || dosage || notes) {
         list.push({ name, dosage, active, notes });
@@ -3879,30 +3853,43 @@ async function saveMedicationsToFirebase() {
     return list;
   };
 
-  const morningMeds = getMedList("morning-med");
-  const eveningMeds = getMedList("evening-med");
-
   try {
     const medDocRef = doc(db, "users", user.uid, "logs", "medication_settings");
-    await setDoc(medDocRef, { morningMeds, eveningMeds }, { merge: true });
+    await setDoc(medDocRef, {
+      morningMeds: parseRows("morning-med"),
+      eveningMeds: parseRows("evening-med")
+    }, { merge: true });
   } catch (err) {
-    console.error("Error saving medication settings:", err);
+    console.error("Error auto-saving medication template:", err);
   }
 }
 
-// Bind automatic Firebase updates on user changes
-document.addEventListener("DOMContentLoaded", () => {
-  // Load saved meds when user logs in/page loads
-  loadUserMedications();
 
-  // Save changes when user edits any medication input field
+document.addEventListener("DOMContentLoaded", () => {
+  // Add Medication Button Listeners
+  document.getElementById("add-morning-med-btn")?.addEventListener("click", () => {
+    const morningList = document.getElementById("morning-meds-list");
+    if (morningList) {
+      morningList.appendChild(createMedRow("morning-med"));
+      saveMedicationsToFirebase();
+    }
+  });
+
+  document.getElementById("add-evening-med-btn")?.addEventListener("click", () => {
+    const eveningList = document.getElementById("evening-meds-list");
+    if (eveningList) {
+      eveningList.appendChild(createMedRow("evening-med"));
+      saveMedicationsToFirebase();
+    }
+  });
+
+  // Handle Input Changes & Removals
   document.addEventListener("change", (e) => {
     if (e.target.closest(".dynamic-med-row")) {
       saveMedicationsToFirebase();
     }
   });
 
-  // Save changes when user deletes a row
   document.addEventListener("click", (e) => {
     if (e.target.classList.contains("remove-med-btn")) {
       const row = e.target.closest(".dynamic-med-row");
@@ -3913,7 +3900,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
 
 
 /*
