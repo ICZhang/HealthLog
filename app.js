@@ -1204,10 +1204,8 @@ function showViewModal(data) {
     </ul>
   
     <p><strong>Day Summary:</strong> ${data.daySummary || 'N/A'}</p>
-    <p><strong>Notes:</strong></p>
-    <div style="white-space: pre-line; margin-top: 4px; color: #333;">
-      ${data.notes || 'No extra notes.'}
-    </div>
+    <p style="margin-bottom: 4px;"><strong>Notes:</strong></p>
+    <div style="white-space: pre-line; margin: 0; color: #333;">${(data.notes || 'No extra notes.').trim()}</div>
 
     <p><strong>Special Instructions:</strong> ${data.specialInstructions || 'None recorded.'}</p>
   `;
