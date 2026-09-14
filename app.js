@@ -1136,21 +1136,22 @@ function showViewModal(data) {
     if (!medSectionData || !Array.isArray(medSectionData.list) || medSectionData.list.length === 0) {
       return '<li>None recorded</li>';
     }
-
+  
     const timeStr = medSectionData.timeTaken ? ` (Time Taken: ${formatTo12Hour(medSectionData.timeTaken)})` : '';
     const items = medSectionData.list.map(med => {
-      const name = med.name || 'Unnamed';
-      const dosage = med.dosage ? ` - ${med.dosage}` : '';
-      const notes = med.notes ? ` (${med.notes})` : '';
+      const nameStr = med.name ? `<strong>Name:</strong> ${med.name}` : '<strong>Name:</strong> Unnamed';
+      const doseStr = med.dosage ? ` | <strong>Dose:</strong> ${med.dosage}` : '';
       
       let statusBadge = '';
-      if (med.active === 'checked') statusBadge = ' [Active]';
-      else if (med.active === 'discontinued') statusBadge = ' [Discontinued]';
-      else if (med.active === 'unchecked') statusBadge = ' [Inactive]';
-
-      return `<li><strong>${name}</strong>${dosage}${statusBadge}${notes}</li>`;
+      if (med.active === 'checked') statusBadge = ' | <strong>Status:</strong> Active';
+      else if (med.active === 'discontinued') statusBadge = ' | <strong>Status:</strong> Discontinued';
+      else if (med.active === 'unchecked') statusBadge = ' | <strong>Status:</strong> Inactive';
+  
+      const notesStr = med.notes ? ` | <strong>Notes:</strong> ${med.notes}` : '';
+  
+      return `<li>${nameStr}${doseStr}${statusBadge}${notesStr}</li>`;
     }).join('');
-
+  
     return `${timeStr ? `<div style="margin-bottom: 4px; font-size: 0.85rem; color: #666;">${timeStr}</div>` : ''}${items}`;
   };
 
