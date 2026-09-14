@@ -484,7 +484,6 @@ async function resetForm() {
   const eveningTimeInput = document.getElementById("evening-meds-time");
   if (morningTimeInput) morningTimeInput.value = "";
   if (eveningTimeInput) eveningTimeInput.value = "";
-  
 
   bmContainer.innerHTML = "";
   formulaContainer.innerHTML = "";
@@ -513,7 +512,24 @@ async function resetForm() {
   addBehaviorRow();
   addCromolynRow();
 
-  await loadUserMedications();
+  // Reset Food Grid State
+  const foodsGrid = document.getElementById("foods-grid");
+  if (foodsGrid) {
+    // Clear amounts and uncheck all food items
+    foodsGrid.querySelectorAll(".food-row").forEach(row => {
+      const checkbox = row.querySelector("input[type='checkbox']");
+      const amountInput = row.querySelector("input[type='text'], input[type='number']");
+      if (checkbox) checkbox.checked = false;
+      if (amountInput) amountInput.value = "";
+      row.classList.remove("new-food-highlight");
+    });
+  }
+
+  // Reload medications and custom foods from Firestore settings
+  await Promise.all([
+    loadUserMedications(),
+    typeof loadUserCustomFoods === "function" ? loadUserCustomFoods() : Promise.resolve()
+  ]);
 }
 
 cancelEditBtn.addEventListener("click", () => {
@@ -894,13 +910,46 @@ function populateFormForEdit(id, data) {
     }
   }
 
-  // Reset ingredient selections in grid
+  // 1. Reset existing food grid checkboxes and amount inputs
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
-    const amountInput = row.querySelector("input[type='text']");
+    const amountInput = row.querySelector("input[type='text'], input[type='number']");
     if (checkbox) checkbox.checked = false;
     if (amountInput) amountInput.value = "";
   });
+
+  // 2. Populate standalone foods / foodData array if saved in this log
+  const foodsToPopulate = data.foodData || data.foods;
+  if (Array.isArray(foodsToPopulate) && foodsToPopulate.length > 0) {
+    const gridContainer = document.getElementById("foods-grid");
+
+    foodsToPopulate.forEach(food => {
+      // Support both string items and object items ({ name, amount, checked })
+      const foodName = (typeof food === "object" ? food.name : food) || "";
+      const foodAmount = typeof food === "object" ? food.amount || "" : "";
+      const isChecked = typeof food === "object" ? (food.checked !== false) : true;
+
+      if (!foodName) return;
+
+      // Find existing input row in grid
+      const existingCheckbox = Array.from(
+        document.querySelectorAll("#foods-grid input[type='checkbox']")
+      ).find(cb => cb.value.toLowerCase().trim() === foodName.toLowerCase().trim());
+
+      if (existingCheckbox) {
+        existingCheckbox.checked = isChecked;
+        const row = existingCheckbox.closest(".food-row");
+        const amountInput = row?.querySelector("input[type='text'], input[type='number']");
+        if (amountInput) amountInput.value = foodAmount;
+      } else {
+        // If the food row does not exist in the DOM (e.g. custom food or historical entry), append it
+        if (gridContainer && typeof createFoodRowElement === "function") {
+          const newRow = createFoodRowElement(foodName, "", foodAmount, isChecked, false);
+          gridContainer.appendChild(newRow);
+        }
+      }
+    });
+  }
 
   // Load saved soups into state and ensure consumedTime exists
   if (Array.isArray(data.soups)) {
