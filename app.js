@@ -3681,7 +3681,9 @@ function renderSleepCalendar(startDate, endDate, records) {
 function createMedRow(sectionPrefix, initialData = {}) {
   const row = document.createElement("div");
   row.className = `${sectionPrefix}-row`;
-  row.style.cssText = "display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 30px; gap: 10px; align-items: center;";
+  
+  // Clean 5-column grid layout with vertical centering
+  row.style.cssText = "display: grid; grid-template-columns: 2fr 1.5fr 1fr 2fr 36px; gap: 10px; align-items: center; width: 100%; margin-bottom: 8px;";
 
   const state = initialData.active || "checked";
   let btnIcon = "✓";
@@ -3696,20 +3698,22 @@ function createMedRow(sectionPrefix, initialData = {}) {
   }
 
   row.innerHTML = `
-    <input type="text" class="${sectionPrefix}-name" placeholder="Medication Name" value="${initialData.name || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
-    <input type="text" class="${sectionPrefix}-dosage" placeholder="e.g. 10mg" value="${initialData.dosage || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    <input type="text" class="${sectionPrefix}-name" placeholder="Medication Name" value="${initialData.name || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    <input type="text" class="${sectionPrefix}-dosage" placeholder="e.g. 10mg" value="${initialData.dosage || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
     
-    <div style="text-align: center;">
-      <button type="button" class="${sectionPrefix}-active-toggle" data-state="${state}" style="background: ${btnBg}; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <button type="button" class="${sectionPrefix}-active-toggle" data-state="${state}" style="background: ${btnBg}; color: white; border: none; border-radius: 4px; width: 32px; height: 32px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; line-height: 1; padding: 0;">
         ${btnIcon}
       </button>
     </div>
 
-    <input type="text" class="${sectionPrefix}-notes" placeholder="Notes..." value="${initialData.notes || ''}" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
+    <input type="text" class="${sectionPrefix}-notes" placeholder="Notes..." value="${initialData.notes || ''}" style="padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box;" />
     
-    <button type="button" class="remove-med-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 26px; height: 26px; cursor: pointer; font-weight: bold; line-height: 1;">
-      ×
-    </button>
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <button type="button" class="remove-med-btn" style="background: #e74c3c; color: white; border: none; border-radius: 4px; width: 32px; height: 32px; cursor: pointer; font-size: 1.2rem; font-weight: 300; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;">
+        &times;
+      </button>
+    </div>
   `;
 
   return row;
