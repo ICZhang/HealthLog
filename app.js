@@ -1166,13 +1166,13 @@ function showViewModal(data) {
   
     const timeStr = medSectionData.timeTaken ? ` (Time Taken: ${formatTo12Hour(medSectionData.timeTaken)})` : '';
     const items = medSectionData.list.map(med => {
-      const nameStr = med.name ? `<strong>Name:</strong> ${med.name}` : '<strong>Name:</strong> Unnamed';
+      const nameStr = med.name ? `<strong></strong> ${med.name}` : '<strong></strong> Unnamed';
       const doseStr = med.dosage ? ` | <strong>Dose:</strong> ${med.dosage}` : '';
       
       let statusBadge = '';
-      if (med.active === 'checked') statusBadge = ' | <strong>Status:</strong> Active';
-      else if (med.active === 'discontinued') statusBadge = ' | <strong>Status:</strong> Discontinued';
-      else if (med.active === 'unchecked') statusBadge = ' | <strong>Status:</strong> Inactive';
+      if (med.active === 'checked') statusBadge = ' | <strong></strong> Active';
+      else if (med.active === 'discontinued') statusBadge = ' | <strong></strong> Discontinued';
+      else if (med.active === 'unchecked') statusBadge = ' | <strong></strong> Inactive';
   
       const notesStr = med.notes ? ` | <strong>Notes:</strong> ${med.notes}` : '';
   
