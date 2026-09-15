@@ -133,3 +133,47 @@ box-sizing: border-box;
     background-color: #fafa00 !important;
 }
 
+#foods-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  
+  .food-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .food-row label {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    width: 120px;
+  }
+  
+  /* Small standalone input wrapper */
+  .amount-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .amount-wrapper input {
+    width: 45px;
+    height: 28px;
+    padding: 2px 4px;
+    text-align: center;
+    font-size: 0.85rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+  }
+  
+  .unit-label {
+    font-size: 0.8rem;
+    color: #666;
+    width: 24px;
+  }
