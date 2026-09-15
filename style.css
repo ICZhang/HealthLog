@@ -137,7 +137,7 @@ box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-width: 400px;
+    max-width: 420px;
   }
   
   .food-row {
@@ -151,15 +151,16 @@ box-sizing: border-box;
     font-size: 0.9rem;
   }
   
-  /* Outer box that holds the number and unit */
+  /* Shorter height & shifted to the right */
   .amount-wrapper {
     display: flex;
     align-items: center;
     border: 1px solid #ccc;
     border-radius: 6px;
-    padding: 4px 10px;
+    padding: 2px 8px; /* Reduced vertical padding from 4px to 2px */
     width: 180px;
     background: #fff;
+    margin-left: 15px; /* Pushes the input column further right */
   }
   
   .amount-wrapper input {
@@ -167,6 +168,7 @@ box-sizing: border-box;
     outline: none;
     width: 100%;
     font-size: 0.9rem;
+    height: 24px; /* Explicit compact height */
   }
   
   .unit-label {
