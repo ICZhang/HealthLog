@@ -148,3 +148,12 @@ box-sizing: border-box;
     color: #666;
     font-weight: 600;
 }
+
+/* Center the list container */
+#foods-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers each row horizontally */
+    gap: 6px;
+    width: 100%;
+  }
