@@ -159,7 +159,7 @@ box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-left: 20px;
+    margin-left: 30px;
   }
   
   .amount-wrapper input {
