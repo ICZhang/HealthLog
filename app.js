@@ -3852,7 +3852,7 @@ function createMedRow(sectionPrefix, initialData = {}) {
 
   if (state === "discontinued") {
     btnIcon = "✕";
-    btnBg = "#e74c3c";
+    btnBg = "#8e44ad";
   } else if (state === "unchecked") {
     btnIcon = "";
     btnBg = "#bdc3c7";
