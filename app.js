@@ -1182,7 +1182,7 @@ function showViewModal(data) {
     const timeStr = medSectionData.timeTaken ? ` (Time Taken: ${formatTo12Hour(medSectionData.timeTaken)})` : '';
     const items = medSectionData.list.map(med => {
       const nameStr = med.name ? `<strong></strong> ${med.name}` : '<strong></strong> Unnamed';
-      const doseStr = med.dosage ? ` | <strong>Dose:</strong> ${med.dosage}` : '';
+      const doseStr = med.dosage ? ` | <strong></strong> ${med.dosage}` : '';
       
       let statusBadge = '';
       if (med.active === 'checked') statusBadge = ' | <strong></strong> Active';
