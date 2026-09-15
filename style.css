@@ -133,27 +133,43 @@ box-sizing: border-box;
     background-color: #fafa00 !important;
 }
 
-.amount-wrapper {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.amount-wrapper input[name="food-amount"] {
-    width: 60px;
-}
-
-.unit-label {
-    font-size: 0.85em;
-    color: #666;
-    font-weight: 600;
-}
-
-/* Center the list container */
 #foods-grid {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centers each row horizontally */
     gap: 6px;
+    max-width: 400px;
+  }
+  
+  .food-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .food-row label {
+    flex: 1;
+    font-size: 0.9rem;
+  }
+  
+  /* Outer box that holds the number and unit */
+  .amount-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px 10px;
+    width: 180px;
+    background: #fff;
+  }
+  
+  .amount-wrapper input {
+    border: none;
+    outline: none;
     width: 100%;
+    font-size: 0.9rem;
+  }
+  
+  .unit-label {
+    font-size: 0.85rem;
+    color: #777;
   }
