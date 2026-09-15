@@ -132,3 +132,19 @@ box-sizing: border-box;
 .food-row.new-food-highlight {
     background-color: #fafa00 !important;
 }
+
+.amount-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.amount-wrapper input[name="food-amount"] {
+    width: 60px;
+}
+
+.unit-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 600;
+}

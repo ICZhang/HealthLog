@@ -319,103 +319,150 @@
       <span><strong style="color: #222;">P</strong> = pod</span>
     </div>
     <div style="margin-top: 8px;" id="foods-grid">
-        <div class="food-row">
-            <input type="checkbox" id="food-quinoa" name="food-check" value="Quinoa">
-            <label for="food-quinoa">Quinoa</label>
-            <input type="text" name="food-amount" placeholder="Amount (T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-potato" name="food-check" value="Potato">
-            <label for="food-potato">Potato</label>
-            <input type="text" name="food-amount" placeholder="Amount (T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-carrot" name="food-check" value="Carrot">
-            <label for="food-carrot">Carrot</label>
-            <input type="text" name="food-amount" placeholder="Amount (t/T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-spinach" name="food-check" value="Spinach">
-            <label for="food-spinach">Spinach</label>
-            <input type="text" name="food-amount" placeholder="Amount (L)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-bokchoy" name="food-check" value="Bok Choy">
-            <label for="food-bokchoy">Bok Choy</label>
-            <input type="text" name="food-amount" placeholder="Amount (L)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-kobocha" name="food-check" value="Kobocha">
-            <label for="food-kobocha">Kobocha</label>
-            <input type="text" name="food-amount" placeholder="Amount (T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-snowpea" name="food-check" value="Snow Pea">
-            <label for="food-snowpea">Snow Pea</label>
-            <input type="text" name="food-amount" placeholder="Amount (P)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-cabbage" name="food-check" value="Cabbage">
-            <label for="food-cabbage">Cabbage</label>
-            <input type="text" name="food-amount" placeholder="Amount (t/T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-romaine-lettuce" name="food-check" value="Romaine_Lettuce">
-            <label for="food-romaine-lettuce">Romaine Lettuce</label>
-            <input type="text" name="food-amount" placeholder="Amount (t/T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-chicken" name="food-check" value="Chicken">
-            <label for="food-chicken">Chicken</label>
-            <input type="text" name="food-amount" placeholder="Amount (t/T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-codfish" name="food-check" value="Cod Fish">
-            <label for="food-codfish">Cod Fish</label>
-            <input type="text" name="food-amount" placeholder="Amount (t/T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-beef" name="food-check" value="Beef">
-            <label for="food-beef">Beef</label>
-            <input type="text" name="food-amount" placeholder="Amount (t/T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-bonebroth" name="food-check" value="Bone Broth">
-            <label for="food-bonebroth">Bone Broth</label>
-            <input type="text" name="food-amount" placeholder="Amount (C)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-veggiebroth" name="food-check" value="Veggie Broth">
-            <label for="food-veggiebroth">Veggie Broth</label>
-            <input type="text" name="food-amount" placeholder="Amount (C)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-salt" name="food-check" value="Salt">
-            <label for="food-salt">Salt</label>
-            <input type="text" name="food-amount" placeholder="Amount (t/T)" />
-        </div>
-
-        <div class="food-row">
-            <input type="checkbox" id="food-oliveoil" name="food-check" value="Olive Oil">
-            <label for="food-oliveoil">Olive Oil</label>
-            <input type="text" name="food-amount" placeholder="Amount (t/T)" />
-        </div>
-
-    </div>
+      <div class="food-row">
+          <input type="checkbox" id="food-quinoa" name="food-check" value="Quinoa">
+          <label for="food-quinoa">Quinoa</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-potato" name="food-check" value="Potato">
+          <label for="food-potato">Potato</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-carrot" name="food-check" value="Carrot">
+          <label for="food-carrot">Carrot</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">t/T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-spinach" name="food-check" value="Spinach">
+          <label for="food-spinach">Spinach</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">L</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-bokchoy" name="food-check" value="Bok Choy">
+          <label for="food-bokchoy">Bok Choy</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">L</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-kobocha" name="food-check" value="Kobocha">
+          <label for="food-kobocha">Kobocha</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-snowpea" name="food-check" value="Snow Pea">
+          <label for="food-snowpea">Snow Pea</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">P</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-cabbage" name="food-check" value="Cabbage">
+          <label for="food-cabbage">Cabbage</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">t/T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-romaine-lettuce" name="food-check" value="Romaine_Lettuce">
+          <label for="food-romaine-lettuce">Romaine Lettuce</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">t/T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-chicken" name="food-check" value="Chicken">
+          <label for="food-chicken">Chicken</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">t/T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-codfish" name="food-check" value="Cod Fish">
+          <label for="food-codfish">Cod Fish</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">t/T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-beef" name="food-check" value="Beef">
+          <label for="food-beef">Beef</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">t/T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-bonebroth" name="food-check" value="Bone Broth">
+          <label for="food-bonebroth">Bone Broth</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">C</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-veggiebroth" name="food-check" value="Veggie Broth">
+          <label for="food-veggiebroth">Veggie Broth</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">C</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-salt" name="food-check" value="Salt">
+          <label for="food-salt">Salt</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">t/T</span>
+          </div>
+      </div>
+  
+      <div class="food-row">
+          <input type="checkbox" id="food-oliveoil" name="food-check" value="Olive Oil">
+          <label for="food-oliveoil">Olive Oil</label>
+          <div class="amount-wrapper">
+              <input type="number" step="any" name="food-amount" placeholder="0" />
+              <span class="unit-label">t/T</span>
+          </div>
+      </div>
+  </div>
 
     <div style="display: flex; gap: 8px; margin-top: 12px; width: 100%;">
         <button type="button" id="toggle-highlight-btn" style="flex: 1; height: 36px; background: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem;">Toggle Highlight</button>

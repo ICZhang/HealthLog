@@ -515,17 +515,16 @@ async function resetForm() {
   // Reset Food Grid State
   const foodsGrid = document.getElementById("foods-grid");
   if (foodsGrid) {
-    // Clear amounts and uncheck all food items
     foodsGrid.querySelectorAll(".food-row").forEach(row => {
-      const checkbox = row.querySelector("input[type='checkbox']");
-      const amountInput = row.querySelector("input[type='text'], input[type='number']");
+      const checkbox = row.querySelector("input[name='food-check']");
+      const amountInput = row.querySelector("input[name='food-amount']");
+      
       if (checkbox) checkbox.checked = false;
       if (amountInput) amountInput.value = "";
-      row.classList.remove("new-food-highlight");
     });
   }
 
-  // Reload medications and custom foods from Firestore settings
+  // Reload medications and restore custom/highlighted foods from settings
   await Promise.all([
     loadUserMedications(),
     typeof loadUserCustomFoods === "function" ? loadUserCustomFoods() : Promise.resolve()
@@ -647,17 +646,25 @@ function getFormData() {
     if (name || time) cromolynMeds.push({ name, time });
   });
 
+  // Updated Food Extraction Section
   const foodData = [];
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
-    const checkbox = row.querySelector("input[type='checkbox']");
-    const amountInput = row.querySelector("input[type='text']");
+    const checkbox = row.querySelector("input[name='food-check']");
+    const amountInput = row.querySelector("input[name='food-amount']");
+    const unitLabel = row.querySelector(".unit-label");
     const isHighlighted = row.classList.contains("new-food-highlight");
 
-    if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== ""))) {
+    const rawAmount = amountInput ? amountInput.value.trim() : "";
+    const unit = unitLabel ? unitLabel.textContent.trim() : "";
+    const formattedAmount = rawAmount ? `${rawAmount} ${unit}`.trim() : "";
+
+    if (checkbox && (checkbox.checked || rawAmount !== "")) {
       foodData.push({
         name: checkbox.value,
         checked: checkbox.checked,
-        amount: amountInput ? amountInput.value.trim() : "",
+        amount: rawAmount,          // Pure number string, e.g., "2"
+        unit: unit,                // Unit label string, e.g., "T"
+        formattedAmount: formattedAmount, // Combined string, e.g., "2 T"
         isHighlighted: isHighlighted 
       });
     }
@@ -729,6 +736,7 @@ function getFormData() {
       chew: { checked: document.getElementById("enzyme-chew")?.checked || false, notes: document.getElementById("enzyme-chew-notes")?.value || "" }
     },
     soups: loggedSoups,
+    foods: foodData,
     painLogs,
     moodLogs,
     behaviorLogs,
@@ -913,7 +921,7 @@ function populateFormForEdit(id, data) {
   // 1. Reset existing food grid checkboxes and amount inputs
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
-    const amountInput = row.querySelector("input[type='text'], input[type='number']");
+    const amountInput = row.querySelector("input[name='food-amount'], input[type='text'], input[type='number']");
     if (checkbox) checkbox.checked = false;
     if (amountInput) amountInput.value = "";
   });
@@ -924,10 +932,17 @@ function populateFormForEdit(id, data) {
     const gridContainer = document.getElementById("foods-grid");
 
     foodsToPopulate.forEach(food => {
-      // Support both string items and object items ({ name, amount, checked })
+      // Extract properties safely from both string items and object items
       const foodName = (typeof food === "object" ? food.name : food) || "";
-      const foodAmount = typeof food === "object" ? food.amount || "" : "";
       const isChecked = typeof food === "object" ? (food.checked !== false) : true;
+      const foodUnit = typeof food === "object" ? food.unit || "" : "";
+      
+      // Handle numeric extraction if legacy data saved amount as "2 T"
+      let rawAmount = typeof food === "object" ? food.amount || "" : "";
+      if (typeof rawAmount === "string") {
+        // Keeps numbers and decimals (e.g. "2.5 T" -> "2.5")
+        rawAmount = rawAmount.replace(/[^0-9.]/g, ""); 
+      }
 
       if (!foodName) return;
 
@@ -939,12 +954,12 @@ function populateFormForEdit(id, data) {
       if (existingCheckbox) {
         existingCheckbox.checked = isChecked;
         const row = existingCheckbox.closest(".food-row");
-        const amountInput = row?.querySelector("input[type='text'], input[type='number']");
-        if (amountInput) amountInput.value = foodAmount;
+        const amountInput = row?.querySelector("input[name='food-amount'], input[type='text'], input[type='number']");
+        if (amountInput) amountInput.value = rawAmount;
       } else {
-        // If the food row does not exist in the DOM (e.g. custom food or historical entry), append it
+        // If the food row does not exist in the DOM, create and append it with unit
         if (gridContainer && typeof createFoodRowElement === "function") {
-          const newRow = createFoodRowElement(foodName, "", foodAmount, isChecked, false);
+          const newRow = createFoodRowElement(foodName, foodUnit, rawAmount, isChecked, false);
           gridContainer.appendChild(newRow);
         }
       }
@@ -1298,15 +1313,30 @@ function showViewModal(data) {
             const createdTimeStr = s.time ? ` (Created: ${formatTo12Hour(s.time)})` : '';
             const consumedTimeStr = s.consumedTime ? ` - Eaten at ${formatTo12Hour(s.consumedTime)}` : ' - Not consumed yet';
             const ingredientsStr = s.ingredients?.length 
-              ? s.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ''}`).join(', ')
+              ? s.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount}${i.unit ? ` ${i.unit}` : ''})` : ''}`).join(', ')
               : 'No ingredients listed';
 
             return `<li><strong>${s.name}</strong>${createdTimeStr}${consumedTimeStr} - Ingredients: ${ingredientsStr}</li>`;
           }).join('') 
-        : (data.foods?.length 
-            ? data.foods.map(f => `<li>${f.name.replace(/_/g, " ")}: ${f.amount || 'Checked'} ${f.time ? `at ${formatTo12Hour(f.time)}` : ''}</li>`).join('')
-            : '<li>None recorded</li>')
+        : '<li>None recorded</li>'
       }
+    </ul>
+
+    <p><strong>Foods (Grid):</strong></p>
+    <ul>
+      ${(() => {
+        const foodList = data.foodData || data.foods;
+        if (Array.isArray(foodList) && foodList.length > 0) {
+          return foodList.map(f => {
+            const name = (typeof f === 'object' ? f.name : f) || 'Unnamed Food';
+            const amount = typeof f === 'object' ? f.amount : '';
+            const unit = typeof f === 'object' ? f.unit || '' : '';
+            const amountStr = amount ? ` - ${amount} ${unit}`.trim() : '';
+            return `<li>${name.replace(/_/g, " ")}${amountStr}</li>`;
+          }).join('');
+        }
+        return '<li>None recorded</li>';
+      })()}
     </ul>
 
     <p><strong>Self-Care:</strong></p>
@@ -2374,14 +2404,20 @@ function calculateWaterCups(waterEntries) {
   return parseFloat(waterEntries) || 0;
 }
 
-function createFoodRowElement(foodName, unit = "", amount = "", isChecked = false, isHighlighted = true) {
+function createFoodRowElement(name, unit = "", amount = "", isChecked = false, isHighlighted = false) {
   const row = document.createElement("div");
-  row.className = `food-row ${isHighlighted ? "new-food-highlight" : ""}`;
+  row.className = "food-row" + (isHighlighted ? " new-food-highlight" : "");
 
-  const safeId = `food-${foodName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
-  const placeholderText = unit ? `Amount (${unit})` : "Amount";
+  const id = `food-${name.toLowerCase().replace(/\s+/g, "-")}`;
 
-  row.innerHTML = `<input type="checkbox" id="${safeId}" name="food-check" value="${foodName}" ${isChecked ? "checked" : ""}><label for="${safeId}">${foodName}</label><input type="text" name="food-amount" placeholder="${placeholderText}" value="${amount}" />`;
+  row.innerHTML = `
+    <input type="checkbox" id="${id}" name="food-check" value="${name}" ${isChecked ? "checked" : ""}>
+    <label for="${id}">${name}</label>
+    <div class="amount-wrapper">
+      <input type="number" step="any" name="food-amount" placeholder="0" value="${amount}">
+      <span class="unit-label">${unit}</span>
+    </div>
+  `;
 
   return row;
 }
