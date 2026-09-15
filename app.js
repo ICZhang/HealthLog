@@ -1306,37 +1306,32 @@ function showViewModal(data) {
         : '<li>None recorded</li>'}
     </ul>
 
-    <p><strong>Soups:</strong></p>
+    <p><strong>Soups & Ingredients:</strong></p>
     <ul>
-      ${data.soups?.length 
+      ${Array.isArray(data.soups) && data.soups.length > 0
         ? data.soups.map(s => {
             const createdTimeStr = s.time ? ` (Created: ${formatTo12Hour(s.time)})` : '';
-            const consumedTimeStr = s.consumedTime ? ` - Eaten at ${formatTo12Hour(s.consumedTime)}` : ' - Not consumed yet';
-            const ingredientsStr = s.ingredients?.length 
-              ? s.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount}${i.unit ? ` ${i.unit}` : ''})` : ''}`).join(', ')
-              : 'No ingredients listed';
+            const consumedTimeStr = s.consumedTime ? ` - Eaten at ${formatTo12Hour(s.consumedTime)}` : '';
+            
+            // Render individual ingredients list
+            let ingredientsMarkup = '';
+            if (Array.isArray(s.ingredients) && s.ingredients.length > 0) {
+              const items = s.ingredients.map(ing => {
+                const ingName = ing.name ? ing.name.replace(/_/g, " ") : 'Ingredient';
+                const ingAmt = ing.amount || ing.quantity || '';
+                const ingUnit = ing.unit || '';
+                const amtDisplay = ingAmt ? ` - ${ingAmt}${ingUnit ? ` ${ingUnit}` : ''}` : '';
+                return `<li style="margin-left: 15px;">${ingName}${amtDisplay}</li>`;
+              }).join('');
+              ingredientsMarkup = `<ul style="margin: 2px 0 6px 0;">${items}</ul>`;
+            } else {
+              ingredientsMarkup = '<div style="margin-left: 15px; color: #777;">No ingredients listed</div>';
+            }
 
-            return `<li><strong>${s.name}</strong>${createdTimeStr}${consumedTimeStr} - Ingredients: ${ingredientsStr}</li>`;
+            return `<li><strong>${s.name}</strong>${createdTimeStr}${consumedTimeStr}${ingredientsMarkup}</li>`;
           }).join('') 
         : '<li>None recorded</li>'
       }
-    </ul>
-
-    <p><strong>Foods (Grid):</strong></p>
-    <ul>
-      ${(() => {
-        const foodList = data.foodData || data.foods;
-        if (Array.isArray(foodList) && foodList.length > 0) {
-          return foodList.map(f => {
-            const name = (typeof f === 'object' ? f.name : f) || 'Unnamed Food';
-            const amount = typeof f === 'object' ? f.amount : '';
-            const unit = typeof f === 'object' ? f.unit || '' : '';
-            const amountStr = amount ? ` - ${amount} ${unit}`.trim() : '';
-            return `<li>${name.replace(/_/g, " ")}${amountStr}</li>`;
-          }).join('');
-        }
-        return '<li>None recorded</li>';
-      })()}
     </ul>
 
     <p><strong>Self-Care:</strong></p>
@@ -3671,7 +3666,13 @@ function renderSavedSoups() {
     card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 12px 40px 12px 14px; margin-bottom: 10px; width: 100%; box-sizing: border-box;";
 
     const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
-    const ingredientSummary = soup.ingredients.map(i => `${i.name.replace(/_/g, " ")}${i.amount ? ` (${i.amount})` : ""}`).join(", ");
+    
+    // Format ingredients to display both amount and unit if available
+    const ingredientSummary = soup.ingredients.map(i => {
+      const name = i.name.replace(/_/g, " ");
+      const amt = i.amount ? ` (${i.amount}${i.unit ? ` ${i.unit}` : ''})` : "";
+      return `${name}${amt}`;
+    }).join(", ");
     
     // Default consumedTime to creation time if not set
     const currentConsumedTime = soup.consumedTime || "";
@@ -3714,12 +3715,12 @@ savedSoupsList?.addEventListener("input", (e) => {
 function clearGridSelection() {
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
-    const amountInput = row.querySelector("input[type='text']");
+    const amountInput = row.querySelector("input[name='food-amount'], input[type='text'], input[type='number']");
     if (checkbox) checkbox.checked = false;
     if (amountInput) amountInput.value = "";
   });
-  soupNameInput.value = "";
-  soupTimeInput.value = "";
+  if (typeof soupNameInput !== "undefined" && soupNameInput) soupNameInput.value = "";
+  if (typeof soupTimeInput !== "undefined" && soupTimeInput) soupTimeInput.value = "";
 }
 
 // Remove individual soup entry
@@ -3733,7 +3734,8 @@ saveSoupBtn.addEventListener("click", () => {
 
   document.querySelectorAll("#foods-grid .food-row").forEach(row => {
     const checkbox = row.querySelector("input[type='checkbox']");
-    const amountInput = row.querySelector("input[type='text']");
+    const amountInput = row.querySelector("input[name='food-amount'], input[type='text'], input[type='number']");
+    const unitSpan = row.querySelector(".unit-label");
     const isHighlighted = row.classList.contains("new-food-highlight");
 
     if (checkbox && (checkbox.checked || (amountInput && amountInput.value.trim() !== ""))) {
@@ -3741,6 +3743,7 @@ saveSoupBtn.addEventListener("click", () => {
         name: checkbox.value,
         checked: checkbox.checked,
         amount: amountInput ? amountInput.value.trim() : "",
+        unit: unitSpan ? unitSpan.textContent.trim() : "",
         isHighlighted: isHighlighted
       });
     }
