@@ -92,6 +92,8 @@ const soupNameInput = document.getElementById("soup-name-input");
 const soupTimeInput = document.getElementById("soup-time-input");
 const savedSoupsList = document.getElementById("saved-soups-list");
 
+document.querySelectorAll("input").forEach(input => input.setAttribute("autocomplete", "off"));
+
 // Delete Entry Handler
 async function deleteLogRecord(docId) {
   const confirmed = confirm("Are you sure you want to delete this care record? This action cannot be undone.");
