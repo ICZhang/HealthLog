@@ -1323,7 +1323,13 @@ function showViewModal(data) {
                 const ingAmt = ing.amount || ing.quantity || '';
                 const ingUnit = ing.unit || '';
                 const amtDisplay = ingAmt ? ` - ${ingAmt}${ingUnit ? ` ${ingUnit}` : ''}` : '';
-                return `<li style="margin-left: 15px;">${ingName}${amtDisplay}</li>`;
+                
+                // Highlight style defined per ingredient
+                const highlightStyle = (ing.isHighlighted || ing.highlighted)
+                  ? 'background-color: #fff3cd; padding: 2px 6px; border-radius: 4px; font-weight: bold;'
+                  : '';
+
+                return `<li style="margin-left: 15px;"><span style="${highlightStyle}">${ingName}</span>${amtDisplay}</li>`;
               }).join('');
               ingredientsMarkup = `<ul style="margin: 2px 0 6px 0;">${items}</ul>`;
             } else {
@@ -3669,14 +3675,18 @@ function renderSavedSoups() {
 
     const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
     
-    // Format ingredients to display both amount and unit if available
+    // Format ingredients and highlight custom ones
     const ingredientSummary = soup.ingredients.map(i => {
       const name = i.name.replace(/_/g, " ");
       const amt = i.amount ? ` (${i.amount}${i.unit ? ` ${i.unit}` : ''})` : "";
+      
+      // Highlight style for custom foods
+      if (i.isHighlighted || i.highlighted) {
+        return `<span style="background-color: #fff3cd; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${name}${amt}</span>`;
+      }
       return `${name}${amt}`;
     }).join(", ");
     
-    // Default consumedTime to creation time if not set
     const currentConsumedTime = soup.consumedTime || "";
 
     card.innerHTML = `
@@ -3684,7 +3694,7 @@ function renderSavedSoups() {
         <p style="margin: 0; font-weight: bold; font-size: 1rem; color: #2c3e50; line-height: 1.2;">
           ${soup.name} <span style="font-weight: normal; color: #666; font-size: 0.9rem;">(Created at ${formattedTime})</span>
         </p>
-        <p style="margin: 0; font-size: 0.9rem; color: #444; word-break: break-word; line-height: 1.3;">
+        <p style="margin: 0; font-size: 0.9rem; color: #444; word-break: break-word; line-height: 1.4;">
           <strong>Ingredients:</strong> ${ingredientSummary}
         </p>
         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
