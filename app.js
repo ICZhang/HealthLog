@@ -28,6 +28,7 @@ let isSignUp = false;
 let allPastRecords = [];
 let painChartInstance = null;
 window.activeAnalyticsTab = "pain";
+let editingSoupIndex = null;
 
 const BM_TYPE_COLORS = {
     "No BM": "#000000", //Black
@@ -3671,7 +3672,7 @@ function renderSavedSoups() {
 
   loggedSoups.forEach((soup, index) => {
     const card = document.createElement("div");
-    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 12px 40px 12px 14px; margin-bottom: 10px; width: 100%; box-sizing: border-box;";
+    card.style.cssText = "position: relative; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 12px 75px 12px 14px; margin-bottom: 10px; width: 100%; box-sizing: border-box;";
 
     const formattedTime = soup.time ? formatTo12Hour(soup.time) : "No time";
     
@@ -3680,7 +3681,6 @@ function renderSavedSoups() {
       const name = i.name.replace(/_/g, " ");
       const amt = i.amount ? ` (${i.amount}${i.unit ? ` ${i.unit}` : ''})` : "";
       
-      // Highlight style for custom foods
       if (i.isHighlighted || i.highlighted) {
         return `<span style="background-color: #fafa00; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${name}${amt}</span>`;
       }
@@ -3706,12 +3706,48 @@ function renderSavedSoups() {
                  style="padding: 4px 8px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; height: 32px; box-sizing: border-box;" />
         </div>
       </div>
-      <button type="button" onclick="window.removeSoup(${index})" style="position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
+      <!-- Action Buttons -->
+      <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 4px;">
+        <button type="button" onclick="window.editSoup(${index})" title="Edit Soup" style="padding: 4px 8px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;">Edit</button>
+        <button type="button" onclick="window.removeSoup(${index})" title="Delete Soup" style="width: 26px; height: 26px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; padding: 0;">✕</button>
+      </div>
     `;
 
     savedSoupsList.appendChild(card);
   });
 }
+
+// Populate the form to edit an existing soup
+window.editSoup = function(index) {
+  const soup = loggedSoups[index];
+  if (!soup) return;
+
+  clearGridSelection(); // Clear grid inputs first
+  editingSoupIndex = index; // NOW set the index being edited
+
+  // Populate metadata inputs
+  if (typeof soupNameInput !== "undefined" && soupNameInput) {
+    soupNameInput.value = soup.name || "";
+  }
+  if (typeof soupTimeInput !== "undefined" && soupTimeInput) {
+    soupTimeInput.value = soup.time || "";
+  }
+
+  // Populate grid inputs with soup ingredients
+  soup.ingredients.forEach(ing => {
+    document.querySelectorAll("#foods-grid .food-row").forEach(row => {
+      const checkbox = row.querySelector("input[type='checkbox']");
+      const amountInput = row.querySelector("input[name='food-amount'], input[type='text'], input[type='number']");
+
+      if (checkbox && checkbox.value === ing.name) {
+        checkbox.checked = ing.checked ?? true;
+        if (amountInput) amountInput.value = ing.amount || "";
+      }
+    });
+  });
+
+  if (saveSoupBtn) saveSoupBtn.textContent = "Update Soup";
+};
 
 // Update live time input listener
 savedSoupsList?.addEventListener("input", (e) => {
@@ -3735,8 +3771,21 @@ function clearGridSelection() {
   if (typeof soupTimeInput !== "undefined" && soupTimeInput) soupTimeInput.value = "";
 }
 
+// Separate helper to fully reset edit state back to default
+function resetEditState() {
+  editingSoupIndex = null;
+  if (typeof saveSoupBtn !== "undefined" && saveSoupBtn) saveSoupBtn.textContent = "Save Soup";
+}
+
 // Remove individual soup entry
 window.removeSoup = function(index) {
+  if (editingSoupIndex === index) {
+    editingSoupIndex = null;
+    if (saveSoupBtn) saveSoupBtn.textContent = "Save Soup";
+    clearGridSelection();
+  } else if (editingSoupIndex !== null && index < editingSoupIndex) {
+    editingSoupIndex--;
+  }
   loggedSoups.splice(index, 1);
   renderSavedSoups();
 };
@@ -3769,15 +3818,27 @@ saveSoupBtn.addEventListener("click", () => {
   const soupName = soupNameInput.value.trim() || `Soup ${loggedSoups.length + 1}`;
   const createdTime = soupTimeInput?.value || document.getElementById("log-time")?.value || "";
 
-  loggedSoups.push({
-    name: soupName,
-    time: createdTime,
-    consumedTime: "",
-    ingredients: selectedIngredients
-  });
+  // Check if we are updating an existing entry
+  if (editingSoupIndex !== null && loggedSoups[editingSoupIndex]) {
+    loggedSoups[editingSoupIndex] = {
+      ...loggedSoups[editingSoupIndex],
+      name: soupName,
+      time: createdTime,
+      ingredients: selectedIngredients
+    };
+  } else {
+    // Add new entry
+    loggedSoups.push({
+      name: soupName,
+      time: createdTime,
+      consumedTime: "",
+      ingredients: selectedIngredients
+    });
+  }
 
   renderSavedSoups();
   clearGridSelection();
+  resetEditState(); // Clean up edit state after saving
 });
 
 function renderHandwashRows() {
