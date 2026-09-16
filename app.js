@@ -1326,7 +1326,7 @@ function showViewModal(data) {
                 
                 // Highlight style defined per ingredient
                 const highlightStyle = (ing.isHighlighted || ing.highlighted)
-                  ? 'background-color: #fff3cd; padding: 2px 6px; border-radius: 4px; font-weight: bold;'
+                  ? 'background-color: #fafa00; padding: 2px 6px; border-radius: 4px; font-weight: bold;'
                   : '';
 
                 return `<li style="margin-left: 15px;"><span style="${highlightStyle}">${ingName}</span>${amtDisplay}</li>`;
@@ -3682,7 +3682,7 @@ function renderSavedSoups() {
       
       // Highlight style for custom foods
       if (i.isHighlighted || i.highlighted) {
-        return `<span style="background-color: #fff3cd; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${name}${amt}</span>`;
+        return `<span style="background-color: #fafa00; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${name}${amt}</span>`;
       }
       return `${name}${amt}`;
     }).join(", ");
